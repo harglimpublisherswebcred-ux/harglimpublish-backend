@@ -9,14 +9,14 @@ The backend is well-structured and incorporates several production-ready feature
 - **Error Handling**: Centralized error handling middleware with Winston logging (via `morgan`). Unhandled rejections and exceptions are caught.
 - **Performance**: Response compression is enabled using `compression`.
 - **Payments**: Uses a secure UPI generation method via QR code, separating intent from manual verification via UTR.
-- **Storage**: Integrates with AWS S3 via presigned URLs for secure, direct-from-client uploads.
+- **Storage**: Integrates with Cloudinary via authenticated multipart upload endpoints.
 
 ### What is Working:
 - **Authentication**: JWT-based register, login, and profile fetching.
 - **Books**: Fetching, filtering (by category/price), pagination, sorting, and full-text search.
 - **Orders**: Secure checkout with atomic stock updates, UPI QR code generation, and UTR-based payment verification.
 - **Admin**: Dashboard analytics, book management (CRUD).
-- **Uploads**: AWS S3 presigned URL generation.
+- **Uploads**: Authenticated Cloudinary image and document uploads.
 
 ---
 
@@ -132,11 +132,17 @@ The backend is well-structured and incorporates several production-ready feature
 
 ### 2.5 Uploads (`/api/uploads`)
 
-#### Get Presigned URL (For S3)
-- **URL:** `GET /api/uploads/presigned-url`
-- **Access:** Private (Author/Admin)
-- **Query Params:** `fileName`, `fileType` (e.g., `image/jpeg`).
-- **Response:** `200 OK` with `presignedUrl` and `publicUrl`.
+#### Upload Image
+- **URL:** `POST /api/uploads/image`
+- **Access:** Private
+- **Request Body:** `multipart/form-data` with field `image`.
+- **Response:** `200 OK` with uploaded file `url`.
+
+#### Upload Document
+- **URL:** `POST /api/uploads/document`
+- **Access:** Private
+- **Request Body:** `multipart/form-data` with field `document`.
+- **Response:** `200 OK` with uploaded file `url`.
 
 ---
 
@@ -179,9 +185,8 @@ The checkout flow uses a manual UPI verification step:
 4. **Verification:** Submit the UTR to `/api/orders/:id/verify-payment`. Order goes to `PENDING` waiting for admin approval.
 
 ### 4. File Upload Flow (Images/Covers)
-Do not send images through the Node.js server. Use the presigned URL approach:
+Use the authenticated multipart upload endpoints:
 1. Frontend selects a file.
-2. Frontend calls `GET /api/uploads/presigned-url?fileName=cover.jpg&fileType=image/jpeg`.
-3. Backend returns a `presignedUrl`.
-4. Frontend makes a `PUT` request directly to the `presignedUrl` with the raw file data using Axios or Fetch.
-5. Frontend saves the returned `publicUrl` to the Book's `coverImage` field via `/api/admin/books`.
+2. Frontend sends `multipart/form-data` to `POST /api/uploads/image` with field `image`.
+3. Backend uploads to Cloudinary and returns `data.url`.
+4. Frontend saves the returned `url` to the Book's `coverImage` field via `/api/admin/books`.

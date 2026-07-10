@@ -301,12 +301,11 @@ Design patterns present:
 Environment variables:
 
 - \`NODE_ENV\`
-- \`PORT\`
+- \`PORT\`, \`REQUEST_BODY_LIMIT\`
 - \`MONGODB_URI\`
 - \`JWT_SECRET\`
 - \`JWT_EXPIRE\`
-- \`CLOUDINARY_CLOUD_NAME\`, \`CLOUDINARY_API_KEY\`, \`CLOUDINARY_API_SECRET\`
-- \`AWS_ACCESS_KEY_ID\`, \`AWS_SECRET_ACCESS_KEY\`, \`AWS_S3_REGION\`, \`AWS_S3_BUCKET\`
+- \`CLOUDINARY_CLOUD_NAME\`, \`CLOUDINARY_API_KEY\`, \`CLOUDINARY_API_SECRET\`, \`UPLOAD_MAX_BYTES\`
 - \`MERCHANT_UPI_ID\`, \`MERCHANT_NAME\`, \`MERCHANT_CODE\`, \`PAYMENT_CURRENCY\`, \`QR_EXPIRY_MINUTES\`
 - \`RESEND_API_KEY\`, \`FROM_EMAIL\`
 
@@ -340,7 +339,7 @@ ${steps.map((step) => `  ${step}`).join('\n')}
 }
 
 function writeSequences() {
-  writeSequence('authentication', 'Authentication', ['actor Client', 'Client->>AuthRoutes: login/register', 'AuthRoutes->>AuthController: validate request', 'AuthController->>User: read/write user', 'AuthController-->>Client: user + JWT']);
+  writeSequence('authentication', 'Authentication', ['actor Client', 'Client->>AuthRoutes: login/register', 'AuthRoutes->>AuthController: validate request', 'AuthController->>AuthService: authenticate/register', 'AuthService->>AuthRepository: read/write user', 'AuthController-->>Client: user + JWT']);
   writeSequence('order', 'Order', ['actor Client', 'Client->>OrderRoutes: create order', 'OrderRoutes->>OrderController: createOrder', 'OrderController->>OrderPaymentBridgeService: create order runtime', 'OrderPaymentBridgeService->>PaymentService: create intent and QR', 'OrderPaymentBridgeService->>InventoryService: reserve inventory', 'OrderPaymentBridgeService-->>Client: legacy-compatible order response']);
   writeSequence('payment', 'Payment', ['actor Client', 'Client->>OrderController: submit UTR', 'OrderController->>PaymentService: submit/verify payment', 'PaymentService->>PaymentRepository: persist status', 'PaymentService->>PaymentLedgerRepository: append event', 'PaymentService->>EventBus: publish PaymentVerified/Rejected']);
   writeSequence('invoice', 'Invoice', ['EventBus->>InvoiceSubscriber: PaymentVerified', 'InvoiceSubscriber->>InvoiceService: generate invoice', 'InvoiceService->>InvoiceRepository: create invoice idempotently', 'InvoiceService->>EventBus: InvoiceGenerated']);

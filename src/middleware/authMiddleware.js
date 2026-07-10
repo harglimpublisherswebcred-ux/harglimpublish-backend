@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const logger = require('../utils/logger');
+const { getJwtSecret } = require('../config/environment');
 
 const protect = async (req, res, next) => {
   let token;
@@ -15,7 +17,7 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || 'secret123'
+        getJwtSecret()
       );
 
       // Get user from the token
@@ -27,7 +29,7 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error(error);
+      logger.warn('auth.token_failed', { message: error.message });
       res.status(401).json({ status: 'error', message: 'Not authorized, token failed' });
     }
   }

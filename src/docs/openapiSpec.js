@@ -11,6 +11,20 @@ const errorExample = {
   message: 'Error message'
 };
 
+const endpointExamples = {
+  Authentication: { success: true, token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', data: { _id: '66b4f5a2a44d2c0012a9c100', name: 'Ghani Reader', email: 'user@example.com', role: 'reader' } },
+  Books: { success: true, data: [{ _id: '66b4f5a2a44d2c0012a9c101', title: 'Enterprise Publishing Systems', slug: 'enterprise-publishing-systems', price: 499, status: 'published' }], pagination: { total: 1, page: 1, pages: 1 } },
+  Categories: { success: true, data: [{ _id: '66b4f5a2a44d2c0012a9c102', name: 'Business Books', slug: 'business-books', active: true, featured: true, bookCount: 12 }], pagination: { total: 1, page: 1, limit: 10, pages: 1 } },
+  Orders: { success: true, data: { _id: '66b4f5a2a44d2c0012a9c120', orderNumber: 'HM-20260710-0001', totalPrice: 998, isPaid: false, paymentMethod: 'UPI', payment: '66b4f5a2a44d2c0012a9c130', qrCodeDataUrl: 'data:image/png;base64,...' } },
+  Uploads: { success: true, data: { url: 'https://res.cloudinary.com/demo/image/upload/sample.jpg', public_id: 'hm_uploads/sample' } },
+  'Admin Categories': { success: true, data: { _id: '66b4f5a2a44d2c0012a9c102', name: 'Business Books', slug: 'business-books', active: true, featured: true, bookCount: 12 } },
+  'Admin Operations': { success: true, data: { items: [], pagination: { total: 0, page: 1, limit: 20, pages: 0 } } },
+  'Admin Invoices': { success: true, data: { invoiceNumber: 'INV-202607-000001', status: 'GENERATED', total: 998, currency: 'INR' } },
+  'Admin Notifications': { success: true, data: { items: [], pagination: { total: 0, page: 1, limit: 20, pages: 0 } } },
+  'Admin Shipments': { success: true, data: { shipmentNumber: 'SHP-202607-000001', status: 'CREATED' } },
+  'Admin Analytics': { success: true, data: { report: 'dashboard', generatedAt: '2026-07-10T00:00:00.000Z', data: {} } }
+};
+
 const schemas = {
   ApiSuccess: {
     type: 'object',
@@ -18,6 +32,23 @@ const schemas = {
       success: { type: 'boolean', examples: [true] },
       data: { type: 'object' },
       message: { type: 'string' }
+    }
+  },
+  Pagination: {
+    type: 'object',
+    properties: {
+      total: { type: 'integer', minimum: 0 },
+      page: { type: 'integer', minimum: 1 },
+      limit: { type: 'integer', minimum: 1 },
+      pages: { type: 'integer', minimum: 0 }
+    }
+  },
+  PaginatedSuccess: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', examples: [true] },
+      data: { type: 'array', items: { type: 'object' } },
+      pagination: { $ref: '#/components/schemas/Pagination' }
     }
   },
   ApiError: {
@@ -28,6 +59,222 @@ const schemas = {
       status: { type: 'string', examples: ['error'] },
       message: { type: 'string' },
       stack: { type: 'string', description: 'Development only.' }
+    }
+  },
+  User: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      name: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] },
+      profilePicture: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Category: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      name: { type: 'string' },
+      slug: { type: 'string' },
+      description: { type: 'string' },
+      shortDescription: { type: 'string' },
+      image: { type: 'string' },
+      banner: { type: 'string' },
+      icon: { type: 'string' },
+      seoTitle: { type: 'string' },
+      seoDescription: { type: 'string' },
+      parentCategory: { type: 'string', nullable: true },
+      sortOrder: { type: 'number' },
+      bookCount: { type: 'integer' },
+      featured: { type: 'boolean' },
+      active: { type: 'boolean' },
+      isActive: { type: 'boolean', description: 'Legacy compatibility field synchronized with active.' },
+      metadata: { type: 'object', additionalProperties: true },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Book: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      title: { type: 'string' },
+      slug: { type: 'string' },
+      description: { type: 'string' },
+      author: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/User' }] },
+      category: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/Category' }] },
+      price: { type: 'number' },
+      coverImage: { type: 'string' },
+      stock: { type: 'integer' },
+      reservedStock: { type: 'integer' },
+      ratings: { type: 'number' },
+      reviewCount: { type: 'integer' },
+      status: { type: 'string', enum: ['draft', 'published', 'archived'] },
+      discountPrice: { type: 'number' },
+      isBestseller: { type: 'boolean' },
+      isFeatured: { type: 'boolean' },
+      isNewRelease: { type: 'boolean' },
+      isbn: { type: 'string' },
+      pages: { type: 'integer' },
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  OrderItem: {
+    type: 'object',
+    properties: {
+      book: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/Book' }] },
+      quantity: { type: 'integer', minimum: 1 },
+      price: { type: 'number' }
+    }
+  },
+  Order: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      orderNumber: { type: 'string' },
+      user: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/User' }] },
+      items: { type: 'array', items: { $ref: '#/components/schemas/OrderItem' } },
+      totalPrice: { type: 'number' },
+      status: { type: 'string' },
+      isPaid: { type: 'boolean' },
+      paidAt: { type: 'string', format: 'date-time' },
+      paymentMethod: { type: 'string' },
+      utr: { type: 'string' },
+      payment: { type: 'string' },
+      qrCode: { type: 'string' },
+      qrCodeDataUrl: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Payment: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      order: { type: 'string' },
+      user: { type: 'string' },
+      amount: { type: 'number' },
+      currency: { type: 'string', examples: ['INR'] },
+      provider: { type: 'string' },
+      paymentMethod: { type: 'string' },
+      status: { type: 'string' },
+      utr: { type: 'string' },
+      successfulPayment: { type: 'boolean' },
+      activeIntent: { type: 'boolean' },
+      expiresAt: { type: 'string', format: 'date-time' },
+      verifiedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  PaymentLedger: {
+    type: 'object',
+    properties: {
+      ledgerId: { type: 'string' },
+      paymentId: { type: 'string' },
+      orderId: { type: 'string' },
+      userId: { type: 'string' },
+      eventType: { type: 'string' },
+      previousStatus: { type: 'string' },
+      currentStatus: { type: 'string' },
+      amount: { type: 'number' },
+      currency: { type: 'string' },
+      provider: { type: 'string' },
+      reference: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  InventoryReservation: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      order: { type: 'string' },
+      payment: { type: 'string' },
+      book: { type: 'string' },
+      quantity: { type: 'integer' },
+      status: { type: 'string' },
+      reservedAt: { type: 'string', format: 'date-time' },
+      expiresAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  InventoryLedger: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      reservation: { type: 'string' },
+      order: { type: 'string' },
+      payment: { type: 'string' },
+      book: { type: 'string' },
+      eventType: { type: 'string' },
+      quantity: { type: 'integer' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Invoice: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      invoiceNumber: { type: 'string' },
+      order: { type: 'string' },
+      payment: { type: 'string' },
+      customer: { type: 'string' },
+      items: { type: 'array', items: { type: 'object' } },
+      total: { type: 'number' },
+      currency: { type: 'string' },
+      status: { type: 'string' },
+      generatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Shipment: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      shipmentNumber: { type: 'string' },
+      order: { type: 'string' },
+      invoice: { type: 'string' },
+      status: { type: 'string' },
+      courier: { type: 'object', additionalProperties: true },
+      tracking: { type: 'array', items: { type: 'object' } },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  ShipmentLedger: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      shipment: { type: 'string' },
+      order: { type: 'string' },
+      eventType: { type: 'string' },
+      previousStatus: { type: 'string' },
+      currentStatus: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  Notification: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      user: { type: 'string' },
+      eventType: { type: 'string' },
+      channel: { type: 'string' },
+      subject: { type: 'string' },
+      status: { type: 'string' },
+      retryCount: { type: 'integer' },
+      sentAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  AnalyticsEvent: {
+    type: 'object',
+    properties: {
+      eventId: { type: 'string' },
+      eventType: { type: 'string' },
+      occurredAt: { type: 'string', format: 'date-time' },
+      bucketDay: { type: 'string' },
+      amount: { type: 'number' },
+      quantity: { type: 'number' },
+      metadata: { type: 'object', additionalProperties: true }
     }
   },
   RegisterRequest: {
@@ -161,6 +408,52 @@ const schemas = {
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] }
     }
   },
+  CategoryCreateRequest: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: { type: 'string' },
+      slug: { type: 'string', description: 'Optional. Generated from name when omitted.' },
+      description: { type: 'string' },
+      shortDescription: { type: 'string' },
+      image: { type: 'string', format: 'uri' },
+      banner: { type: 'string', format: 'uri' },
+      icon: { type: 'string' },
+      seoTitle: { type: 'string' },
+      seoDescription: { type: 'string' },
+      parentCategory: { type: 'string', nullable: true },
+      sortOrder: { type: 'number', default: 0 },
+      featured: { type: 'boolean', default: false },
+      active: { type: 'boolean', default: true },
+      metadata: { type: 'object', additionalProperties: true }
+    }
+  },
+  CategoryUpdateRequest: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      slug: { type: 'string' },
+      description: { type: 'string' },
+      shortDescription: { type: 'string' },
+      image: { type: 'string', format: 'uri' },
+      banner: { type: 'string', format: 'uri' },
+      icon: { type: 'string' },
+      seoTitle: { type: 'string' },
+      seoDescription: { type: 'string' },
+      parentCategory: { type: 'string', nullable: true },
+      sortOrder: { type: 'number' },
+      featured: { type: 'boolean' },
+      active: { type: 'boolean' },
+      metadata: { type: 'object', additionalProperties: true }
+    }
+  },
+  CategoryStatusRequest: {
+    type: 'object',
+    required: ['active'],
+    properties: {
+      active: { type: 'boolean' }
+    }
+  },
   PublishRequestCreate: {
     type: 'object',
     required: ['title', 'genre', 'wordCount', 'packageId', 'fileUrl'],
@@ -211,11 +504,25 @@ const schemas = {
   },
   MultipartImageRequest: {
     type: 'object',
-    properties: { image: { type: 'string', format: 'binary' } }
+    required: ['image'],
+    properties: {
+      image: {
+        type: 'string',
+        format: 'binary',
+        description: 'Multipart field name: image. Allowed MIME types: image/jpeg, image/png, image/webp, image/gif. Default max size: 25MB unless UPLOAD_MAX_BYTES is configured.'
+      }
+    }
   },
   MultipartDocumentRequest: {
     type: 'object',
-    properties: { document: { type: 'string', format: 'binary' } }
+    required: ['document'],
+    properties: {
+      document: {
+        type: 'string',
+        format: 'binary',
+        description: 'Multipart field name: document. Allowed MIME types: application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document. Default max size: 25MB unless UPLOAD_MAX_BYTES is configured.'
+      }
+    }
   }
 };
 
@@ -282,6 +589,23 @@ const schemaExamples = {
     status: 'published',
     isBestseller: true
   },
+  CategoryCreateRequest: {
+    name: 'Business Books',
+    description: 'Books for founders, operators, and enterprise teams.',
+    shortDescription: 'Business and operations titles.',
+    featured: true,
+    sortOrder: 10,
+    seoTitle: 'Business Books',
+    seoDescription: 'Business books from Harglim Publishers.'
+  },
+  CategoryUpdateRequest: {
+    description: 'Updated category description.',
+    featured: false,
+    sortOrder: 20
+  },
+  CategoryStatusRequest: {
+    active: false
+  },
   PublishRequestCreate: {
     title: 'My Manuscript',
     genre: 'Business',
@@ -333,6 +657,7 @@ function queryFor(name) {
     minPrice: { type: 'number', minimum: 0 },
     maxPrice: { type: 'number', minimum: 0 },
     featured: { type: 'boolean' },
+    active: { type: 'boolean' },
     bestseller: { type: 'boolean' },
     newRelease: { type: 'boolean' },
     threshold: { type: 'integer', minimum: 0 },
@@ -349,6 +674,21 @@ function queryFor(name) {
     required: false,
     schema: querySchemas[name] || { type: 'string' }
   };
+}
+
+function authHeaderFor(endpoint) {
+  if (endpoint.auth === 'Public') return [];
+  return [{
+    name: 'Authorization',
+    in: 'header',
+    required: true,
+    description: `Bearer JWT required. Authorization scope: ${endpoint.auth}.`,
+    schema: { type: 'string', examples: ['Bearer <jwt-token>'] }
+  }];
+}
+
+function successExampleFor(endpoint) {
+  return endpointExamples[endpoint.tag] || successExample;
 }
 
 function requestBodyFor(endpoint) {
@@ -388,33 +728,43 @@ function buildOpenApiSpec() {
   for (const endpoint of endpointInventory) {
     paths[endpoint.path] = paths[endpoint.path] || {};
     const body = requestBodyFor(endpoint);
+    const responses = {
+      200: {
+        description: 'Successful response.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { success: { value: successExampleFor(endpoint) } } } }
+      },
+      201: {
+        description: 'Created successfully where applicable.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { created: { value: successExampleFor(endpoint) } } } }
+      },
+      400: { $ref: '#/components/responses/BadRequest' },
+      401: { $ref: '#/components/responses/Unauthorized' },
+      403: { $ref: '#/components/responses/Forbidden' },
+      404: { $ref: '#/components/responses/NotFound' },
+      429: { $ref: '#/components/responses/RateLimited' },
+      500: { $ref: '#/components/responses/InternalServerError' }
+    };
+
+    if (endpoint.tag === 'Uploads') {
+      responses[503] = { $ref: '#/components/responses/ServiceUnavailable' };
+    }
+    if (endpoint.tag === 'Admin Categories' || endpoint.path.includes('/operations/payments')) {
+      responses[409] = { $ref: '#/components/responses/Conflict' };
+    }
+
     paths[endpoint.path][endpoint.method.toLowerCase()] = {
       tags: [endpoint.tag],
       summary: endpoint.summary,
-      description: `${endpoint.summary}. Controller: ${endpoint.controller}. Authentication: ${endpoint.auth}. ${endpoint.notes || ''}`.trim(),
+      description: `${endpoint.summary}. Controller: ${endpoint.controller}. Authentication: ${endpoint.auth}. API routes are rate limited and return standard error envelopes. ${endpoint.notes || ''}`.trim(),
       operationId: toOperationId(endpoint),
       security: securityFor(endpoint),
       parameters: [
+        ...authHeaderFor(endpoint),
         ...(endpoint.params || []).map(parameterFor),
         ...(endpoint.query || []).map(queryFor)
       ],
       ...(body ? { requestBody: body } : {}),
-      responses: {
-        200: {
-          description: 'Successful response.',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { success: { value: successExample } } } }
-        },
-        201: {
-          description: 'Created successfully where applicable.',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' } } }
-        },
-        400: { $ref: '#/components/responses/BadRequest' },
-        401: { $ref: '#/components/responses/Unauthorized' },
-        403: { $ref: '#/components/responses/Forbidden' },
-        404: { $ref: '#/components/responses/NotFound' },
-        429: { $ref: '#/components/responses/RateLimited' },
-        500: { $ref: '#/components/responses/InternalServerError' }
-      }
+      responses
     };
   }
 
@@ -446,7 +796,19 @@ function buildOpenApiSpec() {
         Unauthorized: { description: 'Missing or invalid bearer token.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
         Forbidden: { description: 'Authenticated user does not have the required role.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
         NotFound: { description: 'Resource or route not found.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
-        RateLimited: { description: 'Rate limit exceeded.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
+        Conflict: { description: 'Duplicate resource or state conflict.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' }, examples: { duplicate: { value: { success: false, message: 'Resource already exists' } } } } } },
+        PayloadTooLarge: { description: 'Request body or upload exceeds configured size limits.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' }, examples: { tooLarge: { value: { success: false, message: 'File too large' } } } } } },
+        UnsupportedMediaType: { description: 'Unsupported upload MIME type or file extension.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' }, examples: { unsupported: { value: { success: false, message: 'Unsupported file type' } } } } } },
+        UnprocessableEntity: { description: 'Validation passed transport parsing but failed business validation.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
+        RateLimited: {
+          description: 'Rate limit exceeded.',
+          headers: {
+            RateLimit: { schema: { type: 'string' }, description: 'Standard rate limit policy header.' },
+            'RateLimit-Policy': { schema: { type: 'string' }, description: 'Configured rate-limit policy.' }
+          },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' }, examples: { rateLimited: { value: { success: false, message: 'Too many requests from this IP, please try again later.' } } } } }
+        },
+        ServiceUnavailable: { description: 'Required runtime dependency is unavailable or not configured.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } },
         InternalServerError: { description: 'Unexpected server error.', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } } }
       }
     },

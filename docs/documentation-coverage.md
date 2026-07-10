@@ -1,10 +1,10 @@
 # Documentation Coverage Report
 
-Endpoint inventory: 78
+Endpoint inventory: 87
 
 Models documented: 17
 
-Events documented: 26
+Events documented: 31
 
 Database collections documented: 17
 

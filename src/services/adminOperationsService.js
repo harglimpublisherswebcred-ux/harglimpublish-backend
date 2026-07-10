@@ -6,6 +6,7 @@ const InventoryLedger = require('../models/InventoryLedger');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Book = require('../models/Book');
+const Category = require('../models/Category');
 const paymentService = require('./paymentService');
 const inventoryService = require('./inventoryService');
 const orderPaymentBridgeService = require('./orderPaymentBridgeService');
@@ -314,6 +315,7 @@ class AdminOperationsService {
         payments: [],
         customers: [],
         books: [],
+        categories: [],
         reservations: [],
         ledger: []
       };
@@ -322,10 +324,11 @@ class AdminOperationsService {
     const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     const limit = Math.min(Number(filters.limit) || 10, 25);
 
-    const [orders, customers, books] = await Promise.all([
+    const [orders, customers, books, categories] = await Promise.all([
       Order.find({ orderNumber: regex }).limit(limit).lean(),
       User.find({ $or: [{ name: regex }, { email: regex }] }).select('name email role').limit(limit).lean(),
-      Book.find({ $or: [{ title: regex }, { slug: regex }, { isbn: regex }] }).limit(limit).lean()
+      Book.find({ $or: [{ title: regex }, { slug: regex }, { isbn: regex }] }).limit(limit).lean(),
+      Category.find({ $or: [{ name: regex }, { slug: regex }, { description: regex }] }).limit(limit).lean()
     ]);
     const orderIds = orders.map((order) => order._id);
     const customerIds = customers.map((customer) => customer._id);
@@ -356,6 +359,7 @@ class AdminOperationsService {
       payments,
       customers,
       books,
+      categories,
       reservations,
       ledger: this.combineTimeline(paymentLedger, inventoryLedger)
     };

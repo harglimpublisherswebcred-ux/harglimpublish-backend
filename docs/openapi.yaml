@@ -21,6 +21,8 @@ tags:
   - 
     name: Books
   - 
+    name: Categories
+  - 
     name: Orders
   - 
     name: Uploads
@@ -32,6 +34,8 @@ tags:
     name: Publishing
   - 
     name: Admin Core
+  - 
+    name: Admin Categories
   - 
     name: Admin Operations
   - 
@@ -48,7 +52,7 @@ paths:
       tags:
         - System
       summary: Health check
-      description: "Health check. Controller: server.js. Authentication: Public. Returns server liveness only."
+      description: "Health check. Controller: server.js. Authentication: Public. API routes are rate limited and return standard error envelopes. Returns server liveness only."
       operationId: get_health
       security:
 []
@@ -73,6 +77,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -90,7 +100,7 @@ paths:
       tags:
         - Authentication
       summary: Register user
-      description: "Register user. Controller: authController.registerUser. Authentication: Public."
+      description: "Register user. Controller: authController.registerUser. Authentication: Public. API routes are rate limited and return standard error envelopes. Auth endpoints use a stricter 10 requests per 15 minutes limiter."
       operationId: post_api_auth_register
       security:
 []
@@ -121,14 +131,28 @@ paths:
                 success:
                   value:
                     success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -146,7 +170,7 @@ paths:
       tags:
         - Authentication
       summary: Login user
-      description: "Login user. Controller: authController.loginUser. Authentication: Public."
+      description: "Login user. Controller: authController.loginUser. Authentication: Public. API routes are rate limited and return standard error envelopes. Auth endpoints use a stricter 10 requests per 15 minutes limiter and return a JWT token on success."
       operationId: post_api_auth_login
       security:
 []
@@ -175,14 +199,28 @@ paths:
                 success:
                   value:
                     success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -200,14 +238,22 @@ paths:
       tags:
         - Authentication
       summary: Get current user
-      description: "Get current user. Controller: authController.getMe. Authentication: Bearer."
+      description: "Get current user. Controller: authController.getMe. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Requires Authorization: Bearer <token>."
       operationId: get_api_auth_me
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       responses:
         200:
           description: Successful response.
@@ -219,14 +265,28 @@ paths:
                 success:
                   value:
                     success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c100
+                      name: Ghani Reader
+                      email: "user@example.com"
+                      role: reader
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -244,7 +304,7 @@ paths:
       tags:
         - Books
       summary: List books
-      description: "List books. Controller: bookController.getBooks. Authentication: Public."
+      description: "List books. Controller: bookController.getBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_books
       security:
 []
@@ -322,13 +382,37 @@ paths:
                   value:
                     success: true
                     data:
-
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -346,7 +430,7 @@ paths:
       tags:
         - Books
       summary: Get book by slug
-      description: "Get book by slug. Controller: bookController.getBookBySlug. Authentication: Public."
+      description: "Get book by slug. Controller: bookController.getBookBySlug. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_books_slug
       security:
 []
@@ -369,13 +453,37 @@ paths:
                   value:
                     success: true
                     data:
-
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -393,7 +501,7 @@ paths:
       tags:
         - Books
       summary: Get related books
-      description: "Get related books. Controller: bookController.getRelatedBooks. Authentication: Public."
+      description: "Get related books. Controller: bookController.getRelatedBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_books_slug_related
       security:
 []
@@ -416,13 +524,37 @@ paths:
                   value:
                     success: true
                     data:
-
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -440,7 +572,7 @@ paths:
       tags:
         - Books
       summary: Get book reviews
-      description: "Get book reviews. Controller: bookController.getBookReviews. Authentication: Public."
+      description: "Get book reviews. Controller: bookController.getBookReviews. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_books_slug_reviews
       security:
 []
@@ -463,13 +595,37 @@ paths:
                   value:
                     success: true
                     data:
-
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -487,7 +643,7 @@ paths:
       tags:
         - Books
       summary: Search books
-      description: "Search books. Controller: bookController.searchBooks. Authentication: Public."
+      description: "Search books. Controller: bookController.searchBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_search
       security:
 []
@@ -527,13 +683,320 @@ paths:
                   value:
                     success: true
                     data:
-
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/categories:
+    get:
+      tags:
+        - Categories
+      summary: List categories
+      description: "List categories. Controller: categoryController.listCategories. Authentication: Public. API routes are rate limited and return standard error envelopes. Public list returns active categories by default and includes system-managed book counts."
+      operationId: get_api_categories
+      security:
+[]
+      parameters:
+        - 
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - 
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - 
+          name: featured
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - 
+          name: active
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - 
+          name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - 
+          name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/categories/{slug}:
+    get:
+      tags:
+        - Categories
+      summary: Get category by slug
+      description: "Get category by slug. Controller: categoryController.getCategoryBySlug. Authentication: Public. API routes are rate limited and return standard error envelopes. Only active categories are returned publicly."
+      operationId: get_api_categories_slug
+      security:
+[]
+      parameters:
+        - 
+          name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/categories/{slug}/books:
+    get:
+      tags:
+        - Categories
+      summary: List books by category
+      description: "List books by category. Controller: categoryController.getCategoryBooks. Authentication: Public. API routes are rate limited and return standard error envelopes. Returns published books for an active category."
+      operationId: get_api_categories_slug_books
+      security:
+[]
+      parameters:
+        - 
+          name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - 
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - 
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - 
+          name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      - 
+                        _id: 66b4f5a2a44d2c0012a9c102
+                        name: Business Books
+                        slug: business-books
+                        active: true
+                        featured: true
+                        bookCount: 12
+                    pagination:
+                      total: 1
+                      page: 1
+                      limit: 10
+                      pages: 1
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -551,14 +1014,22 @@ paths:
       tags:
         - Orders
       summary: "Create order with payment, inventory, QR bridge"
-      description: "Create order with payment, inventory, QR bridge. Controller: orderController.createOrder. Authentication: Bearer."
+      description: "Create order with payment, inventory, QR bridge. Controller: orderController.createOrder. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: post_api_orders
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       requestBody:
         required: true
         content:
@@ -593,13 +1064,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -617,13 +1106,22 @@ paths:
       tags:
         - Orders
       summary: Verify order payment reference
-      description: "Verify order payment reference. Controller: orderController.verifyPayment. Authentication: Bearer."
+      description: "Verify order payment reference. Controller: orderController.verifyPayment. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: put_api_orders_id_verify_payment
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -653,13 +1151,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -677,13 +1193,22 @@ paths:
       tags:
         - Orders
       summary: Cancel order
-      description: "Cancel order. Controller: orderController.cancelOrder. Authentication: Bearer."
+      description: "Cancel order. Controller: orderController.cancelOrder. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: delete_api_orders_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -702,13 +1227,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -726,13 +1269,22 @@ paths:
       tags:
         - Orders
       summary: Get order shipment
-      description: "Get order shipment. Controller: orderShipmentController.getOrderShipment. Authentication: Bearer."
+      description: "Get order shipment. Controller: orderShipmentController.getOrderShipment. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_orders_id_shipment
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -751,13 +1303,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -775,13 +1345,22 @@ paths:
       tags:
         - Orders
       summary: Get order tracking
-      description: "Get order tracking. Controller: orderShipmentController.getOrderTracking. Authentication: Bearer."
+      description: "Get order tracking. Controller: orderShipmentController.getOrderTracking. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_orders_id_tracking
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -800,13 +1379,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -824,7 +1421,7 @@ paths:
       tags:
         - Orders
       summary: Track order by order number
-      description: "Track order by order number. Controller: orderController.trackOrder. Authentication: Public."
+      description: "Track order by order number. Controller: orderController.trackOrder. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_orders_track_orderNumber
       security:
 []
@@ -847,13 +1444,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c120
+                      orderNumber: HM-20260710-0001
+                      totalPrice: 998
+                      isPaid: false
+                      paymentMethod: UPI
+                      payment: 66b4f5a2a44d2c0012a9c130
+                      qrCodeDataUrl: "data:image/png;base64,..."
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -871,14 +1486,22 @@ paths:
       tags:
         - Uploads
       summary: Upload image
-      description: "Upload image. Controller: uploadController.uploadImage. Authentication: Bearer."
+      description: "Upload image. Controller: uploadController.uploadImage. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Multipart field: image. Allowed: jpg, jpeg, png, webp, gif. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
       operationId: post_api_uploads_image
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       requestBody:
         required: true
         content:
@@ -897,13 +1520,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      url: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+                      public_id: hm_uploads/sample
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      url: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+                      public_id: hm_uploads/sample
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -916,19 +1547,29 @@ paths:
           $ref: "#/components/responses/RateLimited"
         500:
           $ref: "#/components/responses/InternalServerError"
+        503:
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/uploads/document:
     post:
       tags:
         - Uploads
       summary: Upload document
-      description: "Upload document. Controller: uploadController.uploadDocument. Authentication: Bearer."
+      description: "Upload document. Controller: uploadController.uploadDocument. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Multipart field: document. Allowed: pdf, doc, docx. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
       operationId: post_api_uploads_document
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       requestBody:
         required: true
         content:
@@ -947,13 +1588,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      url: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+                      public_id: hm_uploads/sample
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      url: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+                      public_id: hm_uploads/sample
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -966,18 +1615,29 @@ paths:
           $ref: "#/components/responses/RateLimited"
         500:
           $ref: "#/components/responses/InternalServerError"
+        503:
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/users/{id}/stats:
     get:
       tags:
         - Users
       summary: Get user stats
-      description: "Get user stats. Controller: userController.getUserStats. Authentication: Bearer."
+      description: "Get user stats. Controller: userController.getUserStats. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_users_id_stats
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1003,6 +1663,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1020,13 +1686,22 @@ paths:
       tags:
         - Users
       summary: Update user profile
-      description: "Update user profile. Controller: userController.updateUserProfile. Authentication: Bearer."
+      description: "Update user profile. Controller: userController.updateUserProfile. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: put_api_users_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1064,6 +1739,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1081,13 +1762,22 @@ paths:
       tags:
         - Users
       summary: Get user orders
-      description: "Get user orders. Controller: userController.getUserOrders. Authentication: Bearer."
+      description: "Get user orders. Controller: userController.getUserOrders. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_users_id_orders
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1136,6 +1826,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1153,13 +1849,22 @@ paths:
       tags:
         - Users
       summary: Get user wishlist
-      description: "Get user wishlist. Controller: userController.getUserWishlist. Authentication: Bearer."
+      description: "Get user wishlist. Controller: userController.getUserWishlist. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_users_id_wishlist
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1185,6 +1890,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1201,13 +1912,22 @@ paths:
       tags:
         - Users
       summary: Add book to wishlist
-      description: "Add book to wishlist. Controller: userController.addToWishlist. Authentication: Bearer."
+      description: "Add book to wishlist. Controller: userController.addToWishlist. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: post_api_users_id_wishlist
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1244,6 +1964,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1261,13 +1987,22 @@ paths:
       tags:
         - Users
       summary: Get user library
-      description: "Get user library. Controller: userController.getUserLibrary. Authentication: Bearer."
+      description: "Get user library. Controller: userController.getUserLibrary. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_users_id_library
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1293,6 +2028,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1310,13 +2051,22 @@ paths:
       tags:
         - Users
       summary: Remove book from wishlist
-      description: "Remove book from wishlist. Controller: userController.removeFromWishlist. Authentication: Bearer."
+      description: "Remove book from wishlist. Controller: userController.removeFromWishlist. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: delete_api_users_id_wishlist_bookId
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1348,6 +2098,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1365,7 +2121,7 @@ paths:
       tags:
         - Authors
       summary: List authors
-      description: "List authors. Controller: authorController.getAuthors. Authentication: Public."
+      description: "List authors. Controller: authorController.getAuthors. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors
       security:
 []
@@ -1406,6 +2162,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1423,7 +2185,7 @@ paths:
       tags:
         - Authors
       summary: Get author
-      description: "Get author. Controller: authorController.getAuthorById. Authentication: Public."
+      description: "Get author. Controller: authorController.getAuthorById. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors_id
       security:
 []
@@ -1453,6 +2215,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1470,7 +2238,7 @@ paths:
       tags:
         - Authors
       summary: Get author books
-      description: "Get author books. Controller: authorController.getAuthorBooks. Authentication: Public."
+      description: "Get author books. Controller: authorController.getAuthorBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors_id_books
       security:
 []
@@ -1523,6 +2291,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1540,13 +2314,22 @@ paths:
       tags:
         - Authors
       summary: Get author stats
-      description: "Get author stats. Controller: authorController.getAuthorStats. Authentication: Bearer."
+      description: "Get author stats. Controller: authorController.getAuthorStats. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors_id_stats
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1572,6 +2355,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1589,13 +2378,22 @@ paths:
       tags:
         - Authors
       summary: Get author analytics alias
-      description: "Get author analytics alias. Controller: authorController.getAuthorStats. Authentication: Bearer."
+      description: "Get author analytics alias. Controller: authorController.getAuthorStats. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors_id_analytics
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1621,6 +2419,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1638,13 +2442,22 @@ paths:
       tags:
         - Authors
       summary: Get author royalty history
-      description: "Get author royalty history. Controller: authorController.getAuthorRoyaltiesHistory. Authentication: Bearer."
+      description: "Get author royalty history. Controller: authorController.getAuthorRoyaltiesHistory. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
       operationId: get_api_authors_id_royalties_history
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Bearer."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1670,6 +2483,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1687,14 +2506,22 @@ paths:
       tags:
         - Publishing
       summary: Create publish request
-      description: "Create publish request. Controller: publishController.createPublishRequest. Authentication: Author/Admin."
+      description: "Create publish request. Controller: publishController.createPublishRequest. Authentication: Author/Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_publish_requests
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Author/Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       requestBody:
         required: true
         content:
@@ -1729,6 +2556,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1746,7 +2579,7 @@ paths:
       tags:
         - Publishing
       summary: List publish packages
-      description: "List publish packages. Controller: publishController.getPublishPackages. Authentication: Public."
+      description: "List publish packages. Controller: publishController.getPublishPackages. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_publish_packages
       security:
 []
@@ -1771,6 +2604,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1788,14 +2627,22 @@ paths:
       tags:
         - Admin Core
       summary: Admin analytics summary
-      description: "Admin analytics summary. Controller: adminController.getAdminAnalytics. Authentication: Admin."
+      description: "Admin analytics summary. Controller: adminController.getAdminAnalytics. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       responses:
         200:
           description: Successful response.
@@ -1815,6 +2662,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1832,14 +2685,22 @@ paths:
       tags:
         - Admin Core
       summary: Admin stats alias
-      description: "Admin stats alias. Controller: adminController.getAdminAnalytics. Authentication: Admin."
+      description: "Admin stats alias. Controller: adminController.getAdminAnalytics. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_stats
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       responses:
         200:
           description: Successful response.
@@ -1859,6 +2720,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1876,14 +2743,22 @@ paths:
       tags:
         - Admin Core
       summary: List orders
-      description: "List orders. Controller: adminController.getOrders. Authentication: Admin."
+      description: "List orders. Controller: adminController.getOrders. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_orders
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       responses:
         200:
           description: Successful response.
@@ -1903,6 +2778,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1920,13 +2801,22 @@ paths:
       tags:
         - Admin Core
       summary: Update order status
-      description: "Update order status. Controller: adminController.updateOrderStatus. Authentication: Admin."
+      description: "Update order status. Controller: adminController.updateOrderStatus. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: put_api_admin_orders_id_status
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -1964,6 +2854,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -1981,14 +2877,22 @@ paths:
       tags:
         - Admin Core
       summary: List publish requests
-      description: "List publish requests. Controller: adminController.getPublishRequests. Authentication: Admin."
+      description: "List publish requests. Controller: adminController.getPublishRequests. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_publish_requests
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       responses:
         200:
           description: Successful response.
@@ -2008,6 +2912,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2025,13 +2935,22 @@ paths:
       tags:
         - Admin Core
       summary: Update publish request status
-      description: "Update publish request status. Controller: adminController.updatePublishRequestStatus. Authentication: Admin."
+      description: "Update publish request status. Controller: adminController.updatePublishRequestStatus. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: put_api_admin_publish_requests_id_status
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2069,6 +2988,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2086,14 +3011,22 @@ paths:
       tags:
         - Admin Core
       summary: Create book
-      description: "Create book. Controller: adminController.createBook. Authentication: Admin."
+      description: "Create book. Controller: adminController.createBook. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_books
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
       requestBody:
         required: true
         content:
@@ -2136,6 +3069,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2153,13 +3092,22 @@ paths:
       tags:
         - Admin Core
       summary: Update book
-      description: "Update book. Controller: adminController.updateBook. Authentication: Admin."
+      description: "Update book. Controller: adminController.updateBook. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: put_api_admin_books_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2199,6 +3147,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2215,13 +3169,22 @@ paths:
       tags:
         - Admin Core
       summary: Delete book
-      description: "Delete book. Controller: adminController.deleteBook. Authentication: Admin."
+      description: "Delete book. Controller: adminController.deleteBook. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: delete_api_admin_books_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2247,6 +3210,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2259,19 +3228,68 @@ paths:
           $ref: "#/components/responses/RateLimited"
         500:
           $ref: "#/components/responses/InternalServerError"
-  /api/admin/operations/dashboard:
+  /api/admin/categories:
     get:
       tags:
-        - Admin Operations
-      summary: Operations dashboard
-      description: "Operations dashboard. Controller: adminOperationsController.dashboardSummary. Authentication: Admin."
-      operationId: get_api_admin_operations_dashboard
+        - Admin Categories
+      summary: List categories
+      description: "List categories. Controller: categoryController.listAdminCategories. Authentication: Admin. API routes are rate limited and return standard error envelopes. Admin list can include inactive categories when active=false is supplied."
+      operationId: get_api_admin_categories
       security:
         - 
           bearerAuth:
 []
       parameters:
-[]
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+        - 
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - 
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - 
+          name: featured
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - 
+          name: active
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - 
+          name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - 
+          name: sort
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description: Successful response.
@@ -2284,13 +3302,513 @@ paths:
                   value:
                     success: true
                     data:
-
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - Admin Categories
+      summary: Create category
+      description: "Create category. Controller: categoryController.createCategory. Authentication: Admin. API routes are rate limited and return standard error envelopes. Name and slug must be unique. Slug is generated from name when omitted."
+      operationId: post_api_admin_categories
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreateRequest"
+            examples:
+              default:
+                summary: CategoryCreateRequest example
+                value:
+                  name: Business Books
+                  description: "Books for founders, operators, and enterprise teams."
+                  shortDescription: Business and operations titles.
+                  featured: true
+                  sortOrder: 10
+                  seoTitle: Business Books
+                  seoDescription: Business books from Harglim Publishers.
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/categories/{id}:
+    get:
+      tags:
+        - Admin Categories
+      summary: Get category
+      description: "Get category. Controller: categoryController.getAdminCategory. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_categories_id
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+        - 
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags:
+        - Admin Categories
+      summary: Update category
+      description: "Update category. Controller: categoryController.updateCategory. Authentication: Admin. API routes are rate limited and return standard error envelopes. bookCount is managed by the system and cannot be set through this payload."
+      operationId: put_api_admin_categories_id
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+        - 
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdateRequest"
+            examples:
+              default:
+                summary: CategoryUpdateRequest example
+                value:
+                  description: Updated category description.
+                  featured: false
+                  sortOrder: 20
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - Admin Categories
+      summary: Soft delete category
+      description: "Soft delete category. Controller: categoryController.deleteCategory. Authentication: Admin. API routes are rate limited and return standard error envelopes. Soft delete only. Categories with active books return 409 conflict."
+      operationId: delete_api_admin_categories_id
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+        - 
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/categories/{id}/status:
+    patch:
+      tags:
+        - Admin Categories
+      summary: Update category status
+      description: "Update category status. Controller: categoryController.updateCategoryStatus. Authentication: Admin. API routes are rate limited and return standard error envelopes. Synchronizes active and legacy isActive fields."
+      operationId: patch_api_admin_categories_id_status
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+        - 
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryStatusRequest"
+            examples:
+              default:
+                summary: CategoryStatusRequest example
+                value:
+                  active: false
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      _id: 66b4f5a2a44d2c0012a9c102
+                      name: Business Books
+                      slug: business-books
+                      active: true
+                      featured: true
+                      bookCount: 12
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/operations/dashboard:
+    get:
+      tags:
+        - Admin Operations
+      summary: Operations dashboard
+      description: "Operations dashboard. Controller: adminOperationsController.dashboardSummary. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_operations_dashboard
+      security:
+        - 
+          bearerAuth:
+[]
+      parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2308,13 +3826,22 @@ paths:
       tags:
         - Admin Operations
       summary: Global operations search
-      description: "Global operations search. Controller: adminOperationsController.globalSearch. Authentication: Admin."
+      description: "Global operations search. Controller: adminOperationsController.globalSearch. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_search
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: q
           in: query
@@ -2356,13 +3883,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2380,13 +3925,22 @@ paths:
       tags:
         - Admin Operations
       summary: List payments
-      description: "List payments. Controller: adminOperationsController.listPayments. Authentication: Admin."
+      description: "List payments. Controller: adminOperationsController.listPayments. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_payments
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: status
           in: query
@@ -2436,13 +3990,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2451,6 +4023,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2460,13 +4034,22 @@ paths:
       tags:
         - Admin Operations
       summary: Payment detail
-      description: "Payment detail. Controller: adminOperationsController.getPaymentDetail. Authentication: Admin."
+      description: "Payment detail. Controller: adminOperationsController.getPaymentDetail. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_payments_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2485,13 +4068,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2500,6 +4101,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2509,13 +4112,22 @@ paths:
       tags:
         - Admin Operations
       summary: Approve payment
-      description: "Approve payment. Controller: adminOperationsController.approvePayment. Authentication: Admin."
+      description: "Approve payment. Controller: adminOperationsController.approvePayment. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_approve
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2547,13 +4159,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2562,6 +4192,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2571,13 +4203,22 @@ paths:
       tags:
         - Admin Operations
       summary: Reject payment
-      description: "Reject payment. Controller: adminOperationsController.rejectPayment. Authentication: Admin."
+      description: "Reject payment. Controller: adminOperationsController.rejectPayment. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_reject
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2607,13 +4248,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2622,6 +4281,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2631,13 +4292,22 @@ paths:
       tags:
         - Admin Operations
       summary: Cancel payment intent
-      description: "Cancel payment intent. Controller: adminOperationsController.cancelPaymentIntent. Authentication: Admin."
+      description: "Cancel payment intent. Controller: adminOperationsController.cancelPaymentIntent. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_cancel
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2669,13 +4339,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2684,6 +4372,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2693,13 +4383,22 @@ paths:
       tags:
         - Admin Operations
       summary: Expire payment intent
-      description: "Expire payment intent. Controller: adminOperationsController.expirePayment. Authentication: Admin."
+      description: "Expire payment intent. Controller: adminOperationsController.expirePayment. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_expire
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2731,13 +4430,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2746,6 +4463,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2755,13 +4474,22 @@ paths:
       tags:
         - Admin Operations
       summary: Retry payment verification
-      description: "Retry payment verification. Controller: adminOperationsController.retryVerification. Authentication: Admin."
+      description: "Retry payment verification. Controller: adminOperationsController.retryVerification. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_retry_verification
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2780,13 +4508,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2795,6 +4541,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2804,13 +4552,22 @@ paths:
       tags:
         - Admin Operations
       summary: Recreate payment QR
-      description: "Recreate payment QR. Controller: adminOperationsController.recreateQR. Authentication: Admin."
+      description: "Recreate payment QR. Controller: adminOperationsController.recreateQR. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_operations_payments_id_recreate_qr
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -2841,13 +4598,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2856,6 +4631,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         404:
           $ref: "#/components/responses/NotFound"
+        409:
+          $ref: "#/components/responses/Conflict"
         429:
           $ref: "#/components/responses/RateLimited"
         500:
@@ -2865,13 +4642,22 @@ paths:
       tags:
         - Admin Operations
       summary: List inventory reservations
-      description: "List inventory reservations. Controller: adminOperationsController.listReservations. Authentication: Admin."
+      description: "List inventory reservations. Controller: adminOperationsController.listReservations. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_inventory_reservations
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: status
           in: query
@@ -2939,13 +4725,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -2963,13 +4767,22 @@ paths:
       tags:
         - Admin Operations
       summary: List low stock books
-      description: "List low stock books. Controller: adminOperationsController.listLowStock. Authentication: Admin."
+      description: "List low stock books. Controller: adminOperationsController.listLowStock. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_inventory_low_stock
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: threshold
           in: query
@@ -3012,13 +4825,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3036,13 +4867,22 @@ paths:
       tags:
         - Admin Operations
       summary: List payment ledger
-      description: "List payment ledger. Controller: adminOperationsController.listPaymentLedger. Authentication: Admin."
+      description: "List payment ledger. Controller: adminOperationsController.listPaymentLedger. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_ledger_payments
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: paymentId
           in: query
@@ -3110,13 +4950,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3134,13 +4992,22 @@ paths:
       tags:
         - Admin Operations
       summary: List inventory ledger
-      description: "List inventory ledger. Controller: adminOperationsController.listInventoryLedger. Authentication: Admin."
+      description: "List inventory ledger. Controller: adminOperationsController.listInventoryLedger. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_ledger_inventory
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: reservation
           in: query
@@ -3214,13 +5081,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3238,13 +5123,22 @@ paths:
       tags:
         - Admin Operations
       summary: Combined ledger timeline
-      description: "Combined ledger timeline. Controller: adminOperationsController.combinedTimeline. Authentication: Admin."
+      description: "Combined ledger timeline. Controller: adminOperationsController.combinedTimeline. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_operations_ledger_timeline
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: orderId
           in: query
@@ -3300,13 +5194,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3324,13 +5236,22 @@ paths:
       tags:
         - Admin Invoices
       summary: Search invoices
-      description: "Search invoices. Controller: adminInvoiceController.searchInvoices. Authentication: Admin."
+      description: "Search invoices. Controller: adminInvoiceController.searchInvoices. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_invoices_search
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: q
           in: query
@@ -3410,13 +5331,25 @@ paths:
                   value:
                     success: true
                     data:
-
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3434,13 +5367,22 @@ paths:
       tags:
         - Admin Invoices
       summary: List invoices
-      description: "List invoices. Controller: adminInvoiceController.listInvoices. Authentication: Admin."
+      description: "List invoices. Controller: adminInvoiceController.listInvoices. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_invoices
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: status
           in: query
@@ -3508,13 +5450,25 @@ paths:
                   value:
                     success: true
                     data:
-
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3532,13 +5486,22 @@ paths:
       tags:
         - Admin Invoices
       summary: Download invoice document
-      description: "Download invoice document. Controller: adminInvoiceController.downloadInvoice. Authentication: Admin."
+      description: "Download invoice document. Controller: adminInvoiceController.downloadInvoice. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_invoices_id_download
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -3557,13 +5520,25 @@ paths:
                   value:
                     success: true
                     data:
-
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3581,13 +5556,22 @@ paths:
       tags:
         - Admin Invoices
       summary: Get invoice
-      description: "Get invoice. Controller: adminInvoiceController.getInvoice. Authentication: Admin."
+      description: "Get invoice. Controller: adminInvoiceController.getInvoice. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_invoices_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -3606,13 +5590,25 @@ paths:
                   value:
                     success: true
                     data:
-
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      invoiceNumber: INV-202607-000001
+                      status: GENERATED
+                      total: 998
+                      currency: INR
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3630,13 +5626,22 @@ paths:
       tags:
         - Admin Notifications
       summary: Search notifications
-      description: "Search notifications. Controller: adminNotificationController.searchNotifications. Authentication: Admin."
+      description: "Search notifications. Controller: adminNotificationController.searchNotifications. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_notifications_search
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: q
           in: query
@@ -3716,13 +5721,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3740,13 +5763,22 @@ paths:
       tags:
         - Admin Notifications
       summary: List notifications
-      description: "List notifications. Controller: adminNotificationController.listNotifications. Authentication: Admin."
+      description: "List notifications. Controller: adminNotificationController.listNotifications. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_notifications
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: status
           in: query
@@ -3814,13 +5846,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3838,13 +5888,22 @@ paths:
       tags:
         - Admin Notifications
       summary: Get notification
-      description: "Get notification. Controller: adminNotificationController.getNotification. Authentication: Admin."
+      description: "Get notification. Controller: adminNotificationController.getNotification. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_notifications_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -3863,13 +5922,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3887,13 +5964,22 @@ paths:
       tags:
         - Admin Notifications
       summary: Retry failed notification
-      description: "Retry failed notification. Controller: adminNotificationController.retryNotification. Authentication: Admin."
+      description: "Retry failed notification. Controller: adminNotificationController.retryNotification. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_notifications_id_retry
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -3924,13 +6010,31 @@ paths:
                   value:
                     success: true
                     data:
-
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      items:
+[]
+                      pagination:
+                        total: 0
+                        page: 1
+                        limit: 20
+                        pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -3948,13 +6052,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Search shipments
-      description: "Search shipments. Controller: adminShipmentController.searchShipments. Authentication: Admin."
+      description: "Search shipments. Controller: adminShipmentController.searchShipments. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_shipments_search
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: q
           in: query
@@ -4040,13 +6153,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4064,13 +6185,22 @@ paths:
       tags:
         - Admin Shipments
       summary: List shipments
-      description: "List shipments. Controller: adminShipmentController.listShipments. Authentication: Admin."
+      description: "List shipments. Controller: adminShipmentController.listShipments. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_shipments
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: status
           in: query
@@ -4144,13 +6274,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4168,13 +6306,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Get shipment tracking
-      description: "Get shipment tracking. Controller: adminShipmentController.getTracking. Authentication: Admin."
+      description: "Get shipment tracking. Controller: adminShipmentController.getTracking. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_shipments_id_tracking
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -4193,13 +6340,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4217,13 +6372,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Get shipment
-      description: "Get shipment. Controller: adminShipmentController.getShipment. Authentication: Admin."
+      description: "Get shipment. Controller: adminShipmentController.getShipment. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_shipments_id
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -4242,13 +6406,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4266,13 +6438,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Assign courier
-      description: "Assign courier. Controller: adminShipmentController.assignCourier. Authentication: Admin."
+      description: "Assign courier. Controller: adminShipmentController.assignCourier. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_shipments_id_assign_courier
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -4306,13 +6487,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4330,13 +6519,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Update shipment status
-      description: "Update shipment status. Controller: adminShipmentController.updateStatus. Authentication: Admin."
+      description: "Update shipment status. Controller: adminShipmentController.updateStatus. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_shipments_id_update_status
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -4367,13 +6565,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4391,13 +6597,22 @@ paths:
       tags:
         - Admin Shipments
       summary: Cancel shipment
-      description: "Cancel shipment. Controller: adminShipmentController.cancelShipment. Authentication: Admin."
+      description: "Cancel shipment. Controller: adminShipmentController.cancelShipment. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: post_api_admin_shipments_id_cancel
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: id
           in: path
@@ -4427,13 +6642,21 @@ paths:
                   value:
                     success: true
                     data:
-
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         201:
           description: Created successfully where applicable.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      shipmentNumber: SHP-202607-000001
+                      status: CREATED
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4451,13 +6674,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Analytics dashboard
-      description: "Analytics dashboard. Controller: adminAnalyticsController.dashboard. Authentication: Admin."
+      description: "Analytics dashboard. Controller: adminAnalyticsController.dashboard. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_dashboard
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4495,6 +6727,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4502,6 +6737,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4519,13 +6763,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Revenue report
-      description: "Revenue report. Controller: adminAnalyticsController.revenue. Authentication: Admin."
+      description: "Revenue report. Controller: adminAnalyticsController.revenue. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_revenue
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4580,6 +6833,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4587,6 +6843,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4604,13 +6869,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Book sales report
-      description: "Book sales report. Controller: adminAnalyticsController.books. Authentication: Admin."
+      description: "Book sales report. Controller: adminAnalyticsController.books. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_books
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4660,6 +6934,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4667,6 +6944,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4684,13 +6970,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Payment metrics
-      description: "Payment metrics. Controller: adminAnalyticsController.payments. Authentication: Admin."
+      description: "Payment metrics. Controller: adminAnalyticsController.payments. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_payments
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4734,6 +7029,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4741,6 +7039,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4758,13 +7065,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Inventory metrics
-      description: "Inventory metrics. Controller: adminAnalyticsController.inventory. Authentication: Admin."
+      description: "Inventory metrics. Controller: adminAnalyticsController.inventory. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_inventory
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4808,6 +7124,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4815,6 +7134,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4832,13 +7160,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Shipment metrics
-      description: "Shipment metrics. Controller: adminAnalyticsController.shipments. Authentication: Admin."
+      description: "Shipment metrics. Controller: adminAnalyticsController.shipments. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_shipments
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4882,6 +7219,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4889,6 +7229,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4906,13 +7255,22 @@ paths:
       tags:
         - Admin Analytics
       summary: Customer metrics
-      description: "Customer metrics. Controller: adminAnalyticsController.customers. Authentication: Admin."
+      description: "Customer metrics. Controller: adminAnalyticsController.customers. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: get_api_admin_analytics_customers
       security:
         - 
           bearerAuth:
 []
       parameters:
+        - 
+          name: Authorization
+          in: header
+          required: true
+          description: "Bearer JWT required. Authorization scope: Admin."
+          schema:
+            type: string
+            examples:
+              - "Bearer <jwt-token>"
         - 
           name: from
           in: query
@@ -4956,6 +7314,9 @@ paths:
                   value:
                     success: true
                     data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
 
         201:
           description: Created successfully where applicable.
@@ -4963,6 +7324,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      report: dashboard
+                      generatedAt: "2026-07-10T00:00:00.000Z"
+                      data:
+
         400:
           $ref: "#/components/responses/BadRequest"
         401:
@@ -4993,6 +7363,34 @@ components:
           type: object
         message:
           type: string
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+        pages:
+          type: integer
+          minimum: 0
+    PaginatedSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          examples:
+            - true
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          $ref: "#/components/schemas/Pagination"
     ApiError:
       type: object
       required:
@@ -5011,6 +7409,404 @@ components:
         stack:
           type: string
           description: Development only.
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+            - visitor
+            - reader
+            - author
+            - admin
+        profilePicture:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        image:
+          type: string
+        banner:
+          type: string
+        icon:
+          type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        parentCategory:
+          type: string
+          nullable: true
+        sortOrder:
+          type: number
+        bookCount:
+          type: integer
+        featured:
+          type: boolean
+        active:
+          type: boolean
+        isActive:
+          type: boolean
+          description: Legacy compatibility field synchronized with active.
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Book:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        author:
+          oneOf:
+            - 
+              type: string
+            - 
+              $ref: "#/components/schemas/User"
+        category:
+          oneOf:
+            - 
+              type: string
+            - 
+              $ref: "#/components/schemas/Category"
+        price:
+          type: number
+        coverImage:
+          type: string
+        stock:
+          type: integer
+        reservedStock:
+          type: integer
+        ratings:
+          type: number
+        reviewCount:
+          type: integer
+        status:
+          type: string
+          enum:
+            - draft
+            - published
+            - archived
+        discountPrice:
+          type: number
+        isBestseller:
+          type: boolean
+        isFeatured:
+          type: boolean
+        isNewRelease:
+          type: boolean
+        isbn:
+          type: string
+        pages:
+          type: integer
+        format:
+          type: string
+          enum:
+            - hardcover
+            - paperback
+            - ebook
+            - audiobook
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    OrderItem:
+      type: object
+      properties:
+        book:
+          oneOf:
+            - 
+              type: string
+            - 
+              $ref: "#/components/schemas/Book"
+        quantity:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+        orderNumber:
+          type: string
+        user:
+          oneOf:
+            - 
+              type: string
+            - 
+              $ref: "#/components/schemas/User"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        totalPrice:
+          type: number
+        status:
+          type: string
+        isPaid:
+          type: boolean
+        paidAt:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: string
+        utr:
+          type: string
+        payment:
+          type: string
+        qrCode:
+          type: string
+        qrCodeDataUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Payment:
+      type: object
+      properties:
+        _id:
+          type: string
+        order:
+          type: string
+        user:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+          examples:
+            - INR
+        provider:
+          type: string
+        paymentMethod:
+          type: string
+        status:
+          type: string
+        utr:
+          type: string
+        successfulPayment:
+          type: boolean
+        activeIntent:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+        verifiedAt:
+          type: string
+          format: date-time
+    PaymentLedger:
+      type: object
+      properties:
+        ledgerId:
+          type: string
+        paymentId:
+          type: string
+        orderId:
+          type: string
+        userId:
+          type: string
+        eventType:
+          type: string
+        previousStatus:
+          type: string
+        currentStatus:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        provider:
+          type: string
+        reference:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    InventoryReservation:
+      type: object
+      properties:
+        _id:
+          type: string
+        order:
+          type: string
+        payment:
+          type: string
+        book:
+          type: string
+        quantity:
+          type: integer
+        status:
+          type: string
+        reservedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    InventoryLedger:
+      type: object
+      properties:
+        _id:
+          type: string
+        reservation:
+          type: string
+        order:
+          type: string
+        payment:
+          type: string
+        book:
+          type: string
+        eventType:
+          type: string
+        quantity:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    Invoice:
+      type: object
+      properties:
+        _id:
+          type: string
+        invoiceNumber:
+          type: string
+        order:
+          type: string
+        payment:
+          type: string
+        customer:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+        total:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+    Shipment:
+      type: object
+      properties:
+        _id:
+          type: string
+        shipmentNumber:
+          type: string
+        order:
+          type: string
+        invoice:
+          type: string
+        status:
+          type: string
+        courier:
+          type: object
+          additionalProperties: true
+        tracking:
+          type: array
+          items:
+            type: object
+        createdAt:
+          type: string
+          format: date-time
+    ShipmentLedger:
+      type: object
+      properties:
+        _id:
+          type: string
+        shipment:
+          type: string
+        order:
+          type: string
+        eventType:
+          type: string
+        previousStatus:
+          type: string
+        currentStatus:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Notification:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+        eventType:
+          type: string
+        channel:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+        retryCount:
+          type: integer
+        sentAt:
+          type: string
+          format: date-time
+    AnalyticsEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+        eventType:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        bucketDay:
+          type: string
+        amount:
+          type: number
+        quantity:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
     RegisterRequest:
       type: object
       required:
@@ -5246,6 +8042,89 @@ components:
             - paperback
             - ebook
             - audiobook
+    CategoryCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+          description: Optional. Generated from name when omitted.
+        description:
+          type: string
+        shortDescription:
+          type: string
+        image:
+          type: string
+          format: uri
+        banner:
+          type: string
+          format: uri
+        icon:
+          type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        parentCategory:
+          type: string
+          nullable: true
+        sortOrder:
+          type: number
+          default: 0
+        featured:
+          type: boolean
+          default: false
+        active:
+          type: boolean
+          default: true
+        metadata:
+          type: object
+          additionalProperties: true
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        image:
+          type: string
+          format: uri
+        banner:
+          type: string
+          format: uri
+        icon:
+          type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        parentCategory:
+          type: string
+          nullable: true
+        sortOrder:
+          type: number
+        featured:
+          type: boolean
+        active:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties: true
+    CategoryStatusRequest:
+      type: object
+      required:
+        - active
+      properties:
+        active:
+          type: boolean
     PublishRequestCreate:
       type: object
       required:
@@ -5317,16 +8196,22 @@ components:
           type: string
     MultipartImageRequest:
       type: object
+      required:
+        - image
       properties:
         image:
           type: string
           format: binary
+          description: "Multipart field name: image. Allowed MIME types: image/jpeg, image/png, image/webp, image/gif. Default max size: 25MB unless UPLOAD_MAX_BYTES is configured."
     MultipartDocumentRequest:
       type: object
+      required:
+        - document
       properties:
         document:
           type: string
           format: binary
+          description: "Multipart field name: document. Allowed MIME types: application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document. Default max size: 25MB unless UPLOAD_MAX_BYTES is configured."
   responses:
     BadRequest:
       description: Invalid input or business rule failure.
@@ -5357,8 +8242,67 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: Duplicate resource or state conflict.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            duplicate:
+              value:
+                success: false
+                message: Resource already exists
+    PayloadTooLarge:
+      description: Request body or upload exceeds configured size limits.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            tooLarge:
+              value:
+                success: false
+                message: File too large
+    UnsupportedMediaType:
+      description: Unsupported upload MIME type or file extension.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            unsupported:
+              value:
+                success: false
+                message: Unsupported file type
+    UnprocessableEntity:
+      description: Validation passed transport parsing but failed business validation.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
     RateLimited:
       description: Rate limit exceeded.
+      headers:
+        RateLimit:
+          schema:
+            type: string
+          description: Standard rate limit policy header.
+        RateLimit-Policy:
+          schema:
+            type: string
+          description: Configured rate-limit policy.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          examples:
+            rateLimited:
+              value:
+                success: false
+                message: "Too many requests from this IP, please try again later."
+    ServiceUnavailable:
+      description: Required runtime dependency is unavailable or not configured.
       content:
         application/json:
           schema:
@@ -5478,3 +8422,23 @@ x-event-catalog:
     producer: ShipmentService
     entity: Shipment
     description: A shipment was cancelled before dispatch completion.
+  CategoryCreated:
+    producer: CategoryService
+    entity: Category
+    description: A product category was created.
+  CategoryUpdated:
+    producer: CategoryService
+    entity: Category
+    description: A product category was updated.
+  CategoryDeleted:
+    producer: CategoryService
+    entity: Category
+    description: A product category was soft deleted.
+  CategoryActivated:
+    producer: CategoryService
+    entity: Category
+    description: A product category was activated.
+  CategoryDeactivated:
+    producer: CategoryService
+    entity: Category
+    description: A product category was deactivated.

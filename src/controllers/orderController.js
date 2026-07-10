@@ -1,9 +1,7 @@
-const Order = require('../models/Order');
-const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 const { sendOrderConfirmation } = require('../utils/emailService');
 const orderPaymentBridgeService = require('../services/orderPaymentBridgeService');
-const eventBus = require('../events/eventBus');
+const orderService = require('../services/orderService');
 
 // @desc    Create new order and return UPI QR code (Uses MongoDB Transactions)
 // @route   POST /api/orders
@@ -42,26 +40,10 @@ const createOrder = async (req, res) => {
 // @access  Public
 const trackOrder = async (req, res) => {
   try {
-    const order = await Order.findOne({ orderNumber: req.params.orderNumber })
-      .populate('items.book', 'title coverImage');
-
-    if (!order) {
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        orderNumber: order.orderNumber,
-        status: order.status,
-        shippingAddress: order.shippingAddress,
-        items: order.items,
-        trackingUpdates: order.trackingUpdates,
-        totalPrice: order.totalPrice
-      }
-    });
+    const data = await orderService.trackOrder(req.params.orderNumber);
+    res.json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -91,54 +73,11 @@ const verifyPayment = async (req, res) => {
 // @route   DELETE /api/orders/:id
 // @access  Private
 const cancelOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-
   try {
-    session.startTransaction();
-
-    const order = await Order.findById(req.params.id).session(session);
-    if (!order) {
-      await session.abortTransaction();
-      eventBus.discardSession(session);
-      return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-    
-    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      await session.abortTransaction();
-      eventBus.discardSession(session);
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
-    if (order.status !== 'PENDING') {
-      await session.abortTransaction();
-      eventBus.discardSession(session);
-      return res.status(400).json({ success: false, message: 'Can only cancel pending orders' });
-    }
-
-    order.status = 'CANCELLED';
-    order.trackingUpdates.push({
-      status: 'Cancelled',
-      description: 'Order cancelled by user',
-    });
-    
-    await order.save({ session });
-    await orderPaymentBridgeService.releaseOrderInventory(order._id, {
-      userId: req.user._id
-    }, {
-      session,
-      actorType: req.user.role === 'admin' ? 'ADMIN' : 'CUSTOMER',
-      reason: 'Inventory reservation released after order cancellation'
-    });
-
-    await session.commitTransaction();
-    await eventBus.flushSession(session);
+    const order = await orderService.cancelOrder(req.params.id, req.user);
     res.json({ success: true, data: order });
   } catch (error) {
-    await session.abortTransaction();
-    eventBus.discardSession(session);
-    res.status(500).json({ success: false, message: error.message });
-  } finally {
-    session.endSession();
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 

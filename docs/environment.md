@@ -8,6 +8,7 @@ This document is generated from actual environment references in `server.js`, `s
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `NODE_ENV` | Optional | non-production behavior when unset | `server.js`, `src/utils/logger.js` | Controls server startup, stack traces, and logger transports. | Set to `production` in production. | `production` | No |
 | `PORT` | Optional | `5000` | `server.js` | HTTP server port. | Set explicitly behind PM2/Nginx/container runtime. | `5000` | No |
+| `REQUEST_BODY_LIMIT` | Optional | `1mb` | `server.js` | Maximum JSON/urlencoded request body size. | Keep small unless a specific API needs larger JSON bodies. | `1mb` | No |
 | `MONGODB_URI` | Required | None | `src/config/database.js` | MongoDB connection string. | Use a production MongoDB replica set/Atlas URI with credentials from a secret manager. | `mongodb://localhost:27017/hm_backend` | Yes |
 | `JWT_SECRET` | Required for production | `secret123` fallback exists | `src/utils/tokenUtils.js`, `src/middleware/authMiddleware.js`, tests | Signs and verifies JWTs. | Must be a long random secret; never use fallback in production. | `CHANGE_ME_TO_A_LONG_RANDOM_PRODUCTION_SECRET` | Yes |
 | `JWT_EXPIRE` | Optional | `30d` | `src/utils/tokenUtils.js` | JWT expiry duration. | Use short expiry aligned to frontend session policy. | `7d` | No |
@@ -21,10 +22,7 @@ This document is generated from actual environment references in `server.js`, `s
 | `CLOUDINARY_CLOUD_NAME` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary account name. | Required if `/api/uploads/*` image/document upload routes are used. | `your_cloud_name` | No |
 | `CLOUDINARY_API_KEY` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary API key. | Store securely. | `CHANGE_ME` | Yes |
 | `CLOUDINARY_API_SECRET` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary API secret. | Store securely. | `CHANGE_ME` | Yes |
-| `AWS_ACCESS_KEY_ID` | Optional feature dependency | None | `src/controllers/uploadsController.js` | AWS S3 access key for the legacy/orphan uploads controller. | Configure only if that controller is mounted or reused. | `CHANGE_ME` | Yes |
-| `AWS_SECRET_ACCESS_KEY` | Optional feature dependency | None | `src/controllers/uploadsController.js` | AWS S3 secret key for the legacy/orphan uploads controller. | Configure only if that controller is mounted or reused. | `CHANGE_ME` | Yes |
-| `AWS_S3_REGION` | Optional feature dependency | `us-east-1` | `src/controllers/uploadsController.js` | AWS S3 region. | Use the bucket region if S3 upload path is enabled. | `us-east-1` | No |
-| `AWS_S3_BUCKET` | Optional feature dependency | None | `src/controllers/uploadsController.js` | AWS S3 bucket name. | Configure only if S3 upload path is enabled. | `your-bucket-name` | No |
+| `UPLOAD_MAX_BYTES` | Optional | `26214400` | `src/config/cloudinary.js` | Maximum upload file size in bytes. | Keep at or below infrastructure/provider limits. | `26214400` | No |
 | `MONGOMS_DOWNLOAD_DIR` | Test-only | mongodb-memory-server default | tests | Cache directory for mongodb-memory-server binaries. | Keep out of production runtime env. | `node_modules/.cache/mongodb-binaries` | No |
 
 ## Current `.env` Audit
@@ -35,16 +33,14 @@ The real `.env` was inspected by key name only; secret values were not printed o
 
 - `MONGODB_URI`
 - `PORT`
+- `REQUEST_BODY_LIMIT`
 - `NODE_ENV`
 - `JWT_SECRET`
 - `JWT_EXPIRE`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_S3_REGION`
-- `AWS_S3_BUCKET`
+- `UPLOAD_MAX_BYTES`
 - `MERCHANT_UPI_ID`
 - `MERCHANT_NAME`
 - `MERCHANT_CODE`
@@ -67,11 +63,15 @@ These keys are present in the current `.env` but are not read by the source code
 - `APP_NAME`
 - `APP_VERSION`
 - `LOG_LEVEL`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_S3_REGION`
+- `AWS_S3_BUCKET`
 
 ### Deprecated Or Incorrect Names
 
 - `JWT_EXPIRY` is not used. The runtime reads `JWT_EXPIRE`.
-- `AWS_REGION` is not used. The runtime reads `AWS_S3_REGION`.
+- `AWS_REGION` and `AWS_S3_REGION` are not used by the current runtime.
 - `EMAIL_FROM` is not used. The runtime reads `FROM_EMAIL`.
 - `UPI_ID`, `UPI_PAYEE_NAME`, and `PAYMENT_QR_EXPIRES_MINUTES` are not used. The runtime reads `MERCHANT_UPI_ID`, `MERCHANT_NAME`, and `QR_EXPIRY_MINUTES`.
 
@@ -93,23 +93,18 @@ Required for production Cloudinary upload usage:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 
-Required only if the legacy S3 upload controller is mounted or reused:
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_S3_BUCKET`
-
 ## Optional Variables
 
 - `NODE_ENV`
 - `PORT`
+- `REQUEST_BODY_LIMIT`
 - `JWT_EXPIRE`
 - `MERCHANT_CODE`
 - `PAYMENT_CURRENCY`
 - `QR_EXPIRY_MINUTES`
 - `RESEND_API_KEY`
 - `FROM_EMAIL`
-- `AWS_S3_REGION`
+- `UPLOAD_MAX_BYTES`
 - `MONGOMS_DOWNLOAD_DIR`
 
 ## Development Example
@@ -117,6 +112,7 @@ Required only if the legacy S3 upload controller is mounted or reused:
 ```env
 NODE_ENV=development
 PORT=5000
+REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb://localhost:27017/hm_backend
 JWT_SECRET=dev_only_change_me
 JWT_EXPIRE=7d
@@ -132,6 +128,7 @@ FROM_EMAIL=onboarding@resend.dev
 ```env
 NODE_ENV=production
 PORT=5000
+REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb+srv://USER:PASSWORD@staging-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_STAGING_SECRET
 JWT_EXPIRE=7d
@@ -148,6 +145,7 @@ FROM_EMAIL=noreply-staging@example.com
 ```env
 NODE_ENV=production
 PORT=5000
+REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb+srv://USER:PASSWORD@production-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_LONG_RANDOM_PRODUCTION_SECRET
 JWT_EXPIRE=7d
@@ -161,6 +159,7 @@ FROM_EMAIL=noreply@example.com
 CLOUDINARY_CLOUD_NAME=CHANGE_ME
 CLOUDINARY_API_KEY=CHANGE_ME
 CLOUDINARY_API_SECRET=CHANGE_ME
+UPLOAD_MAX_BYTES=26214400
 ```
 
 ## Security Notes
@@ -168,6 +167,6 @@ CLOUDINARY_API_SECRET=CHANGE_ME
 - Do not commit `.env`; it is ignored by git.
 - Rotate `JWT_SECRET` before production if it has ever been shared locally.
 - Do not use the code fallback `secret123` in production.
-- Store `MONGODB_URI`, `JWT_SECRET`, `RESEND_API_KEY`, `CLOUDINARY_API_SECRET`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY` in a secret manager.
+- Store `MONGODB_URI`, `JWT_SECRET`, `RESEND_API_KEY`, and `CLOUDINARY_API_SECRET` in a secret manager.
 - The source contains non-secret fallback strings such as `secret123` and `onboarding@resend.dev`; these should be treated as development fallbacks, not production configuration.
 - No real API keys or credentials should be placed in `.env.example`.

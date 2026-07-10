@@ -4,11 +4,11 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 78
+Endpoints documented: 87
 
 Models documented: 17
 
-Events documented: 26
+Events documented: 31
 
 Database collections documented: 17
 
@@ -33,6 +33,9 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/books/{slug}/related` | Public | `bookController.getRelatedBooks` |
 | GET | `/api/books/{slug}/reviews` | Public | `bookController.getBookReviews` |
 | GET | `/api/search` | Public | `bookController.searchBooks` |
+| GET | `/api/categories` | Public | `categoryController.listCategories` |
+| GET | `/api/categories/{slug}` | Public | `categoryController.getCategoryBySlug` |
+| GET | `/api/categories/{slug}/books` | Public | `categoryController.getCategoryBooks` |
 | POST | `/api/orders` | Bearer | `orderController.createOrder` |
 | PUT | `/api/orders/{id}/verify-payment` | Bearer | `orderController.verifyPayment` |
 | DELETE | `/api/orders/{id}` | Bearer | `orderController.cancelOrder` |
@@ -65,6 +68,12 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/admin/books` | Admin | `adminController.createBook` |
 | PUT | `/api/admin/books/{id}` | Admin | `adminController.updateBook` |
 | DELETE | `/api/admin/books/{id}` | Admin | `adminController.deleteBook` |
+| GET | `/api/admin/categories` | Admin | `categoryController.listAdminCategories` |
+| GET | `/api/admin/categories/{id}` | Admin | `categoryController.getAdminCategory` |
+| POST | `/api/admin/categories` | Admin | `categoryController.createCategory` |
+| PUT | `/api/admin/categories/{id}` | Admin | `categoryController.updateCategory` |
+| PATCH | `/api/admin/categories/{id}/status` | Admin | `categoryController.updateCategoryStatus` |
+| DELETE | `/api/admin/categories/{id}` | Admin | `categoryController.deleteCategory` |
 | GET | `/api/admin/operations/dashboard` | Admin | `adminOperationsController.dashboardSummary` |
 | GET | `/api/admin/operations/search` | Admin | `adminOperationsController.globalSearch` |
 | GET | `/api/admin/operations/payments` | Admin | `adminOperationsController.listPayments` |

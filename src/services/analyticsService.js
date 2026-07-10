@@ -16,15 +16,16 @@ class AnalyticsService {
   }
 
   async dashboard(filters = {}) {
-    const [revenue, payments, inventory, shipments, customers, bestBooks] = await Promise.all([
+    const [revenue, payments, inventory, shipments, customers, bestBooks, topCategories] = await Promise.all([
       this.repository.getRevenueSummary({ ...filters, period: 'daily' }),
       this.repository.getPaymentMetrics(filters),
       this.repository.getInventoryMetrics(filters),
       this.repository.getShipmentMetrics(filters),
       this.repository.getCustomerMetrics(filters, { limit: 5 }),
-      this.repository.getBookSales(filters, { limit: 5 })
+      this.repository.getBookSales(filters, { limit: 5 }),
+      this.repository.getCategoryMetrics(filters, { limit: 5 })
     ]);
-    return this.reporter.exportReady('dashboard', { revenue, payments, inventory, shipments, customers, bestBooks }, filters);
+    return this.reporter.exportReady('dashboard', { revenue, payments, inventory, shipments, customers, bestBooks, topCategories }, filters);
   }
 
   async revenue(filters = {}) {
@@ -32,11 +33,12 @@ class AnalyticsService {
   }
 
   async books(filters = {}) {
-    const [bestSelling, lowestSelling] = await Promise.all([
+    const [bestSelling, lowestSelling, categories] = await Promise.all([
       this.repository.getBookSales(filters, filters, { sort: 'best' }),
-      this.repository.getBookSales(filters, filters, { sort: 'lowest' })
+      this.repository.getBookSales(filters, filters, { sort: 'lowest' }),
+      this.repository.getCategoryMetrics(filters, filters, { sort: 'best' })
     ]);
-    return this.reporter.exportReady('books', { bestSelling, lowestSelling }, filters);
+    return this.reporter.exportReady('books', { bestSelling, lowestSelling, categories }, filters);
   }
 
   async payments(filters = {}) {

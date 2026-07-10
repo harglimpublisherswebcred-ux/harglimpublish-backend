@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
@@ -9,15 +10,36 @@ const mongoSanitize = require('express-mongo-sanitize');
 const { clean: cleanXss } = require('xss-clean/lib/xss');
 const connectDB = require('./src/config/database');
 const logger = require('./src/utils/logger');
+const { validateEnvironment } = require('./src/config/environment');
 const { registerSubscribers } = require('./src/events/registerSubscribers');
 const { mountSwagger } = require('./src/docs/swagger');
 const { renderDeveloperPortal } = require('./src/docs/developerPortal');
 
+let server;
+let isShuttingDown = false;
+const bodyLimit = process.env.REQUEST_BODY_LIMIT || '1mb';
+
+const shutdown = async (signal, exitCode = 0) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  logger.info('server.shutdown_started', { signal });
+
+  if (server) {
+    await new Promise((resolve) => server.close(resolve));
+  }
+
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+
+  logger.info('server.shutdown_complete', { signal });
+  process.exit(exitCode);
+};
+
 // Catch unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error(`Unhandled Rejection: ${err.message}`);
-  // In production, you might want to gracefully shutdown
-  // process.exit(1);
+  shutdown('unhandledRejection', 1);
 });
 
 // Catch uncaught exceptions
@@ -25,6 +47,9 @@ process.on('uncaughtException', (err) => {
   logger.error(`Uncaught Exception: ${err.message}`);
   process.exit(1);
 });
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 const app = express();
 
@@ -41,8 +66,8 @@ app.use(helmet());
 app.use(cors());
 // Integrate morgan with winston
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: bodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 app.use(compression());
 
 // Data sanitization against NoSQL query injection.
@@ -96,6 +121,7 @@ app.get('/health', (req, res) => {
 // Routes will be imported here
 app.use('/api/auth', authLimiter, require('./src/routes/authRoutes'));
 app.use('/api/books', require('./src/routes/bookRoutes'));
+app.use('/api/categories', require('./src/routes/categoryRoutes'));
 app.use('/api/search', require('./src/routes/searchRoutes'));
 app.use('/api/orders', require('./src/routes/orderRoutes'));
 app.use('/api/admin', require('./src/routes/adminRoutes'));
@@ -123,13 +149,23 @@ app.use((err, req, res, next) => {
   });
 });
 
+const startServer = async () => {
+  validateEnvironment();
+  await connectDB();
+  const PORT = process.env.PORT || 5000;
+  server = app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT}`);
+  });
+  return server;
+};
+
 // Start server
 if (process.env.NODE_ENV !== 'test') {
-  connectDB();
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
+  startServer().catch((error) => {
+    logger.error(`Startup failed: ${error.message}`);
+    process.exit(1);
   });
 }
 
 module.exports = app;
+module.exports.startServer = startServer;

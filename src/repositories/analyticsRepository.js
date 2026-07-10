@@ -70,6 +70,22 @@ class AnalyticsRepository {
     ]));
   }
 
+  getCategoryMetrics(filters = {}, pagination = {}, options = {}) {
+    const { limit } = normalizePagination(pagination);
+    const match = this.buildMatch({ ...filters, eventType: 'InventoryDeducted' });
+    return execute(async () => this.AnalyticsEvent.aggregate([
+      { $match: { ...match, book: { $ne: null } } },
+      { $lookup: { from: 'books', localField: 'book', foreignField: '_id', as: 'bookDoc' } },
+      { $unwind: { path: '$bookDoc', preserveNullAndEmptyArrays: false } },
+      { $group: { _id: '$bookDoc.category', quantity: { $sum: '$quantity' }, revenue: { $sum: '$amount' }, books: { $addToSet: '$book' } } },
+      { $sort: options.sort === 'lowest' ? { quantity: 1 } : { quantity: -1 } },
+      { $limit: limit },
+      { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'category' } },
+      { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+      { $project: { category: 1, quantity: 1, revenue: 1, bookCount: { $size: '$books' } } }
+    ]));
+  }
+
   getPaymentMetrics(filters = {}) {
     const match = this.buildMatch(filters);
     return execute(async () => {

@@ -24,7 +24,12 @@ const DOMAIN_EVENTS = Object.freeze({
   COURIER_ASSIGNED: 'CourierAssigned',
   SHIPMENT_DISPATCHED: 'ShipmentDispatched',
   SHIPMENT_DELIVERED: 'ShipmentDelivered',
-  SHIPMENT_CANCELLED: 'ShipmentCancelled'
+  SHIPMENT_CANCELLED: 'ShipmentCancelled',
+  CATEGORY_CREATED: 'CategoryCreated',
+  CATEGORY_UPDATED: 'CategoryUpdated',
+  CATEGORY_DELETED: 'CategoryDeleted',
+  CATEGORY_ACTIVATED: 'CategoryActivated',
+  CATEGORY_DEACTIVATED: 'CategoryDeactivated'
 });
 
 const EVENT_CATALOG = Object.freeze({
@@ -157,6 +162,31 @@ const EVENT_CATALOG = Object.freeze({
     producer: 'ShipmentService',
     entity: 'Shipment',
     description: 'A shipment was cancelled before dispatch completion.'
+  },
+  [DOMAIN_EVENTS.CATEGORY_CREATED]: {
+    producer: 'CategoryService',
+    entity: 'Category',
+    description: 'A product category was created.'
+  },
+  [DOMAIN_EVENTS.CATEGORY_UPDATED]: {
+    producer: 'CategoryService',
+    entity: 'Category',
+    description: 'A product category was updated.'
+  },
+  [DOMAIN_EVENTS.CATEGORY_DELETED]: {
+    producer: 'CategoryService',
+    entity: 'Category',
+    description: 'A product category was soft deleted.'
+  },
+  [DOMAIN_EVENTS.CATEGORY_ACTIVATED]: {
+    producer: 'CategoryService',
+    entity: 'Category',
+    description: 'A product category was activated.'
+  },
+  [DOMAIN_EVENTS.CATEGORY_DEACTIVATED]: {
+    producer: 'CategoryService',
+    entity: 'Category',
+    description: 'A product category was deactivated.'
   }
 });
 

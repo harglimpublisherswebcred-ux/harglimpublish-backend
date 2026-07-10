@@ -125,7 +125,7 @@ class NotificationService {
         }, { session: options.session });
       }
 
-      const failed = await this.repository.markFailed(notification._id, result.error || 'Notification adapter failed', {
+      await this.repository.markFailed(notification._id, result.error || 'Notification adapter failed', {
         session: options.session,
         incrementRetry: true
       });

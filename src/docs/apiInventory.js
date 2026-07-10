@@ -1,15 +1,19 @@
 const endpointInventory = [
   { method: 'GET', path: '/health', tag: 'System', summary: 'Health check', auth: 'Public', controller: 'server.js', notes: 'Returns server liveness only.' },
 
-  { method: 'POST', path: '/api/auth/register', tag: 'Authentication', summary: 'Register user', auth: 'Public', controller: 'authController.registerUser', body: 'RegisterRequest' },
-  { method: 'POST', path: '/api/auth/login', tag: 'Authentication', summary: 'Login user', auth: 'Public', controller: 'authController.loginUser', body: 'LoginRequest' },
-  { method: 'GET', path: '/api/auth/me', tag: 'Authentication', summary: 'Get current user', auth: 'Bearer', controller: 'authController.getMe' },
+  { method: 'POST', path: '/api/auth/register', tag: 'Authentication', summary: 'Register user', auth: 'Public', controller: 'authController.registerUser', body: 'RegisterRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter.' },
+  { method: 'POST', path: '/api/auth/login', tag: 'Authentication', summary: 'Login user', auth: 'Public', controller: 'authController.loginUser', body: 'LoginRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter and return a JWT token on success.' },
+  { method: 'GET', path: '/api/auth/me', tag: 'Authentication', summary: 'Get current user', auth: 'Bearer', controller: 'authController.getMe', notes: 'Requires Authorization: Bearer <token>.' },
 
   { method: 'GET', path: '/api/books', tag: 'Books', summary: 'List books', auth: 'Public', controller: 'bookController.getBooks', query: ['page', 'limit', 'category', 'minPrice', 'maxPrice', 'sort', 'featured', 'bestseller', 'newRelease'] },
   { method: 'GET', path: '/api/books/{slug}', tag: 'Books', summary: 'Get book by slug', auth: 'Public', controller: 'bookController.getBookBySlug', params: ['slug'] },
   { method: 'GET', path: '/api/books/{slug}/related', tag: 'Books', summary: 'Get related books', auth: 'Public', controller: 'bookController.getRelatedBooks', params: ['slug'] },
   { method: 'GET', path: '/api/books/{slug}/reviews', tag: 'Books', summary: 'Get book reviews', auth: 'Public', controller: 'bookController.getBookReviews', params: ['slug'] },
   { method: 'GET', path: '/api/search', tag: 'Books', summary: 'Search books', auth: 'Public', controller: 'bookController.searchBooks', query: ['q', 'page', 'limit'] },
+
+  { method: 'GET', path: '/api/categories', tag: 'Categories', summary: 'List categories', auth: 'Public', controller: 'categoryController.listCategories', query: ['page', 'limit', 'featured', 'active', 'search', 'sort'], notes: 'Public list returns active categories by default and includes system-managed book counts.' },
+  { method: 'GET', path: '/api/categories/{slug}', tag: 'Categories', summary: 'Get category by slug', auth: 'Public', controller: 'categoryController.getCategoryBySlug', params: ['slug'], notes: 'Only active categories are returned publicly.' },
+  { method: 'GET', path: '/api/categories/{slug}/books', tag: 'Categories', summary: 'List books by category', auth: 'Public', controller: 'categoryController.getCategoryBooks', params: ['slug'], query: ['page', 'limit', 'sort'], notes: 'Returns published books for an active category.' },
 
   { method: 'POST', path: '/api/orders', tag: 'Orders', summary: 'Create order with payment, inventory, QR bridge', auth: 'Bearer', controller: 'orderController.createOrder', body: 'OrderCreateRequest' },
   { method: 'PUT', path: '/api/orders/{id}/verify-payment', tag: 'Orders', summary: 'Verify order payment reference', auth: 'Bearer', controller: 'orderController.verifyPayment', params: ['id'], body: 'PaymentVerificationRequest' },
@@ -18,8 +22,8 @@ const endpointInventory = [
   { method: 'GET', path: '/api/orders/{id}/tracking', tag: 'Orders', summary: 'Get order tracking', auth: 'Bearer', controller: 'orderShipmentController.getOrderTracking', params: ['id'] },
   { method: 'GET', path: '/api/orders/track/{orderNumber}', tag: 'Orders', summary: 'Track order by order number', auth: 'Public', controller: 'orderController.trackOrder', params: ['orderNumber'] },
 
-  { method: 'POST', path: '/api/uploads/image', tag: 'Uploads', summary: 'Upload image', auth: 'Bearer', controller: 'uploadController.uploadImage', body: 'MultipartImageRequest' },
-  { method: 'POST', path: '/api/uploads/document', tag: 'Uploads', summary: 'Upload document', auth: 'Bearer', controller: 'uploadController.uploadDocument', body: 'MultipartDocumentRequest' },
+  { method: 'POST', path: '/api/uploads/image', tag: 'Uploads', summary: 'Upload image', auth: 'Bearer', controller: 'uploadController.uploadImage', body: 'MultipartImageRequest', notes: 'Multipart field: image. Allowed: jpg, jpeg, png, webp, gif. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.' },
+  { method: 'POST', path: '/api/uploads/document', tag: 'Uploads', summary: 'Upload document', auth: 'Bearer', controller: 'uploadController.uploadDocument', body: 'MultipartDocumentRequest', notes: 'Multipart field: document. Allowed: pdf, doc, docx. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.' },
 
   { method: 'GET', path: '/api/users/{id}/stats', tag: 'Users', summary: 'Get user stats', auth: 'Bearer', controller: 'userController.getUserStats', params: ['id'] },
   { method: 'PUT', path: '/api/users/{id}', tag: 'Users', summary: 'Update user profile', auth: 'Bearer', controller: 'userController.updateUserProfile', params: ['id'], body: 'UserUpdateRequest' },
@@ -48,6 +52,12 @@ const endpointInventory = [
   { method: 'POST', path: '/api/admin/books', tag: 'Admin Core', summary: 'Create book', auth: 'Admin', controller: 'adminController.createBook', body: 'BookCreateRequest' },
   { method: 'PUT', path: '/api/admin/books/{id}', tag: 'Admin Core', summary: 'Update book', auth: 'Admin', controller: 'adminController.updateBook', params: ['id'], body: 'BookUpdateRequest' },
   { method: 'DELETE', path: '/api/admin/books/{id}', tag: 'Admin Core', summary: 'Delete book', auth: 'Admin', controller: 'adminController.deleteBook', params: ['id'] },
+  { method: 'GET', path: '/api/admin/categories', tag: 'Admin Categories', summary: 'List categories', auth: 'Admin', controller: 'categoryController.listAdminCategories', query: ['page', 'limit', 'featured', 'active', 'search', 'sort'], notes: 'Admin list can include inactive categories when active=false is supplied.' },
+  { method: 'GET', path: '/api/admin/categories/{id}', tag: 'Admin Categories', summary: 'Get category', auth: 'Admin', controller: 'categoryController.getAdminCategory', params: ['id'] },
+  { method: 'POST', path: '/api/admin/categories', tag: 'Admin Categories', summary: 'Create category', auth: 'Admin', controller: 'categoryController.createCategory', body: 'CategoryCreateRequest', notes: 'Name and slug must be unique. Slug is generated from name when omitted.' },
+  { method: 'PUT', path: '/api/admin/categories/{id}', tag: 'Admin Categories', summary: 'Update category', auth: 'Admin', controller: 'categoryController.updateCategory', params: ['id'], body: 'CategoryUpdateRequest', notes: 'bookCount is managed by the system and cannot be set through this payload.' },
+  { method: 'PATCH', path: '/api/admin/categories/{id}/status', tag: 'Admin Categories', summary: 'Update category status', auth: 'Admin', controller: 'categoryController.updateCategoryStatus', params: ['id'], body: 'CategoryStatusRequest', notes: 'Synchronizes active and legacy isActive fields.' },
+  { method: 'DELETE', path: '/api/admin/categories/{id}', tag: 'Admin Categories', summary: 'Soft delete category', auth: 'Admin', controller: 'categoryController.deleteCategory', params: ['id'], notes: 'Soft delete only. Categories with active books return 409 conflict.' },
 
   { method: 'GET', path: '/api/admin/operations/dashboard', tag: 'Admin Operations', summary: 'Operations dashboard', auth: 'Admin', controller: 'adminOperationsController.dashboardSummary' },
   { method: 'GET', path: '/api/admin/operations/search', tag: 'Admin Operations', summary: 'Global operations search', auth: 'Admin', controller: 'adminOperationsController.globalSearch', query: ['q', 'type', 'page', 'limit'] },
