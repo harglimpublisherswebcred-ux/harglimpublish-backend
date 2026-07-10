@@ -223,8 +223,12 @@ Query Parameters:
 - `page`: optional query parameter.
 - `limit`: optional query parameter.
 - `category`: optional query parameter.
-- `search`: optional query parameter.
+- `minPrice`: optional query parameter.
+- `maxPrice`: optional query parameter.
 - `sort`: optional query parameter.
+- `featured`: optional query parameter.
+- `bestseller`: optional query parameter.
+- `newRelease`: optional query parameter.
 
 Request Body: No request body.
 
@@ -431,7 +435,6 @@ Query Parameters:
 - `q`: optional query parameter.
 - `page`: optional query parameter.
 - `limit`: optional query parameter.
-- `category`: optional query parameter.
 
 Request Body: No request body.
 
@@ -992,7 +995,9 @@ Path Parameters:
 - `id`: path parameter.
 
 Query Parameters:
-- None.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `status`: optional query parameter.
 
 Request Body: No request body.
 
@@ -1248,7 +1253,8 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 
@@ -1350,7 +1356,9 @@ Path Parameters:
 - `id`: path parameter.
 
 Query Parameters:
-- None.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `sort`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2328,7 +2336,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `PaymentActionRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -2430,7 +2438,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `PaymentActionRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -2481,7 +2489,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `PaymentActionRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -2583,7 +2591,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `QRRegenerateRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -2632,7 +2640,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `status`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `book`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2683,7 +2698,10 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `threshold`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `category`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2734,7 +2752,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `paymentId`: optional query parameter.
+- `orderId`: optional query parameter.
+- `userId`: optional query parameter.
+- `eventType`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2785,7 +2810,15 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `reservation`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `book`: optional query parameter.
+- `eventType`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2836,7 +2869,12 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `orderId`: optional query parameter.
+- `paymentId`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2887,7 +2925,16 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `q`: optional query parameter.
+- `search`: optional query parameter.
+- `status`: optional query parameter.
+- `customer`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -2938,7 +2985,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `status`: optional query parameter.
+- `customer`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3091,7 +3145,16 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `q`: optional query parameter.
+- `search`: optional query parameter.
+- `status`: optional query parameter.
+- `channel`: optional query parameter.
+- `eventType`: optional query parameter.
+- `user`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3142,7 +3205,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `status`: optional query parameter.
+- `channel`: optional query parameter.
+- `eventType`: optional query parameter.
+- `user`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3246,7 +3316,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `NotificationRetryRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -3295,7 +3365,17 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `q`: optional query parameter.
+- `search`: optional query parameter.
+- `status`: optional query parameter.
+- `customer`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `invoice`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3346,7 +3426,15 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `status`: optional query parameter.
+- `customer`: optional query parameter.
+- `order`: optional query parameter.
+- `payment`: optional query parameter.
+- `invoice`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3603,7 +3691,7 @@ Path Parameters:
 Query Parameters:
 - None.
 
-Request Body: No request body.
+Request Body: Uses schema `ShipmentCancelRequest`.
 
 Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
 
@@ -3652,7 +3740,9 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `period`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3703,7 +3793,11 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `period`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3754,7 +3848,11 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `sort`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3805,7 +3903,10 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3856,7 +3957,10 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3907,7 +4011,10 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 
@@ -3958,7 +4065,10 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
 
 Request Body: No request body.
 

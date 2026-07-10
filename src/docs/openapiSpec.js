@@ -37,7 +37,7 @@ const schemas = {
       name: { type: 'string', minLength: 2 },
       email: { type: 'string', format: 'email' },
       password: { type: 'string', minLength: 6 },
-      role: { type: 'string', enum: ['reader', 'author', 'admin'] }
+      role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'], default: 'reader' }
     }
   },
   LoginRequest: {
@@ -54,17 +54,29 @@ const schemas = {
     properties: {
       items: {
         type: 'array',
+        minItems: 1,
         items: {
           type: 'object',
           required: ['book', 'quantity'],
           properties: {
-            book: { type: 'string' },
+            book: { type: 'string', description: 'Book ObjectId.' },
             quantity: { type: 'integer', minimum: 1 }
           }
         }
       },
-      shippingAddress: { type: 'object' },
-      paymentMethod: { type: 'string', examples: ['UPI'] }
+      shippingAddress: {
+        type: 'object',
+        required: ['fullName', 'addressLine1', 'city', 'postalCode', 'country'],
+        properties: {
+          fullName: { type: 'string' },
+          addressLine1: { type: 'string' },
+          addressLine2: { type: 'string' },
+          city: { type: 'string' },
+          postalCode: { type: 'string' },
+          country: { type: 'string' }
+        }
+      },
+      paymentMethod: { type: 'string', default: 'UPI', examples: ['UPI'] }
     }
   },
   PaymentVerificationRequest: {
@@ -76,9 +88,13 @@ const schemas = {
   },
   StatusUpdateRequest: {
     type: 'object',
+    required: ['status'],
     properties: {
       status: { type: 'string' },
-      reason: { type: 'string' }
+      reason: { type: 'string' },
+      description: { type: 'string' },
+      location: { type: 'string' },
+      occurredAt: { type: 'string', format: 'date-time' }
     }
   },
   RejectPaymentRequest: {
@@ -91,7 +107,8 @@ const schemas = {
     type: 'object',
     properties: {
       name: { type: 'string' },
-      email: { type: 'string', format: 'email' }
+      bio: { type: 'string', description: 'Accepted by controller but currently not persisted in User schema.' },
+      profilePicture: { type: 'string', format: 'uri' }
     }
   },
   WishlistRequest: {
@@ -103,34 +120,93 @@ const schemas = {
   },
   BookCreateRequest: {
     type: 'object',
+    required: ['title', 'description', 'category', 'price'],
     properties: {
       title: { type: 'string' },
-      author: { type: 'string' },
+      description: { type: 'string' },
+      author: { type: 'string', description: 'Optional author ObjectId. Defaults to current admin user when omitted.' },
+      category: { type: 'string', description: 'Category ObjectId.' },
       price: { type: 'number' },
-      stock: { type: 'integer' }
+      coverImage: { type: 'string', format: 'uri' },
+      stock: { type: 'integer', minimum: 0 },
+      reservedStock: { type: 'integer', minimum: 0 },
+      status: { type: 'string', enum: ['draft', 'published', 'archived'], default: 'draft' },
+      discountPrice: { type: 'number' },
+      isBestseller: { type: 'boolean' },
+      isFeatured: { type: 'boolean' },
+      isNewRelease: { type: 'boolean' },
+      isbn: { type: 'string' },
+      pages: { type: 'integer', minimum: 1 },
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' }
     }
   },
   BookUpdateRequest: {
     type: 'object',
     properties: {
       title: { type: 'string' },
+      description: { type: 'string' },
+      author: { type: 'string' },
+      category: { type: 'string' },
       price: { type: 'number' },
-      stock: { type: 'integer' }
+      coverImage: { type: 'string', format: 'uri' },
+      stock: { type: 'integer', minimum: 0 },
+      reservedStock: { type: 'integer', minimum: 0 },
+      status: { type: 'string', enum: ['draft', 'published', 'archived'] },
+      discountPrice: { type: 'number' },
+      isBestseller: { type: 'boolean' },
+      isFeatured: { type: 'boolean' },
+      isNewRelease: { type: 'boolean' },
+      isbn: { type: 'string' },
+      pages: { type: 'integer', minimum: 1 },
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] }
     }
   },
   PublishRequestCreate: {
     type: 'object',
+    required: ['title', 'genre', 'wordCount', 'packageId', 'fileUrl'],
     properties: {
       title: { type: 'string' },
-      manuscript: { type: 'string' },
-      package: { type: 'string' }
+      genre: { type: 'string' },
+      wordCount: { type: 'integer', minimum: 1 },
+      packageId: { type: 'string', description: 'PublishPackage ObjectId.' },
+      fileUrl: { type: 'string', format: 'uri' }
     }
   },
   CourierAssignRequest: {
     type: 'object',
     properties: {
-      courierCode: { type: 'string' },
-      trackingNumber: { type: 'string' }
+      provider: { type: 'string', default: 'manual' },
+      serviceName: { type: 'string', default: 'Manual Courier' },
+      trackingNumber: { type: 'string' },
+      trackingUrl: { type: 'string' },
+      estimatedDelivery: { type: 'string', format: 'date-time' }
+    }
+  },
+  PaymentActionRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string', maxLength: 500 },
+      metadata: { type: 'object', additionalProperties: true }
+    }
+  },
+  QRRegenerateRequest: {
+    type: 'object',
+    properties: {
+      force: { type: 'boolean', default: true },
+      reason: { type: 'string', default: 'Admin QR regeneration' }
+    }
+  },
+  NotificationRetryRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string' },
+      force: { type: 'boolean', default: false }
+    }
+  },
+  ShipmentCancelRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string' }
     }
   },
   MultipartImageRequest: {
@@ -140,6 +216,100 @@ const schemas = {
   MultipartDocumentRequest: {
     type: 'object',
     properties: { document: { type: 'string', format: 'binary' } }
+  }
+};
+
+const schemaExamples = {
+  RegisterRequest: {
+    name: 'Ghani Reader',
+    email: 'user@example.com',
+    password: 'StrongPass123!',
+    role: 'reader'
+  },
+  LoginRequest: {
+    email: 'user@example.com',
+    password: 'StrongPass123!'
+  },
+  OrderCreateRequest: {
+    items: [
+      { book: '66b4f5a2a44d2c0012a9c101', quantity: 2 }
+    ],
+    shippingAddress: {
+      fullName: 'Ghani Khan',
+      addressLine1: '12 MG Road',
+      addressLine2: 'Near Central Mall',
+      city: 'Bengaluru',
+      postalCode: '560001',
+      country: 'India'
+    },
+    paymentMethod: 'UPI'
+  },
+  PaymentVerificationRequest: {
+    utr: 'UPI1234567890'
+  },
+  StatusUpdateRequest: {
+    status: 'PROCESSING',
+    reason: 'Status updated by admin'
+  },
+  RejectPaymentRequest: {
+    reason: 'UTR could not be verified'
+  },
+  UserUpdateRequest: {
+    name: 'Ghani Khan',
+    profilePicture: 'https://example.com/profile.jpg'
+  },
+  WishlistRequest: {
+    bookId: '66b4f5a2a44d2c0012a9c101'
+  },
+  BookCreateRequest: {
+    title: 'Enterprise Publishing Systems',
+    description: 'A practical book about modern publishing operations.',
+    category: '66b4f5a2a44d2c0012a9c102',
+    author: '66b4f5a2a44d2c0012a9c103',
+    price: 499,
+    coverImage: 'https://example.com/cover.jpg',
+    stock: 100,
+    status: 'published',
+    discountPrice: 399,
+    isFeatured: true,
+    isbn: '9781234567890',
+    pages: 320,
+    format: 'paperback'
+  },
+  BookUpdateRequest: {
+    price: 449,
+    stock: 120,
+    status: 'published',
+    isBestseller: true
+  },
+  PublishRequestCreate: {
+    title: 'My Manuscript',
+    genre: 'Business',
+    wordCount: 65000,
+    packageId: '66b4f5a2a44d2c0012a9c104',
+    fileUrl: 'https://res.cloudinary.com/demo/raw/upload/manuscript.pdf'
+  },
+  CourierAssignRequest: {
+    provider: 'manual',
+    serviceName: 'Manual Courier',
+    trackingNumber: 'MAN-123456',
+    trackingUrl: '/track/MAN-123456',
+    estimatedDelivery: '2026-07-15T10:00:00.000Z'
+  },
+  PaymentActionRequest: {
+    reason: 'Approved after manual verification',
+    metadata: { source: 'admin-dashboard' }
+  },
+  QRRegenerateRequest: {
+    force: true,
+    reason: 'Customer requested a fresh QR'
+  },
+  NotificationRetryRequest: {
+    reason: 'Retry after provider recovery',
+    force: false
+  },
+  ShipmentCancelRequest: {
+    reason: 'Customer cancelled before dispatch'
   }
 };
 
@@ -157,22 +327,52 @@ function parameterFor(name) {
 }
 
 function queryFor(name) {
+  const querySchemas = {
+    page: { type: 'integer', minimum: 1, default: 1 },
+    limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+    minPrice: { type: 'number', minimum: 0 },
+    maxPrice: { type: 'number', minimum: 0 },
+    featured: { type: 'boolean' },
+    bestseller: { type: 'boolean' },
+    newRelease: { type: 'boolean' },
+    threshold: { type: 'integer', minimum: 0 },
+    from: { type: 'string', format: 'date-time' },
+    to: { type: 'string', format: 'date-time' },
+    period: { type: 'string', enum: ['daily', 'weekly', 'monthly', 'yearly'] },
+    status: { type: 'string' },
+    sort: { type: 'string' }
+  };
+
   return {
     name,
     in: 'query',
     required: false,
-    schema: name === 'page' || name === 'limit' ? { type: 'integer', minimum: 1 } : { type: 'string' }
+    schema: querySchemas[name] || { type: 'string' }
   };
 }
 
 function requestBodyFor(endpoint) {
   if (!endpoint.body) return undefined;
   const isMultipart = endpoint.body.startsWith('Multipart');
+  const optionalBodies = new Set([
+    'PaymentActionRequest',
+    'QRRegenerateRequest',
+    'NotificationRetryRequest',
+    'ShipmentCancelRequest'
+  ]);
   return {
-    required: !endpoint.body.includes('Update'),
+    required: !endpoint.body.includes('Update') && !optionalBodies.has(endpoint.body),
     content: {
       [isMultipart ? 'multipart/form-data' : 'application/json']: {
-        schema: { $ref: `#/components/schemas/${endpoint.body}` }
+        schema: { $ref: `#/components/schemas/${endpoint.body}` },
+        ...(schemaExamples[endpoint.body] ? {
+          examples: {
+            default: {
+              summary: `${endpoint.body} example`,
+              value: schemaExamples[endpoint.body]
+            }
+          }
+        } : {})
       }
     }
   };

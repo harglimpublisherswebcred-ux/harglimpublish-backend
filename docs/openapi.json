@@ -140,6 +140,17 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "RegisterRequest example",
+                  "value": {
+                    "name": "Ghani Reader",
+                    "email": "user@example.com",
+                    "password": "StrongPass123!",
+                    "role": "reader"
+                  }
+                }
               }
             }
           }
@@ -210,6 +221,15 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "LoginRequest example",
+                  "value": {
+                    "email": "user@example.com",
+                    "password": "StrongPass123!"
+                  }
+                }
               }
             }
           }
@@ -344,7 +364,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "default": 1
             }
           },
           {
@@ -353,7 +374,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
             }
           },
           {
@@ -365,11 +388,21 @@
             }
           },
           {
-            "name": "search",
+            "name": "minPrice",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0
             }
           },
           {
@@ -378,6 +411,30 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "bestseller",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "newRelease",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -662,7 +719,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "default": 1
             }
           },
           {
@@ -671,15 +729,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
-            }
-          },
-          {
-            "name": "category",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
             }
           }
         ],
@@ -753,6 +805,28 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/OrderCreateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "OrderCreateRequest example",
+                  "value": {
+                    "items": [
+                      {
+                        "book": "66b4f5a2a44d2c0012a9c101",
+                        "quantity": 2
+                      }
+                    ],
+                    "shippingAddress": {
+                      "fullName": "Ghani Khan",
+                      "addressLine1": "12 MG Road",
+                      "addressLine2": "Near Central Mall",
+                      "city": "Bengaluru",
+                      "postalCode": "560001",
+                      "country": "India"
+                    },
+                    "paymentMethod": "UPI"
+                  }
+                }
               }
             }
           }
@@ -836,6 +910,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PaymentVerificationRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "PaymentVerificationRequest example",
+                  "value": {
+                    "utr": "UPI1234567890"
+                  }
+                }
               }
             }
           }
@@ -1428,6 +1510,15 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UserUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "UserUpdateRequest example",
+                  "value": {
+                    "name": "Ghani Khan",
+                    "profilePicture": "https://example.com/profile.jpg"
+                  }
+                }
               }
             }
           }
@@ -1500,6 +1591,35 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -1655,6 +1775,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/WishlistRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "WishlistRequest example",
+                  "value": {
+                    "bookId": "66b4f5a2a44d2c0012a9c101"
+                  }
+                }
               }
             }
           }
@@ -1872,7 +2000,29 @@
         "description": "List authors. Controller: authorController.getAuthors. Authentication: Public.",
         "operationId": "get_api_authors",
         "security": [],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -2006,6 +2156,35 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -2300,6 +2479,18 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PublishRequestCreate"
+              },
+              "examples": {
+                "default": {
+                  "summary": "PublishRequestCreate example",
+                  "value": {
+                    "title": "My Manuscript",
+                    "genre": "Business",
+                    "wordCount": 65000,
+                    "packageId": "66b4f5a2a44d2c0012a9c104",
+                    "fileUrl": "https://res.cloudinary.com/demo/raw/upload/manuscript.pdf"
+                  }
+                }
               }
             }
           }
@@ -2635,6 +2826,15 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/StatusUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "StatusUpdateRequest example",
+                  "value": {
+                    "status": "PROCESSING",
+                    "reason": "Status updated by admin"
+                  }
+                }
               }
             }
           }
@@ -2782,6 +2982,15 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/StatusUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "StatusUpdateRequest example",
+                  "value": {
+                    "status": "PROCESSING",
+                    "reason": "Status updated by admin"
+                  }
+                }
               }
             }
           }
@@ -2856,6 +3065,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BookCreateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "BookCreateRequest example",
+                  "value": {
+                    "title": "Enterprise Publishing Systems",
+                    "description": "A practical book about modern publishing operations.",
+                    "category": "66b4f5a2a44d2c0012a9c102",
+                    "author": "66b4f5a2a44d2c0012a9c103",
+                    "price": 499,
+                    "coverImage": "https://example.com/cover.jpg",
+                    "stock": 100,
+                    "status": "published",
+                    "discountPrice": 399,
+                    "isFeatured": true,
+                    "isbn": "9781234567890",
+                    "pages": 320,
+                    "format": "paperback"
+                  }
+                }
               }
             }
           }
@@ -2939,6 +3168,17 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BookUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "BookUpdateRequest example",
+                  "value": {
+                    "price": 449,
+                    "stock": 120,
+                    "status": "published",
+                    "isBestseller": true
+                  }
+                }
               }
             }
           }
@@ -3164,7 +3404,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "default": 1
             }
           },
           {
@@ -3173,7 +3414,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
             }
           }
         ],
@@ -3255,7 +3498,8 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "default": 1
             }
           },
           {
@@ -3264,7 +3508,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
             }
           },
           {
@@ -3272,7 +3518,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           },
           {
@@ -3280,7 +3527,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -3430,6 +3678,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentActionRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "PaymentActionRequest example",
+                  "value": {
+                    "reason": "Approved after manual verification",
+                    "metadata": {
+                      "source": "admin-dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3509,6 +3778,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RejectPaymentRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "RejectPaymentRequest example",
+                  "value": {
+                    "reason": "UTR could not be verified"
+                  }
+                }
               }
             }
           }
@@ -3586,6 +3863,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentActionRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "PaymentActionRequest example",
+                  "value": {
+                    "reason": "Approved after manual verification",
+                    "metadata": {
+                      "source": "admin-dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3659,6 +3957,27 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentActionRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "PaymentActionRequest example",
+                  "value": {
+                    "reason": "Approved after manual verification",
+                    "metadata": {
+                      "source": "admin-dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3805,6 +4124,25 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QRRegenerateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "QRRegenerateRequest example",
+                  "value": {
+                    "force": true,
+                    "reason": "Customer requested a fresh QR"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3868,7 +4206,79 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3932,7 +4342,46 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "threshold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3996,7 +4445,79 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4060,7 +4581,87 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "reservation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "book",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4124,7 +4725,63 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4188,7 +4845,95 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4252,7 +4997,79 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4462,7 +5279,95 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4526,7 +5431,79 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4673,6 +5650,25 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationRetryRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "NotificationRetryRequest example",
+                  "value": {
+                    "reason": "Retry after provider recovery",
+                    "force": false
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4736,7 +5732,103 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -4800,7 +5892,87 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5026,6 +6198,18 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CourierAssignRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "CourierAssignRequest example",
+                  "value": {
+                    "provider": "manual",
+                    "serviceName": "Manual Courier",
+                    "trackingNumber": "MAN-123456",
+                    "trackingUrl": "/track/MAN-123456",
+                    "estimatedDelivery": "2026-07-15T10:00:00.000Z"
+                  }
+                }
               }
             }
           }
@@ -5109,6 +6293,15 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/StatusUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "StatusUpdateRequest example",
+                  "value": {
+                    "status": "PROCESSING",
+                    "reason": "Status updated by admin"
+                  }
+                }
               }
             }
           }
@@ -5186,6 +6379,24 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentCancelRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "ShipmentCancelRequest example",
+                  "value": {
+                    "reason": "Customer cancelled before dispatch"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5249,7 +6460,40 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "yearly"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5313,7 +6557,61 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "yearly"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5377,7 +6675,55 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5441,7 +6787,47 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5505,7 +6891,47 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5569,7 +6995,47 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5633,7 +7099,47 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -5761,10 +7267,12 @@
           "role": {
             "type": "string",
             "enum": [
+              "visitor",
               "reader",
               "author",
               "admin"
-            ]
+            ],
+            "default": "reader"
           }
         }
       },
@@ -5793,6 +7301,7 @@
         "properties": {
           "items": {
             "type": "array",
+            "minItems": 1,
             "items": {
               "type": "object",
               "required": [
@@ -5801,7 +7310,8 @@
               ],
               "properties": {
                 "book": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Book ObjectId."
                 },
                 "quantity": {
                   "type": "integer",
@@ -5811,10 +7321,38 @@
             }
           },
           "shippingAddress": {
-            "type": "object"
+            "type": "object",
+            "required": [
+              "fullName",
+              "addressLine1",
+              "city",
+              "postalCode",
+              "country"
+            ],
+            "properties": {
+              "fullName": {
+                "type": "string"
+              },
+              "addressLine1": {
+                "type": "string"
+              },
+              "addressLine2": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              }
+            }
           },
           "paymentMethod": {
             "type": "string",
+            "default": "UPI",
             "examples": [
               "UPI"
             ]
@@ -5835,12 +7373,25 @@
       },
       "StatusUpdateRequest": {
         "type": "object",
+        "required": [
+          "status"
+        ],
         "properties": {
           "status": {
             "type": "string"
           },
           "reason": {
             "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -5859,9 +7410,13 @@
           "name": {
             "type": "string"
           },
-          "email": {
+          "bio": {
             "type": "string",
-            "format": "email"
+            "description": "Accepted by controller but currently not persisted in User schema."
+          },
+          "profilePicture": {
+            "type": "string",
+            "format": "uri"
           }
         }
       },
@@ -5878,18 +7433,79 @@
       },
       "BookCreateRequest": {
         "type": "object",
+        "required": [
+          "title",
+          "description",
+          "category",
+          "price"
+        ],
         "properties": {
           "title": {
             "type": "string"
           },
-          "author": {
+          "description": {
             "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "description": "Optional author ObjectId. Defaults to current admin user when omitted."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category ObjectId."
           },
           "price": {
             "type": "number"
           },
+          "coverImage": {
+            "type": "string",
+            "format": "uri"
+          },
           "stock": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
+          },
+          "reservedStock": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "default": "draft"
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "isBestseller": {
+            "type": "boolean"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "isNewRelease": {
+            "type": "boolean"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "hardcover",
+              "paperback",
+              "ebook",
+              "audiobook"
+            ],
+            "default": "paperback"
           }
         }
       },
@@ -5899,35 +7515,163 @@
           "title": {
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
           "price": {
             "type": "number"
           },
+          "coverImage": {
+            "type": "string",
+            "format": "uri"
+          },
           "stock": {
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
+          },
+          "reservedStock": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "isBestseller": {
+            "type": "boolean"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "isNewRelease": {
+            "type": "boolean"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "hardcover",
+              "paperback",
+              "ebook",
+              "audiobook"
+            ]
           }
         }
       },
       "PublishRequestCreate": {
         "type": "object",
+        "required": [
+          "title",
+          "genre",
+          "wordCount",
+          "packageId",
+          "fileUrl"
+        ],
         "properties": {
           "title": {
             "type": "string"
           },
-          "manuscript": {
+          "genre": {
             "type": "string"
           },
-          "package": {
-            "type": "string"
+          "wordCount": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "packageId": {
+            "type": "string",
+            "description": "PublishPackage ObjectId."
+          },
+          "fileUrl": {
+            "type": "string",
+            "format": "uri"
           }
         }
       },
       "CourierAssignRequest": {
         "type": "object",
         "properties": {
-          "courierCode": {
-            "type": "string"
+          "provider": {
+            "type": "string",
+            "default": "manual"
+          },
+          "serviceName": {
+            "type": "string",
+            "default": "Manual Courier"
           },
           "trackingNumber": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": "string"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentActionRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "QRRegenerateRequest": {
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean",
+            "default": true
+          },
+          "reason": {
+            "type": "string",
+            "default": "Admin QR regeneration"
+          }
+        }
+      },
+      "NotificationRetryRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "force": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "ShipmentCancelRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
             "type": "string"
           }
         }
