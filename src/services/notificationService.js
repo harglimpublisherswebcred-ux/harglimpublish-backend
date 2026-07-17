@@ -152,6 +152,22 @@ class NotificationService {
     });
   }
 
+  async retryFailedNotifications(options = {}) {
+    return this.execute('retryFailedNotifications', async () => {
+      const limit = Math.min(Math.max(parseInt(options.limit, 10) || 50, 1), 100);
+      const result = await this.repository.search({ status: 'FAILED' }, { page: 1, limit }, { sort: { failedAt: 1, createdAt: 1 } });
+      let retried = 0;
+      for (const notification of result.items || []) {
+        try {
+          await this.retryNotification(notification._id, options);
+          retried += 1;
+        } catch (error) {
+          this.logWarn('notification.retry_failed', { notificationId: String(notification._id), message: error.message });
+        }
+      }
+      return retried;
+    });
+  }
   async getNotification(id, options = {}) {
     return this.execute('getNotification', () => this.repository.getById(id, options));
   }
@@ -232,3 +248,4 @@ module.exports.NotificationService = NotificationService;
 module.exports.NotificationServiceError = NotificationServiceError;
 module.exports.NotificationDeliveryError = NotificationDeliveryError;
 module.exports.NotificationRetryLimitError = NotificationRetryLimitError;
+

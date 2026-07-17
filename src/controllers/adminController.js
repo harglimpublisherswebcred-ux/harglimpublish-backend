@@ -96,6 +96,49 @@ const updatePublishRequestStatus = async (req, res) => {
   }
 };
 
+// @desc    List users
+// @route   GET /api/admin/users
+// @access  Private (Admin)
+const listUsers = async (req, res) => {
+  try {
+    const result = await adminCoreService.listUsers(req.query);
+    res.json({ success: true, data: result.data, pagination: result.pagination });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const getUser = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.getUser(req.params.id) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const updateUserRole = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.updateUserRole(req.params.id, req.body.role) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const updateUserStatus = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.updateUserStatus(req.params.id, req.body.isActive) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const resetUserPassword = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.resetUserPassword(req.params.id, req.body.password) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   getAdminAnalytics,
   createBook,
@@ -104,5 +147,11 @@ module.exports = {
   getOrders,
   updateOrderStatus,
   getPublishRequests,
-  updatePublishRequestStatus
+  updatePublishRequestStatus,
+  listUsers,
+  getUser,
+  updateUserRole,
+  updateUserStatus,
+  resetUserPassword
 };
+

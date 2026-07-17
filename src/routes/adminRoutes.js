@@ -1,21 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const { getAdminAnalytics, createBook, updateBook, deleteBook, getOrders, updateOrderStatus, getPublishRequests, updatePublishRequestStatus } = require('../controllers/adminController');
+const {
+  getAdminAnalytics,
+  createBook,
+  updateBook,
+  deleteBook,
+  getOrders,
+  updateOrderStatus,
+  getPublishRequests,
+  updatePublishRequestStatus,
+  listUsers,
+  getUser,
+  updateUserRole,
+  updateUserStatus,
+  resetUserPassword
+} = require('../controllers/adminController');
 const adminOperationsController = require('../controllers/adminOperationsController');
 const adminInvoiceController = require('../controllers/adminInvoiceController');
 const adminNotificationController = require('../controllers/adminNotificationController');
 const adminShipmentController = require('../controllers/adminShipmentController');
 const adminAnalyticsController = require('../controllers/adminAnalyticsController');
 const categoryController = require('../controllers/categoryController');
+const { listReviews, moderateReview, deleteReview } = require('../controllers/reviewController');
+const { listAuthorApplications, updateAuthorApplicationStatus } = require('../controllers/authorApplicationController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
-// All routes here require admin access
 router.use(protect);
 router.use(authorize('admin'));
 
 router.get('/analytics', getAdminAnalytics);
-router.get('/stats', getAdminAnalytics); // alias for frontend compatibility
+router.get('/stats', getAdminAnalytics);
 router.get('/analytics/dashboard', adminAnalyticsController.dashboard);
 router.get('/analytics/revenue', adminAnalyticsController.revenue);
 router.get('/analytics/books', adminAnalyticsController.books);
@@ -23,6 +38,17 @@ router.get('/analytics/payments', adminAnalyticsController.payments);
 router.get('/analytics/inventory', adminAnalyticsController.inventory);
 router.get('/analytics/shipments', adminAnalyticsController.shipments);
 router.get('/analytics/customers', adminAnalyticsController.customers);
+router.get('/users', listUsers);
+router.get('/users/:id', getUser);
+router.patch('/users/:id/role', updateUserRole);
+router.put('/users/:id/role', updateUserRole);
+router.patch('/users/:id/status', updateUserStatus);
+router.post('/users/:id/reset-password', resetUserPassword);
+router.get('/author-applications', listAuthorApplications);
+router.put('/author-applications/:id/status', updateAuthorApplicationStatus);
+router.get('/reviews', listReviews);
+router.patch('/reviews/:reviewId/status', moderateReview);
+router.delete('/reviews/:id', deleteReview);
 router.get('/categories', categoryController.listAdminCategories);
 router.get('/categories/:id', categoryController.getAdminCategory);
 router.post('/categories', categoryController.createCategory);
@@ -63,11 +89,10 @@ router.get('/orders', getOrders);
 router.put('/orders/:id/status', updateOrderStatus);
 router.get('/publish-requests', getPublishRequests);
 router.put('/publish-requests/:id/status', updatePublishRequestStatus);
-
-router.route('/books')
-  .post(createBook);
-router.route('/books/:id')
-  .put(updateBook)
-  .delete(deleteBook);
+router.route('/books').post(createBook);
+router.route('/books/:id').put(updateBook).delete(deleteBook);
 
 module.exports = router;
+
+
+

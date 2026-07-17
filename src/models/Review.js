@@ -22,10 +22,26 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ['visible', 'hidden', 'rejected'],
+      default: 'visible',
+    },
+    moderatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    moderatedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
 
+reviewSchema.index({ book: 1, user: 1 }, { unique: true });
+reviewSchema.index({ book: 1, status: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Review', reviewSchema);
+

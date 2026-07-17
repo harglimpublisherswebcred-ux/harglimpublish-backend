@@ -1,5 +1,4 @@
 const logger = require('../utils/logger');
-const { sendOrderConfirmation } = require('../utils/emailService');
 const orderPaymentBridgeService = require('../services/orderPaymentBridgeService');
 const orderService = require('../services/orderService');
 
@@ -19,8 +18,6 @@ const createOrder = async (req, res) => {
 
     logger.info(`Order created successfully: ${createdOrder.orderNumber}`);
     
-    // Send order confirmation email asynchronously
-    sendOrderConfirmation(req.user, createdOrder);
 
     res.status(201).json({
       success: true,
@@ -35,6 +32,17 @@ const createOrder = async (req, res) => {
   }
 };
 
+// @desc    Get order detail
+// @route   GET /api/orders/:id
+// @access  Private
+const getOrder = async (req, res) => {
+  try {
+    const order = await orderService.loadAuthorizedOrder(req.params.id, req.user);
+    res.json({ success: true, data: order });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
 // @desc    Track Order
 // @route   GET /api/orders/track/:orderNumber
 // @access  Public
@@ -83,7 +91,10 @@ const cancelOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
+  getOrder,
   trackOrder,
   verifyPayment,
   cancelOrder
 };
+
+

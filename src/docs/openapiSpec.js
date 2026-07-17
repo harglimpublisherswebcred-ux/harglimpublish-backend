@@ -454,7 +454,98 @@ const schemas = {
       active: { type: 'boolean' }
     }
   },
-  PublishRequestCreate: {
+  RefreshTokenRequest: {
+    type: 'object',
+    properties: {
+      refreshToken: { type: 'string', description: 'Opaque refresh token issued by login/register/reset-password.' }
+    }
+  },
+  LogoutRequest: {
+    type: 'object',
+    properties: {
+      refreshToken: { type: 'string', description: 'Refresh token to revoke. Optional when bearer token is supplied.' },
+      all: { type: 'boolean', default: false, description: 'Revoke all active sessions for the authenticated user.' }
+    }
+  },
+  ResetPasswordRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },
+  ChangePasswordRequest: {
+    type: 'object',
+    required: ['currentPassword', 'password'],
+    properties: {
+      currentPassword: { type: 'string', minLength: 6 },
+      password: { type: 'string', minLength: 6 }
+    }
+  },  ForgotPasswordRequest: {
+    type: 'object',
+    required: ['email'],
+    properties: { email: { type: 'string', format: 'email' } }
+  },
+  PasswordResetRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },
+  AuthorApplicationRequest: {
+    type: 'object',
+    properties: {
+      penName: { type: 'string' },
+      bio: { type: 'string' },
+      portfolioUrl: { type: 'string', format: 'uri' },
+      experience: { type: 'string' }
+    }
+  },
+  AuthorApplicationStatusRequest: {
+    type: 'object',
+    required: ['status'],
+    properties: { status: { type: 'string', enum: ['approved', 'rejected'] } }
+  },
+  ReviewRequest: {
+    type: 'object',
+    properties: { book: { type: 'string' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewCreateRequest: {
+    type: 'object',
+    required: ['book', 'rating', 'comment'],
+    properties: { book: { type: 'string' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewUpdateRequest: {
+    type: 'object',
+    properties: { rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewModerationRequest: {
+    type: 'object',
+    required: ['status'],
+    properties: { status: { type: 'string', enum: ['approved', 'pending', 'rejected'] } }
+  },
+  UserRoleRequest: {
+    type: 'object',
+    required: ['role'],
+    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+  },
+  UserStatusRequest: {
+    type: 'object',
+    required: ['isActive'],
+    properties: { isActive: { type: 'boolean' } }
+  },
+  AdminRoleUpdateRequest: {
+    type: 'object',
+    required: ['role'],
+    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+  },
+  AdminUserStatusRequest: {
+    type: 'object',
+    required: ['isActive'],
+    properties: { isActive: { type: 'boolean' } }
+  },
+  AdminPasswordResetRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },  PublishRequestCreate: {
     type: 'object',
     required: ['title', 'genre', 'wordCount', 'packageId', 'fileUrl'],
     properties: {
@@ -606,7 +697,98 @@ const schemaExamples = {
   CategoryStatusRequest: {
     active: false
   },
-  PublishRequestCreate: {
+  RefreshTokenRequest: {
+    type: 'object',
+    properties: {
+      refreshToken: { type: 'string', description: 'Opaque refresh token issued by login/register/reset-password.' }
+    }
+  },
+  LogoutRequest: {
+    type: 'object',
+    properties: {
+      refreshToken: { type: 'string', description: 'Refresh token to revoke. Optional when bearer token is supplied.' },
+      all: { type: 'boolean', default: false, description: 'Revoke all active sessions for the authenticated user.' }
+    }
+  },
+  ResetPasswordRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },
+  ChangePasswordRequest: {
+    type: 'object',
+    required: ['currentPassword', 'password'],
+    properties: {
+      currentPassword: { type: 'string', minLength: 6 },
+      password: { type: 'string', minLength: 6 }
+    }
+  },  ForgotPasswordRequest: {
+    type: 'object',
+    required: ['email'],
+    properties: { email: { type: 'string', format: 'email' } }
+  },
+  PasswordResetRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },
+  AuthorApplicationRequest: {
+    type: 'object',
+    properties: {
+      penName: { type: 'string' },
+      bio: { type: 'string' },
+      portfolioUrl: { type: 'string', format: 'uri' },
+      experience: { type: 'string' }
+    }
+  },
+  AuthorApplicationStatusRequest: {
+    type: 'object',
+    required: ['status'],
+    properties: { status: { type: 'string', enum: ['approved', 'rejected'] } }
+  },
+  ReviewRequest: {
+    type: 'object',
+    properties: { book: { type: 'string' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewCreateRequest: {
+    type: 'object',
+    required: ['book', 'rating', 'comment'],
+    properties: { book: { type: 'string' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewUpdateRequest: {
+    type: 'object',
+    properties: { rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
+  },
+  ReviewModerationRequest: {
+    type: 'object',
+    required: ['status'],
+    properties: { status: { type: 'string', enum: ['approved', 'pending', 'rejected'] } }
+  },
+  UserRoleRequest: {
+    type: 'object',
+    required: ['role'],
+    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+  },
+  UserStatusRequest: {
+    type: 'object',
+    required: ['isActive'],
+    properties: { isActive: { type: 'boolean' } }
+  },
+  AdminRoleUpdateRequest: {
+    type: 'object',
+    required: ['role'],
+    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+  },
+  AdminUserStatusRequest: {
+    type: 'object',
+    required: ['isActive'],
+    properties: { isActive: { type: 'boolean' } }
+  },
+  AdminPasswordResetRequest: {
+    type: 'object',
+    required: ['password'],
+    properties: { password: { type: 'string', minLength: 6 } }
+  },  PublishRequestCreate: {
     title: 'My Manuscript',
     genre: 'Business',
     wordCount: 65000,
@@ -818,3 +1000,6 @@ function buildOpenApiSpec() {
 }
 
 module.exports = { buildOpenApiSpec, schemas };
+
+
+

@@ -60,7 +60,7 @@ class CatalogRepository {
   }
 
   findReviewsByBook(bookId, { skip, limit }) {
-    return Review.find({ book: bookId })
+    return Review.find({ book: bookId, status: 'visible' })
       .populate('user', 'name profilePicture')
       .sort('-createdAt')
       .skip(skip)
@@ -68,9 +68,11 @@ class CatalogRepository {
   }
 
   countReviewsByBook(bookId) {
-    return Review.countDocuments({ book: bookId });
+    return Review.countDocuments({ book: bookId, status: 'visible' });
   }
 }
 
 module.exports = new CatalogRepository();
 module.exports.CatalogRepository = CatalogRepository;
+
+

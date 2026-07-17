@@ -211,7 +211,7 @@ Flow:
 4. Send \`Authorization: Bearer <token>\` on protected requests.
 5. Use \`GET /api/auth/me\` to hydrate the current user.
 
-Refresh tokens and logout endpoints are not implemented in the current backend.
+Refresh token rotation, logout revocation, forgot/reset password, and change-password endpoints are implemented in the current backend.
 
 Admin authorization is enforced by \`authorize('admin')\` in \`src/routes/adminRoutes.js\`. Publishing creation accepts \`author\` and \`admin\`.
 
@@ -466,3 +466,4 @@ ${endpointTable()}
 }
 
 main();
+

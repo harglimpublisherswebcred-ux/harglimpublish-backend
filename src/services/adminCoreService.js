@@ -7,6 +7,21 @@ const notFound = (message) => {
   return error;
 };
 
+const serviceError = (message, statusCode = 400) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
+const pageMeta = (page, limit) => {
+  const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+  const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  return { pageNum, limitNum, skip: (pageNum - 1) * limitNum };
+};
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const allowedRoles = new Set(['visitor', 'reader', 'author', 'admin']);
+
 class AdminCoreService {
   constructor(repository = adminCoreRepository) {
     this.repository = repository;
@@ -22,6 +37,51 @@ class AdminCoreService {
       totalBooks: await this.repository.countBooks(),
       totalUsers: await this.repository.countUsers()
     };
+  }
+
+  async listUsers(filters = {}) {
+    const { pageNum, limitNum, skip } = pageMeta(filters.page, filters.limit);
+    const query = {};
+    if (filters.role) query.role = filters.role;
+    if (filters.isActive !== undefined) query.isActive = String(filters.isActive) === 'true';
+    if (filters.search || filters.q) {
+      const regex = new RegExp(escapeRegex(filters.search || filters.q), 'i');
+      query.$or = [{ name: regex }, { email: regex }];
+    }
+    const [data, total] = await Promise.all([
+      this.repository.listUsers(query, { skip, limit: limitNum }),
+      this.repository.countUsersByQuery(query)
+    ]);
+    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
+  }
+
+  async getUser(id) {
+    const user = await this.repository.findUserById(id);
+    if (!user) throw notFound('User not found');
+    return user;
+  }
+
+  async updateUserRole(id, role) {
+    if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
+    const user = await this.repository.updateUser(id, { role });
+    if (!user) throw notFound('User not found');
+    return user;
+  }
+
+  async updateUserStatus(id, isActive) {
+    if (isActive === undefined) throw serviceError('isActive is required');
+    const user = await this.repository.updateUser(id, { isActive: Boolean(isActive) });
+    if (!user) throw notFound('User not found');
+    return user;
+  }
+
+  async resetUserPassword(id, password) {
+    if (!password || String(password).length < 6) throw serviceError('Password must be at least 6 characters');
+    const user = await this.repository.findUserById(id);
+    if (!user) throw notFound('User not found');
+    user.password = password;
+    await this.repository.saveUser(user);
+    return { _id: user._id, email: user.email, role: user.role };
   }
 
   createBook(data, actor) {

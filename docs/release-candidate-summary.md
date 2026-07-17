@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 87
+Endpoints documented: 117
 
 Models documented: 17
 
@@ -27,11 +27,20 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/health` | Public | `server.js` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
 | POST | `/api/auth/login` | Public | `authController.loginUser` |
+| POST | `/api/auth/refresh` | Public/Bearer | `authController.refreshToken` |
+| POST | `/api/auth/logout` | Public/Bearer | `authController.logoutUser` |
+| POST | `/api/auth/forgot-password` | Public | `authController.forgotPassword` |
 | GET | `/api/auth/me` | Bearer | `authController.getMe` |
+| PUT | `/api/auth/reset-password/{token}` | Public | `authController.resetPassword` |
+| POST | `/api/auth/reset-password/{token}` | Public | `authController.resetPassword` |
+| PUT | `/api/auth/change-password` | Bearer | `authController.changePassword` |
+| POST | `/api/auth/change-password` | Bearer | `authController.changePassword` |
 | GET | `/api/books` | Public | `bookController.getBooks` |
 | GET | `/api/books/{slug}` | Public | `bookController.getBookBySlug` |
 | GET | `/api/books/{slug}/related` | Public | `bookController.getRelatedBooks` |
-| GET | `/api/books/{slug}/reviews` | Public | `bookController.getBookReviews` |
+| POST | `/api/books/{slug}/reviews` | Bearer | `reviewController.createReview` |
+| PUT | `/api/books/{slug}/reviews/{reviewId}` | Bearer | `reviewController.updateReview` |
+| DELETE | `/api/books/{slug}/reviews/{reviewId}` | Bearer | `reviewController.deleteReview` |
 | GET | `/api/search` | Public | `bookController.searchBooks` |
 | GET | `/api/categories` | Public | `categoryController.listCategories` |
 | GET | `/api/categories/{slug}` | Public | `categoryController.getCategoryBySlug` |
@@ -46,7 +55,20 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/uploads/document` | Bearer | `uploadController.uploadDocument` |
 | GET | `/api/users/{id}/stats` | Bearer | `userController.getUserStats` |
 | PUT | `/api/users/{id}` | Bearer | `userController.updateUserProfile` |
-| GET | `/api/users/{id}/orders` | Bearer | `userController.getUserOrders` |
+| GET | `/api/users/me/author-application` | Bearer | `authorApplicationController.getMyAuthorApplication` |
+| GET | `/api/users/{id}/orders/{orderId}/payments` | Bearer | `userController.getUserOrderPayments` |
+| GET | `/api/users/{id}/payments` | Bearer | `userController.getUserPayments` |
+| GET | `/api/users/{id}/payments/{paymentId}` | Bearer | `userController.getUserPayment` |
+| GET | `/api/users/{id}/invoices` | Bearer | `userController.getUserInvoices` |
+| GET | `/api/users/{id}/invoices/{invoiceId}` | Bearer | `userController.getUserInvoice` |
+| GET | `/api/users/{id}/invoices/{invoiceId}/download` | Bearer | `userController.downloadUserInvoice` |
+| GET | `/api/users/{id}/shipments` | Bearer | `userController.getUserShipments` |
+| GET | `/api/users/{id}/shipments/{shipmentId}` | Bearer | `userController.getUserShipment` |
+| GET | `/api/users/{id}/notifications` | Bearer | `userController.getUserNotifications` |
+| PATCH | `/api/users/{id}/notifications/read-all` | Bearer | `userController.markAllUserNotificationsRead` |
+| PATCH | `/api/users/{id}/notifications/{notificationId}/read` | Bearer | `userController.markUserNotificationRead` |
+| GET | `/api/users/{id}/notifications/{notificationId}` | Bearer | `userController.getUserNotification` |
+| DELETE | `/api/users/{id}/notifications/{notificationId}` | Bearer | `userController.archiveUserNotification` |
 | GET | `/api/users/{id}/wishlist` | Bearer | `userController.getUserWishlist` |
 | GET | `/api/users/{id}/library` | Bearer | `userController.getUserLibrary` |
 | POST | `/api/users/{id}/wishlist` | Bearer | `userController.addToWishlist` |
@@ -60,7 +82,15 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/publish-requests` | Author/Admin | `publishController.createPublishRequest` |
 | GET | `/api/publish-packages` | Public | `publishController.getPublishPackages` |
 | GET | `/api/admin/analytics` | Admin | `adminController.getAdminAnalytics` |
-| GET | `/api/admin/stats` | Admin | `adminController.getAdminAnalytics` |
+| GET | `/api/admin/reviews` | Admin | `reviewController.listReviews` |
+| PATCH | `/api/admin/reviews/{id}/status` | Admin | `reviewController.moderateReview` |
+| DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
+| GET | `/api/admin/users` | Admin | `adminController.listUsers` |
+| GET | `/api/admin/users/{id}` | Admin | `adminController.getUser` |
+| PATCH | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
+| PUT | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
+| PATCH | `/api/admin/users/{id}/status` | Admin | `adminController.updateUserStatus` |
+| POST | `/api/admin/users/{id}/reset-password` | Admin | `adminController.resetUserPassword` |
 | GET | `/api/admin/orders` | Admin | `adminController.getOrders` |
 | PUT | `/api/admin/orders/{id}/status` | Admin | `adminController.updateOrderStatus` |
 | GET | `/api/admin/publish-requests` | Admin | `adminController.getPublishRequests` |

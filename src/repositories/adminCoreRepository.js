@@ -31,6 +31,26 @@ class AdminCoreRepository {
     return User.countDocuments();
   }
 
+  listUsers(query = {}, { skip = 0, limit = 20 } = {}) {
+    return User.find(query).select('-password').sort('-createdAt').skip(skip).limit(limit);
+  }
+
+  countUsersByQuery(query = {}) {
+    return User.countDocuments(query);
+  }
+
+  findUserById(id) {
+    return User.findById(id).select('-password');
+  }
+
+  updateUser(id, data) {
+    return User.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true }).select('-password');
+  }
+
+  saveUser(user) {
+    return user.save();
+  }
+
   createBook(data) {
     const book = new Book(data);
     return book.save();
@@ -67,3 +87,5 @@ class AdminCoreRepository {
 
 module.exports = new AdminCoreRepository();
 module.exports.AdminCoreRepository = AdminCoreRepository;
+
+

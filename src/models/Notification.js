@@ -62,6 +62,10 @@ const notificationSchema = new mongoose.Schema(
     failedAt: {
       type: Date
     },
+    readAt: {
+      type: Date,
+      index: true
+    },
     lastError: {
       type: String,
       trim: true,
@@ -103,3 +107,4 @@ notificationSchema.index({ channel: 1, status: 1, createdAt: -1 });
 module.exports = mongoose.model('Notification', notificationSchema);
 module.exports.NOTIFICATION_CHANNELS = NOTIFICATION_CHANNELS;
 module.exports.NOTIFICATION_STATUSES = NOTIFICATION_STATUSES;
+

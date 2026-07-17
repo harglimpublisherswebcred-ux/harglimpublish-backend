@@ -3,12 +3,23 @@ const endpointInventory = [
 
   { method: 'POST', path: '/api/auth/register', tag: 'Authentication', summary: 'Register user', auth: 'Public', controller: 'authController.registerUser', body: 'RegisterRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter.' },
   { method: 'POST', path: '/api/auth/login', tag: 'Authentication', summary: 'Login user', auth: 'Public', controller: 'authController.loginUser', body: 'LoginRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter and return a JWT token on success.' },
-  { method: 'GET', path: '/api/auth/me', tag: 'Authentication', summary: 'Get current user', auth: 'Bearer', controller: 'authController.getMe', notes: 'Requires Authorization: Bearer <token>.' },
+  
+  { method: 'POST', path: '/api/auth/refresh', tag: 'Authentication', summary: 'Refresh access token using refresh token or bearer fallback', auth: 'Public/Bearer', controller: 'authController.refreshToken', body: 'RefreshTokenRequest' },
+  { method: 'POST', path: '/api/auth/logout', tag: 'Authentication', summary: 'Logout and revoke refresh session', auth: 'Public/Bearer', controller: 'authController.logoutUser', body: 'LogoutRequest' },
+  { method: 'POST', path: '/api/auth/forgot-password', tag: 'Authentication', summary: 'Request password reset token', auth: 'Public', controller: 'authController.forgotPassword', body: 'ForgotPasswordRequest' },
+  { method: 'GET', path: '/api/auth/me', tag: 'Authentication', summary: 'Get current user', auth: 'Bearer', controller: 'authController.getMe' },
+  { method: 'PUT', path: '/api/auth/reset-password/{token}', tag: 'Authentication', summary: 'Reset password with token', auth: 'Public', controller: 'authController.resetPassword', params: ['token'], body: 'ResetPasswordRequest' },
+  { method: 'POST', path: '/api/auth/reset-password/{token}', tag: 'Authentication', summary: 'Reset password with token alias', auth: 'Public', controller: 'authController.resetPassword', params: ['token'], body: 'ResetPasswordRequest' },
+  { method: 'PUT', path: '/api/auth/change-password', tag: 'Authentication', summary: 'Change current user password', auth: 'Bearer', controller: 'authController.changePassword', body: 'ChangePasswordRequest' },
+  { method: 'POST', path: '/api/auth/change-password', tag: 'Authentication', summary: 'Change current user password alias', auth: 'Bearer', controller: 'authController.changePassword', body: 'ChangePasswordRequest' },
 
   { method: 'GET', path: '/api/books', tag: 'Books', summary: 'List books', auth: 'Public', controller: 'bookController.getBooks', query: ['page', 'limit', 'category', 'minPrice', 'maxPrice', 'sort', 'featured', 'bestseller', 'newRelease'] },
   { method: 'GET', path: '/api/books/{slug}', tag: 'Books', summary: 'Get book by slug', auth: 'Public', controller: 'bookController.getBookBySlug', params: ['slug'] },
   { method: 'GET', path: '/api/books/{slug}/related', tag: 'Books', summary: 'Get related books', auth: 'Public', controller: 'bookController.getRelatedBooks', params: ['slug'] },
-  { method: 'GET', path: '/api/books/{slug}/reviews', tag: 'Books', summary: 'Get book reviews', auth: 'Public', controller: 'bookController.getBookReviews', params: ['slug'] },
+  
+  { method: 'POST', path: '/api/books/{slug}/reviews', tag: 'Books', summary: 'Create book review', auth: 'Bearer', controller: 'reviewController.createReview', params: ['slug'], body: 'ReviewRequest' },
+  { method: 'PUT', path: '/api/books/{slug}/reviews/{reviewId}', tag: 'Books', summary: 'Update book review', auth: 'Bearer', controller: 'reviewController.updateReview', params: ['slug', 'reviewId'], body: 'ReviewRequest' },
+  { method: 'DELETE', path: '/api/books/{slug}/reviews/{reviewId}', tag: 'Books', summary: 'Delete book review', auth: 'Bearer', controller: 'reviewController.deleteReview', params: ['slug', 'reviewId'] },
   { method: 'GET', path: '/api/search', tag: 'Books', summary: 'Search books', auth: 'Public', controller: 'bookController.searchBooks', query: ['q', 'page', 'limit'] },
 
   { method: 'GET', path: '/api/categories', tag: 'Categories', summary: 'List categories', auth: 'Public', controller: 'categoryController.listCategories', query: ['page', 'limit', 'featured', 'active', 'search', 'sort'], notes: 'Public list returns active categories by default and includes system-managed book counts.' },
@@ -27,7 +38,21 @@ const endpointInventory = [
 
   { method: 'GET', path: '/api/users/{id}/stats', tag: 'Users', summary: 'Get user stats', auth: 'Bearer', controller: 'userController.getUserStats', params: ['id'] },
   { method: 'PUT', path: '/api/users/{id}', tag: 'Users', summary: 'Update user profile', auth: 'Bearer', controller: 'userController.updateUserProfile', params: ['id'], body: 'UserUpdateRequest' },
-  { method: 'GET', path: '/api/users/{id}/orders', tag: 'Users', summary: 'Get user orders', auth: 'Bearer', controller: 'userController.getUserOrders', params: ['id'], query: ['page', 'limit', 'status'] },
+  
+  { method: 'GET', path: '/api/users/me/author-application', tag: 'Users', summary: 'Get current user author application', auth: 'Bearer', controller: 'authorApplicationController.getMyAuthorApplication' },
+  { method: 'GET', path: '/api/users/{id}/orders/{orderId}/payments', tag: 'Users', summary: 'Get payment attempts for a user order', auth: 'Bearer', controller: 'userController.getUserOrderPayments', params: ['id', 'orderId'], query: ['page', 'limit'] },
+  { method: 'GET', path: '/api/users/{id}/payments', tag: 'Users', summary: 'Get user payment attempts', auth: 'Bearer', controller: 'userController.getUserPayments', params: ['id'], query: ['page', 'limit', 'status', 'order'] },
+  { method: 'GET', path: '/api/users/{id}/payments/{paymentId}', tag: 'Users', summary: 'Get user payment detail including active QR metadata', auth: 'Bearer', controller: 'userController.getUserPayment', params: ['id', 'paymentId'] },
+  { method: 'GET', path: '/api/users/{id}/invoices', tag: 'Users', summary: 'Get user invoices', auth: 'Bearer', controller: 'userController.getUserInvoices', params: ['id'], query: ['page', 'limit', 'status'] },
+  { method: 'GET', path: '/api/users/{id}/invoices/{invoiceId}', tag: 'Users', summary: 'Get user invoice', auth: 'Bearer', controller: 'userController.getUserInvoice', params: ['id', 'invoiceId'] },
+  { method: 'GET', path: '/api/users/{id}/invoices/{invoiceId}/download', tag: 'Users', summary: 'Download user invoice', auth: 'Bearer', controller: 'userController.downloadUserInvoice', params: ['id', 'invoiceId'] },
+  { method: 'GET', path: '/api/users/{id}/shipments', tag: 'Users', summary: 'Get user shipments', auth: 'Bearer', controller: 'userController.getUserShipments', params: ['id'], query: ['page', 'limit', 'status'] },
+  { method: 'GET', path: '/api/users/{id}/shipments/{shipmentId}', tag: 'Users', summary: 'Get user shipment detail', auth: 'Bearer', controller: 'userController.getUserShipment', params: ['id', 'shipmentId'] },
+  { method: 'GET', path: '/api/users/{id}/notifications', tag: 'Users', summary: 'Get user notifications', auth: 'Bearer', controller: 'userController.getUserNotifications', params: ['id'], query: ['page', 'limit', 'status', 'unread'] },
+  { method: 'PATCH', path: '/api/users/{id}/notifications/read-all', tag: 'Users', summary: 'Mark all user notifications as read', auth: 'Bearer', controller: 'userController.markAllUserNotificationsRead', params: ['id'] },
+  { method: 'PATCH', path: '/api/users/{id}/notifications/{notificationId}/read', tag: 'Users', summary: 'Mark user notification as read', auth: 'Bearer', controller: 'userController.markUserNotificationRead', params: ['id', 'notificationId'] },
+  { method: 'GET', path: '/api/users/{id}/notifications/{notificationId}', tag: 'Users', summary: 'Get user notification detail', auth: 'Bearer', controller: 'userController.getUserNotification', params: ['id', 'notificationId'] },
+  { method: 'DELETE', path: '/api/users/{id}/notifications/{notificationId}', tag: 'Users', summary: 'Archive user notification', auth: 'Bearer', controller: 'userController.archiveUserNotification', params: ['id', 'notificationId'] },
   { method: 'GET', path: '/api/users/{id}/wishlist', tag: 'Users', summary: 'Get user wishlist', auth: 'Bearer', controller: 'userController.getUserWishlist', params: ['id'] },
   { method: 'GET', path: '/api/users/{id}/library', tag: 'Users', summary: 'Get user library', auth: 'Bearer', controller: 'userController.getUserLibrary', params: ['id'] },
   { method: 'POST', path: '/api/users/{id}/wishlist', tag: 'Users', summary: 'Add book to wishlist', auth: 'Bearer', controller: 'userController.addToWishlist', params: ['id'], body: 'WishlistRequest' },
@@ -44,7 +69,16 @@ const endpointInventory = [
   { method: 'GET', path: '/api/publish-packages', tag: 'Publishing', summary: 'List publish packages', auth: 'Public', controller: 'publishController.getPublishPackages' },
 
   { method: 'GET', path: '/api/admin/analytics', tag: 'Admin Core', summary: 'Admin analytics summary', auth: 'Admin', controller: 'adminController.getAdminAnalytics' },
-  { method: 'GET', path: '/api/admin/stats', tag: 'Admin Core', summary: 'Admin stats alias', auth: 'Admin', controller: 'adminController.getAdminAnalytics' },
+  { method: 'GET', path: '/api/admin/reviews', tag: 'Admin Core', summary: 'List reviews for moderation', auth: 'Admin', controller: 'reviewController.listReviews', query: ['page', 'limit', 'status', 'book', 'user'] },
+  { method: 'PATCH', path: '/api/admin/reviews/{id}/status', tag: 'Admin Core', summary: 'Moderate review', auth: 'Admin', controller: 'reviewController.moderateReview', params: ['id'], body: 'ReviewModerationRequest' },
+  { method: 'DELETE', path: '/api/admin/reviews/{id}', tag: 'Admin Core', summary: 'Delete review as admin', auth: 'Admin', controller: 'reviewController.deleteReview', params: ['id'] },
+  
+  { method: 'GET', path: '/api/admin/users', tag: 'Admin Users', summary: 'List users', auth: 'Admin', controller: 'adminController.listUsers', query: ['page', 'limit', 'role', 'isActive', 'search'] },
+  { method: 'GET', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Get user', auth: 'Admin', controller: 'adminController.getUser', params: ['id'] },
+  { method: 'PATCH', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
+  { method: 'PUT', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role alias', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
+  { method: 'PATCH', path: '/api/admin/users/{id}/status', tag: 'Admin Users', summary: 'Update user active status', auth: 'Admin', controller: 'adminController.updateUserStatus', params: ['id'], body: 'UserStatusRequest' },
+  { method: 'POST', path: '/api/admin/users/{id}/reset-password', tag: 'Admin Users', summary: 'Reset user password', auth: 'Admin', controller: 'adminController.resetUserPassword', params: ['id'], body: 'ResetPasswordRequest' },
   { method: 'GET', path: '/api/admin/orders', tag: 'Admin Core', summary: 'List orders', auth: 'Admin', controller: 'adminController.getOrders' },
   { method: 'PUT', path: '/api/admin/orders/{id}/status', tag: 'Admin Core', summary: 'Update order status', auth: 'Admin', controller: 'adminController.updateOrderStatus', params: ['id'], body: 'StatusUpdateRequest' },
   { method: 'GET', path: '/api/admin/publish-requests', tag: 'Admin Core', summary: 'List publish requests', auth: 'Admin', controller: 'adminController.getPublishRequests' },
@@ -103,3 +137,7 @@ const endpointInventory = [
 ];
 
 module.exports = { endpointInventory };
+
+
+
+

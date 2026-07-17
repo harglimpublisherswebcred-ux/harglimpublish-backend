@@ -14,6 +14,7 @@ const { validateEnvironment } = require('./src/config/environment');
 const { registerSubscribers } = require('./src/events/registerSubscribers');
 const { mountSwagger } = require('./src/docs/swagger');
 const { renderDeveloperPortal } = require('./src/docs/developerPortal');
+const maintenanceWorker = require('./src/workers/maintenanceWorker');
 
 let server;
 let isShuttingDown = false;
@@ -23,6 +24,8 @@ const shutdown = async (signal, exitCode = 0) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
   logger.info('server.shutdown_started', { signal });
+
+  maintenanceWorker.stop();
 
   if (server) {
     await new Promise((resolve) => server.close(resolve));
@@ -122,6 +125,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authLimiter, require('./src/routes/authRoutes'));
 app.use('/api/books', require('./src/routes/bookRoutes'));
 app.use('/api/categories', require('./src/routes/categoryRoutes'));
+app.use('/api/author-applications', require('./src/routes/authorApplicationRoutes'));
+app.use('/api/reviews', require('./src/routes/reviewRoutes'));
 app.use('/api/search', require('./src/routes/searchRoutes'));
 app.use('/api/orders', require('./src/routes/orderRoutes'));
 app.use('/api/admin', require('./src/routes/adminRoutes'));
@@ -152,6 +157,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   validateEnvironment();
   await connectDB();
+  maintenanceWorker.start();
   const PORT = process.env.PORT || 5000;
   server = app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
@@ -169,3 +175,5 @@ if (process.env.NODE_ENV !== 'test') {
 
 module.exports = app;
 module.exports.startServer = startServer;
+
+

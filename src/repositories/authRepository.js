@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const AuthSession = require('../models/AuthSession');
 
 class AuthRepository {
   findUserByEmail(email, options = {}) {
@@ -13,6 +14,34 @@ class AuthRepository {
 
   findUserById(id) {
     return User.findById(id);
+  }
+
+  findUserByResetToken(tokenHash) {
+    return User.findOne({ passwordResetToken: tokenHash, passwordResetExpires: { $gt: Date.now() } }).select('+password');
+  }
+
+  saveUser(user) {
+    return user.save();
+  }
+
+  createSession(data) {
+    return AuthSession.create(data);
+  }
+
+  findSessionByRefreshTokenHash(refreshTokenHash) {
+    return AuthSession.findOne({ refreshTokenHash }).select('+refreshTokenHash');
+  }
+
+  revokeSession(sessionId, revokedAt = new Date()) {
+    return AuthSession.findByIdAndUpdate(sessionId, { revokedAt }, { returnDocument: 'after' });
+  }
+
+  markSessionReplaced(sessionId, replacementId, revokedAt = new Date()) {
+    return AuthSession.findByIdAndUpdate(sessionId, { revokedAt, replacedBy: replacementId }, { returnDocument: 'after' });
+  }
+
+  revokeUserSessions(userId, revokedAt = new Date()) {
+    return AuthSession.updateMany({ user: userId, revokedAt: { $exists: false } }, { revokedAt });
   }
 }
 
