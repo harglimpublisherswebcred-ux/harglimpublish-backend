@@ -14,6 +14,7 @@ const Invoice = require('../src/models/Invoice');
 const Notification = require('../src/models/Notification');
 const Review = require('../src/models/Review');
 const AuthorApplication = require('../src/models/AuthorApplication');
+const Content = require('../src/models/Content');
 
 jest.setTimeout(600000);
 process.env.MONGOMS_DOWNLOAD_DIR = 'node_modules/.cache/mongodb-binaries';
@@ -32,17 +33,17 @@ let adminToken;
 const tokenFor = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await MongoMemoryServer.create({ instance: { launchTimeout: 60000 } });
   await mongoose.connect(mongoServer.getUri());
 });
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await mongoServer.stop();
+  if (mongoServer) await mongoServer.stop();
 });
 
 beforeEach(async () => {
-  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({})]);
+  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), Content.deleteMany({})]);
   admin = await User.create({ name: 'Admin', email: 'admin12@example.com', password: 'password123', role: 'admin' });
   reader = await User.create({ name: 'Reader', email: 'reader12@example.com', password: 'password123', role: 'reader' });
   author = await User.create({ name: 'Author', email: 'author12@example.com', password: 'password123', role: 'author' });
@@ -114,4 +115,96 @@ test('supports auth hardening and admin user management', async () => {
   await request(app).patch(`/api/admin/users/${reader._id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ isActive: false }).expect(200);
   await request(app).post(`/api/admin/users/${reader._id}/reset-password`).set('Authorization', `Bearer ${adminToken}`).send({ password: 'admin123' }).expect(200);
   expect((await User.findById(reader._id)).isActive).toBe(false);
+});
+
+test('supports CMS content frontend contract', async () => {
+  const empty = await request(app).get('/api/content').expect(200);
+  expect(empty.body.success).toBe(true);
+  expect(empty.body.data.hero).toBeTruthy();
+  expect(empty.body.homeTitle).toBeTruthy();
+
+  const payload = {
+    homeTitle: 'Frontend Home',
+    homeSubtitle: 'Frontend Subtitle',
+    hero: { title: 'Hero', subtitle: 'Sub', body: 'Body' },
+    about: { title: 'About', body: 'About body' },
+    contact: { email: 'support@example.com' },
+    faq: [{ question: 'Q?', answer: 'A.' }],
+    footer: { title: 'Footer' },
+    socialLinks: { instagram: 'https://instagram.com/harglim' },
+    seo: { title: 'SEO', description: 'SEO desc', keywords: ['books'] },
+    announcements: [{ title: 'Launch', message: 'Live', active: true }],
+    siteSettings: { siteName: 'Harglim', maintenanceMode: false },
+    packagesJson: '[]',
+    ignored: 'nope'
+  };
+
+  const updated = await request(app).put('/api/admin/content').set('Authorization', `Bearer ${adminToken}`).send(payload).expect(200);
+  expect(updated.body.success).toBe(true);
+  expect(updated.body.data.homeTitle).toBe('Frontend Home');
+  expect(updated.body.data.ignored).toBeUndefined();
+
+  const stored = await request(app).get('/api/content').expect(200);
+  expect(stored.body.data.homeTitle).toBe('Frontend Home');
+});
+
+test('supports /api/users/me profile contract', async () => {
+  const me = await request(app).get('/api/users/me').set('Authorization', `Bearer ${readerToken}`).expect(200);
+  expect(me.body.success).toBe(true);
+  expect(me.body.data.email).toBe(reader.email);
+  expect(me.body.data.password).toBeUndefined();
+});
+
+test('supports combined admin user update and frontend value normalization', async () => {
+  const suspended = await request(app)
+    .put(`/api/admin/users/${reader._id}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ role: 'user', status: 'Suspended' })
+    .expect(200);
+
+  expect(suspended.body.data.role).toBe('reader');
+  expect(suspended.body.data.isActive).toBe(false);
+
+  const active = await request(app)
+    .put(`/api/admin/users/${reader._id}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ isActive: true })
+    .expect(200);
+
+  expect(active.body.data.isActive).toBe(true);
+});
+
+test('normalizes frontend order statuses without changing stored enum definitions', async () => {
+  await request(app)
+    .put(`/api/admin/orders/${order._id}/status`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'Processing' })
+    .expect(200);
+
+  expect((await Order.findById(order._id)).status).toBe('PROCESSING');
+});
+
+test('supports book royalty percentage through admin book APIs', async () => {
+  const created = await request(app)
+    .post('/api/admin/books')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      title: 'Royalty Book',
+      description: 'Royalty enabled book',
+      category: book.category,
+      price: 250,
+      royaltyPercentage: 15,
+      status: 'published'
+    })
+    .expect(201);
+
+  expect(created.body.data.royaltyPercentage).toBe(15);
+
+  const updated = await request(app)
+    .put(`/api/admin/books/${created.body.data._id}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ royaltyPercentage: 18 })
+    .expect(200);
+
+  expect(updated.body.data.royaltyPercentage).toBe(18);
 });

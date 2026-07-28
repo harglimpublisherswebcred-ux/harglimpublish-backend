@@ -32,7 +32,10 @@ function mountSwagger(app) {
   const swaggerUiOptions = {
     explorer: true,
     customSiteTitle: 'HM Backend API Docs',
-    swaggerUrl: '/api/docs.json'
+    swaggerUrl: '/api/docs.json',
+    swaggerOptions: {
+      persistAuthorization: true
+    }
   };
 
   app.use('/api/docs', swaggerUi.serveFiles(null, swaggerUiOptions), (req, res, next) => {

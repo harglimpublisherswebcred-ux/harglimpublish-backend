@@ -29,6 +29,24 @@ class UserService {
     this.repository = repository;
   }
 
+
+  async getProfile(actor) {
+    const userId = actor.id || actor._id;
+    const user = await this.repository.findById(userId);
+    if (!user) throw userNotFound();
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      profilePicture: user.profilePicture,
+      wishlist: user.wishlist,
+      library: user.library,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
   async getStats(userId, actor) {
     userId = authorizeUser(userId, actor);
     const user = await this.repository.findById(userId);

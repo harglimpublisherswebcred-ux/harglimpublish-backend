@@ -97,6 +97,27 @@ const schemas = {
       updatedAt: { type: 'string', format: 'date-time' }
     }
   },
+  Content: {
+    type: 'object',
+    properties: {
+      key: { type: 'string', default: 'global' },
+      hero: { type: 'object', additionalProperties: true },
+      about: { type: 'object', additionalProperties: true },
+      contact: { type: 'object', additionalProperties: true },
+      faq: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      footer: { type: 'object', additionalProperties: true },
+      socialLinks: { type: 'object', additionalProperties: true },
+      seo: { type: 'object', additionalProperties: true },
+      announcements: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      siteSettings: { type: 'object', additionalProperties: true },
+      homeTitle: { type: 'string' },
+      homeSubtitle: { type: 'string' },
+      publishTitle: { type: 'string' },
+      publishSubtitle: { type: 'string' },
+      packagesJson: { type: 'string' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
   Book: {
     type: 'object',
     properties: {
@@ -107,6 +128,7 @@ const schemas = {
       author: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/User' }] },
       category: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/Category' }] },
       price: { type: 'number' },
+      royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       coverImage: { type: 'string' },
       stock: { type: 'integer' },
       reservedStock: { type: 'integer' },
@@ -374,6 +396,7 @@ const schemas = {
       author: { type: 'string', description: 'Optional author ObjectId. Defaults to current admin user when omitted.' },
       category: { type: 'string', description: 'Category ObjectId.' },
       price: { type: 'number' },
+      royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
       reservedStock: { type: 'integer', minimum: 0 },
@@ -395,6 +418,7 @@ const schemas = {
       author: { type: 'string' },
       category: { type: 'string' },
       price: { type: 'number' },
+      royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
       reservedStock: { type: 'integer', minimum: 0 },
@@ -521,10 +545,37 @@ const schemas = {
     required: ['status'],
     properties: { status: { type: 'string', enum: ['approved', 'pending', 'rejected'] } }
   },
+  ContentUpdateRequest: {
+    type: 'object',
+    properties: {
+      hero: { type: 'object', additionalProperties: true },
+      about: { type: 'object', additionalProperties: true },
+      contact: { type: 'object', additionalProperties: true },
+      faq: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      footer: { type: 'object', additionalProperties: true },
+      socialLinks: { type: 'object', additionalProperties: true },
+      seo: { type: 'object', additionalProperties: true },
+      announcements: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      siteSettings: { type: 'object', additionalProperties: true },
+      homeTitle: { type: 'string' },
+      homeSubtitle: { type: 'string' },
+      publishTitle: { type: 'string' },
+      publishSubtitle: { type: 'string' },
+      packagesJson: { type: 'string' }
+    }
+  },
+  AdminUserUpdateRequest: {
+    type: 'object',
+    properties: {
+      role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader.' },
+      isActive: { type: 'boolean' },
+      status: { type: 'string', enum: ['Active', 'Suspended'], description: 'Frontend compatibility alias for isActive.' }
+    }
+  },
   UserRoleRequest: {
     type: 'object',
     required: ['role'],
-    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+    properties: { role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader for frontend compatibility.' } }
   },
   UserStatusRequest: {
     type: 'object',
@@ -534,7 +585,7 @@ const schemas = {
   AdminRoleUpdateRequest: {
     type: 'object',
     required: ['role'],
-    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+    properties: { role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader for frontend compatibility.' } }
   },
   AdminUserStatusRequest: {
     type: 'object',
@@ -646,11 +697,17 @@ const schemaExamples = {
     utr: 'UPI1234567890'
   },
   StatusUpdateRequest: {
-    status: 'PROCESSING',
+    status: 'Processing',
     reason: 'Status updated by admin'
   },
   RejectPaymentRequest: {
     reason: 'UTR could not be verified'
+  },
+  ContentUpdateRequest: {
+    homeTitle: 'You write, we print.',
+    homeSubtitle: 'Explore inspiring books.',
+    publishTitle: 'Publish Your Book With Us',
+    packagesJson: '[]'
   },
   UserUpdateRequest: {
     name: 'Ghani Khan',
@@ -665,6 +722,7 @@ const schemaExamples = {
     category: '66b4f5a2a44d2c0012a9c102',
     author: '66b4f5a2a44d2c0012a9c103',
     price: 499,
+    royaltyPercentage: 10,
     coverImage: 'https://example.com/cover.jpg',
     stock: 100,
     status: 'published',
@@ -676,6 +734,7 @@ const schemaExamples = {
   },
   BookUpdateRequest: {
     price: 449,
+    royaltyPercentage: 12,
     stock: 120,
     status: 'published',
     isBestseller: true
@@ -764,10 +823,37 @@ const schemaExamples = {
     required: ['status'],
     properties: { status: { type: 'string', enum: ['approved', 'pending', 'rejected'] } }
   },
+  ContentUpdateRequest: {
+    type: 'object',
+    properties: {
+      hero: { type: 'object', additionalProperties: true },
+      about: { type: 'object', additionalProperties: true },
+      contact: { type: 'object', additionalProperties: true },
+      faq: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      footer: { type: 'object', additionalProperties: true },
+      socialLinks: { type: 'object', additionalProperties: true },
+      seo: { type: 'object', additionalProperties: true },
+      announcements: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      siteSettings: { type: 'object', additionalProperties: true },
+      homeTitle: { type: 'string' },
+      homeSubtitle: { type: 'string' },
+      publishTitle: { type: 'string' },
+      publishSubtitle: { type: 'string' },
+      packagesJson: { type: 'string' }
+    }
+  },
+  AdminUserUpdateRequest: {
+    type: 'object',
+    properties: {
+      role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader.' },
+      isActive: { type: 'boolean' },
+      status: { type: 'string', enum: ['Active', 'Suspended'], description: 'Frontend compatibility alias for isActive.' }
+    }
+  },
   UserRoleRequest: {
     type: 'object',
     required: ['role'],
-    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+    properties: { role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader for frontend compatibility.' } }
   },
   UserStatusRequest: {
     type: 'object',
@@ -777,7 +863,7 @@ const schemaExamples = {
   AdminRoleUpdateRequest: {
     type: 'object',
     required: ['role'],
-    properties: { role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'] } }
+    properties: { role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], description: 'user is normalized to reader for frontend compatibility.' } }
   },
   AdminUserStatusRequest: {
     type: 'object',
@@ -858,15 +944,8 @@ function queryFor(name) {
   };
 }
 
-function authHeaderFor(endpoint) {
-  if (endpoint.auth === 'Public') return [];
-  return [{
-    name: 'Authorization',
-    in: 'header',
-    required: true,
-    description: `Bearer JWT required. Authorization scope: ${endpoint.auth}.`,
-    schema: { type: 'string', examples: ['Bearer <jwt-token>'] }
-  }];
+function authHeaderFor() {
+  return [];
 }
 
 function successExampleFor(endpoint) {
@@ -1000,6 +1079,3 @@ function buildOpenApiSpec() {
 }
 
 module.exports = { buildOpenApiSpec, schemas };
-
-
-

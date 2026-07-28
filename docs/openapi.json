@@ -24,6 +24,9 @@
       "name": "System"
     },
     {
+      "name": "Content"
+    },
+    {
       "name": "Authentication"
     },
     {
@@ -49,6 +52,9 @@
     },
     {
       "name": "Admin Core"
+    },
+    {
+      "name": "Admin Content"
     },
     {
       "name": "Admin Users"
@@ -81,6 +87,74 @@
         "summary": "Health check",
         "description": "Health check. Controller: server.js. Authentication: Public. API routes are rate limited and return standard error envelopes. Returns server liveness only.",
         "operationId": "get_health",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/content": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Get global CMS content",
+        "description": "Get global CMS content. Controller: contentController.getContent. Authentication: Public. API routes are rate limited and return standard error envelopes.",
+        "operationId": "get_api_content",
         "security": [],
         "parameters": [],
         "responses": {
@@ -354,20 +428,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Public/Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -475,20 +536,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Public/Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -708,20 +756,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -1035,20 +1070,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1162,20 +1184,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1673,18 +1682,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "slug",
             "in": "path",
             "required": true,
@@ -1822,18 +1819,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "slug",
             "in": "path",
@@ -1978,18 +1963,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "slug",
             "in": "path",
@@ -2623,20 +2596,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -2758,18 +2718,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -2885,18 +2833,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -2994,18 +2930,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -3102,18 +3026,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -3303,20 +3215,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -3407,20 +3306,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -3498,6 +3384,78 @@
         }
       }
     },
+    "/api/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get current user profile",
+        "description": "Get current user profile. Controller: userController.getCurrentUser. Authentication: Bearer. API routes are rate limited and return standard error envelopes.",
+        "operationId": "get_api_users_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/api/users/{id}/stats": {
       "get": {
         "tags": [
@@ -3512,18 +3470,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -3605,18 +3551,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -3716,20 +3650,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -3802,18 +3723,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -3924,18 +3833,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -4055,18 +3952,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4155,18 +4040,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -4278,18 +4151,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4379,18 +4240,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4479,18 +4328,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -4602,18 +4439,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4702,18 +4527,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -4833,18 +4646,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4925,18 +4726,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -5027,18 +4816,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -5125,18 +4902,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -5227,18 +4992,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -5317,18 +5070,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -5429,18 +5170,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -5521,18 +5250,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -5896,18 +5613,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -5988,18 +5693,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -6082,18 +5775,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Bearer.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6173,20 +5854,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Author/Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -6348,20 +6016,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -6434,18 +6089,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -6565,18 +6208,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6689,18 +6320,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6709,6 +6328,155 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/admin/content": {
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Update global CMS content",
+        "description": "Update global CMS content. Controller: contentController.updateContent. Authentication: Admin. API routes are rate limited and return standard error envelopes.",
+        "operationId": "put_api_admin_content",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContentUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "ContentUpdateRequest example",
+                  "value": {
+                    "type": "object",
+                    "properties": {
+                      "hero": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "about": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "contact": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "faq": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      },
+                      "footer": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "socialLinks": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "seo": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "announcements": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      },
+                      "siteSettings": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "homeTitle": {
+                        "type": "string"
+                      },
+                      "homeSubtitle": {
+                        "type": "string"
+                      },
+                      "publishTitle": {
+                        "type": "string"
+                      },
+                      "publishSubtitle": {
+                        "type": "string"
+                      },
+                      "packagesJson": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -6781,18 +6549,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -6912,17 +6668,84 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
+            "name": "id",
+            "in": "path",
             "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
             "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
             }
           },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Update user",
+        "description": "Update user. Controller: adminController.updateUser. Authentication: Admin. API routes are rate limited and return standard error envelopes.",
+        "operationId": "put_api_admin_users_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
           {
             "name": "id",
             "in": "path",
@@ -6932,6 +6755,48 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "AdminUserUpdateRequest example",
+                  "value": {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "user",
+                          "visitor",
+                          "reader",
+                          "author",
+                          "admin"
+                        ],
+                        "description": "user is normalized to reader."
+                      },
+                      "isActive": {
+                        "type": "boolean"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "Active",
+                          "Suspended"
+                        ],
+                        "description": "Frontend compatibility alias for isActive."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -7005,18 +6870,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7044,11 +6897,13 @@
                       "role": {
                         "type": "string",
                         "enum": [
+                          "user",
                           "visitor",
                           "reader",
                           "author",
                           "admin"
-                        ]
+                        ],
+                        "description": "user is normalized to reader for frontend compatibility."
                       }
                     }
                   }
@@ -7128,18 +6983,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7167,11 +7010,13 @@
                       "role": {
                         "type": "string",
                         "enum": [
+                          "user",
                           "visitor",
                           "reader",
                           "author",
                           "admin"
-                        ]
+                        ],
+                        "description": "user is normalized to reader for frontend compatibility."
                       }
                     }
                   }
@@ -7252,18 +7097,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -7372,18 +7205,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7490,20 +7311,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -7577,18 +7385,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7608,7 +7404,7 @@
                 "default": {
                   "summary": "StatusUpdateRequest example",
                   "value": {
-                    "status": "PROCESSING",
+                    "status": "Processing",
                     "reason": "Status updated by admin"
                   }
                 }
@@ -7687,20 +7483,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -7774,18 +7557,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7805,7 +7576,7 @@
                 "default": {
                   "summary": "StatusUpdateRequest example",
                   "value": {
-                    "status": "PROCESSING",
+                    "status": "Processing",
                     "reason": "Status updated by admin"
                   }
                 }
@@ -7884,20 +7655,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -7914,6 +7672,7 @@
                     "category": "66b4f5a2a44d2c0012a9c102",
                     "author": "66b4f5a2a44d2c0012a9c103",
                     "price": 499,
+                    "royaltyPercentage": 10,
                     "coverImage": "https://example.com/cover.jpg",
                     "stock": 100,
                     "status": "published",
@@ -8001,18 +7760,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -8033,6 +7780,7 @@
                   "summary": "BookUpdateRequest example",
                   "value": {
                     "price": 449,
+                    "royaltyPercentage": 12,
                     "stock": 120,
                     "status": "published",
                     "isBestseller": true
@@ -8112,18 +7860,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -8205,18 +7941,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "page",
             "in": "query",
@@ -8357,20 +8081,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -8485,18 +8196,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -8592,18 +8291,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -8721,18 +8408,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -8830,18 +8505,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -8957,20 +8620,7 @@
             "bearerAuth": []
           }
         ],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -9059,18 +8709,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "q",
             "in": "query",
@@ -9197,18 +8835,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "status",
             "in": "query",
@@ -9349,18 +8975,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -9460,18 +9074,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -9594,18 +9196,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -9723,18 +9313,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -9857,18 +9435,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -9990,18 +9556,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -10101,18 +9655,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -10232,18 +9774,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "status",
             "in": "query",
@@ -10405,18 +9935,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "threshold",
             "in": "query",
             "required": false,
@@ -10543,18 +10061,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "paymentId",
             "in": "query",
@@ -10715,18 +10221,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "reservation",
             "in": "query",
@@ -10896,18 +10390,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "orderId",
             "in": "query",
             "required": false,
@@ -11051,18 +10533,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "q",
             "in": "query",
@@ -11234,18 +10704,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "status",
             "in": "query",
             "required": false,
@@ -11400,18 +10858,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -11503,18 +10949,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -11605,18 +11039,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "q",
             "in": "query",
@@ -11794,18 +11216,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "status",
             "in": "query",
             "required": false,
@@ -11966,18 +11376,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -12074,18 +11472,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -12202,18 +11588,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "q",
             "in": "query",
@@ -12389,18 +11763,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "status",
             "in": "query",
             "required": false,
@@ -12559,18 +11921,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -12658,18 +12008,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -12756,18 +12094,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -12878,18 +12204,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -12909,7 +12223,7 @@
                 "default": {
                   "summary": "StatusUpdateRequest example",
                   "value": {
-                    "status": "PROCESSING",
+                    "status": "Processing",
                     "reason": "Status updated by admin"
                   }
                 }
@@ -12995,18 +12309,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "id",
             "in": "path",
@@ -13112,18 +12414,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "from",
             "in": "query",
@@ -13237,18 +12527,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "from",
             "in": "query",
@@ -13384,18 +12662,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "from",
             "in": "query",
             "required": false,
@@ -13524,18 +12790,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "from",
             "in": "query",
             "required": false,
@@ -13655,18 +12909,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "from",
             "in": "query",
@@ -13788,18 +13030,6 @@
         ],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
-          {
             "name": "from",
             "in": "query",
             "required": false,
@@ -13919,18 +13149,6 @@
           }
         ],
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "description": "Bearer JWT required. Authorization scope: Admin.",
-            "schema": {
-              "type": "string",
-              "examples": [
-                "Bearer <jwt-token>"
-              ]
-            }
-          },
           {
             "name": "from",
             "in": "query",
@@ -14234,6 +13452,76 @@
           }
         }
       },
+      "Content": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "default": "global"
+          },
+          "hero": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "about": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contact": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "footer": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "socialLinks": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "seo": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "announcements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "siteSettings": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "homeTitle": {
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "type": "string"
+          },
+          "publishTitle": {
+            "type": "string"
+          },
+          "publishSubtitle": {
+            "type": "string"
+          },
+          "packagesJson": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "Book": {
         "type": "object",
         "properties": {
@@ -14271,6 +13559,12 @@
           },
           "price": {
             "type": "number"
+          },
+          "royaltyPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 0
           },
           "coverImage": {
             "type": "string"
@@ -14936,6 +14230,12 @@
           "price": {
             "type": "number"
           },
+          "royaltyPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 0
+          },
           "coverImage": {
             "type": "string",
             "format": "uri"
@@ -15005,6 +14305,12 @@
           },
           "price": {
             "type": "number"
+          },
+          "royaltyPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 0
           },
           "coverImage": {
             "type": "string",
@@ -15351,6 +14657,95 @@
           }
         }
       },
+      "ContentUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "hero": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "about": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contact": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "footer": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "socialLinks": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "seo": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "announcements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "siteSettings": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "homeTitle": {
+            "type": "string"
+          },
+          "homeSubtitle": {
+            "type": "string"
+          },
+          "publishTitle": {
+            "type": "string"
+          },
+          "publishSubtitle": {
+            "type": "string"
+          },
+          "packagesJson": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUserUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "visitor",
+              "reader",
+              "author",
+              "admin"
+            ],
+            "description": "user is normalized to reader."
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Suspended"
+            ],
+            "description": "Frontend compatibility alias for isActive."
+          }
+        }
+      },
       "UserRoleRequest": {
         "type": "object",
         "required": [
@@ -15360,11 +14755,13 @@
           "role": {
             "type": "string",
             "enum": [
+              "user",
               "visitor",
               "reader",
               "author",
               "admin"
-            ]
+            ],
+            "description": "user is normalized to reader for frontend compatibility."
           }
         }
       },
@@ -15388,11 +14785,13 @@
           "role": {
             "type": "string",
             "enum": [
+              "user",
               "visitor",
               "reader",
               "author",
               "admin"
-            ]
+            ],
+            "description": "user is normalized to reader for frontend compatibility."
           }
         }
       },

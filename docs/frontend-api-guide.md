@@ -55,6 +55,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `System`.
 
+## GET /api/content
+
+Purpose: Get global CMS content.
+
+Authentication: Public.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/content`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/content', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/content', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Content`.
+
 ## POST /api/auth/register
 
 Purpose: Register user.
@@ -1501,6 +1552,57 @@ await dio.request('/api/uploads/document', options: Options(method: 'POST', head
 Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
 
 Related APIs: See endpoints with tag `Uploads`.
+
+## GET /api/users/me
+
+Purpose: Get current user profile.
+
+Authentication: Bearer.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/users/me`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/users/me', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/users/me', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Users`.
 
 ## GET /api/users/{id}/stats
 
@@ -3161,6 +3263,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Admin Core`.
 
+## PUT /api/admin/content
+
+Purpose: Update global CMS content.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `ContentUpdateRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/content`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'PUT', url: '/api/admin/content', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/content', options: Options(method: 'PUT', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Content`.
+
 ## GET /api/admin/users
 
 Purpose: List users.
@@ -3261,6 +3414,57 @@ await axios.request({ method: 'GET', url: '/api/admin/users/:id', headers: { Aut
 Example Flutter Dio Request:
 ```dart
 await dio.request('/api/admin/users/:id', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Users`.
+
+## PUT /api/admin/users/{id}
+
+Purpose: Update user.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `AdminUserUpdateRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/users/:id`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'PUT', url: '/api/admin/users/:id', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/users/:id', options: Options(method: 'PUT', headers: {'Authorization': 'Bearer $token'}));
 ```
 
 Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.

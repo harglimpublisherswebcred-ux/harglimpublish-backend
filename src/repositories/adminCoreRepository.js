@@ -57,7 +57,7 @@ class AdminCoreRepository {
   }
 
   updateBook(id, data) {
-    return Book.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    return Book.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true });
   }
 
   deleteBook(id) {
@@ -81,7 +81,7 @@ class AdminCoreRepository {
   }
 
   updatePublishRequestStatus(id, status) {
-    return PublishRequest.findByIdAndUpdate(id, { status }, { new: true }).populate('user');
+    return PublishRequest.findByIdAndUpdate(id, { status }, { returnDocument: 'after' }).populate('user');
   }
 }
 

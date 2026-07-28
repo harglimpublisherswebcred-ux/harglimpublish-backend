@@ -10,7 +10,7 @@ Generated from `src/docs/apiInventory.js` and aligned with Swagger/OpenAPI.
 |---|---|
 | Package | `hm_backend` |
 | Version | `1.0.0` |
-| API Inventory | `117` endpoints |
+| API Inventory | `121` endpoints |
 | OpenAPI | `/api/docs.json` |
 | Swagger UI | `/api/docs` |
 | Health Check | `/health` |
@@ -84,6 +84,30 @@ Login/register/reset-password responses include an access token and refresh toke
 
 Use `/api/users/me/...` or `/api/users/{id}/...` for account dashboards. Current APIs include orders, payments, invoices, shipments, notifications, wishlist, library, and author application status.
 
+
+### Sprint 12 Frontend Compatibility
+
+These endpoints were added for the current Next.js frontend contract without breaking existing APIs:
+
+| Feature | Endpoint | Notes |
+|---|---|---|
+| Public CMS content | `GET /api/content` | Returns global home, publish, footer, SEO, announcements, and site settings content. |
+| Admin CMS update | `PUT /api/admin/content` | Admin-only partial update for global CMS content. |
+| Current user profile | `GET /api/users/me` | Authenticated profile hydration endpoint. |
+| Combined admin user update | `PUT /api/admin/users/{id}` | Accepts partial `role`, `isActive`, or frontend `status`. |
+| Book royalty | `royaltyPercentage` | Supported in admin book create/update payloads. Defaults to `0`. |
+
+Compatibility normalization happens in the service layer only:
+
+| Frontend Value | Stored Value |
+|---|---|
+| `role: "user"` | `role: "reader"` |
+| `status: "Active"` | `isActive: true` |
+| `status: "Suspended"` | `isActive: false` |
+| `Processing` | `PROCESSING` |
+| `Shipped` | `SHIPPED` |
+| `Delivered` | `DELIVERED` |
+| `Cancelled` | `CANCELLED` |
 ### Admin Operations
 
 Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admin` role. Admin operations cover users, reviews, categories, payment verification, inventory reservations, ledgers, invoices, notifications, shipments, analytics, books, orders, and publishing requests.
@@ -92,6 +116,7 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 
 - [System](#system)
 - [Authentication](#authentication)
+- [Content](#content)
 - [Books](#books)
 - [Categories](#categories)
 - [Orders](#orders)
@@ -100,6 +125,7 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 - [Authors](#authors)
 - [Publishing](#publishing)
 - [Admin Core](#admin-core)
+- [Admin Content](#admin-content)
 - [Admin Users](#admin-users)
 - [Admin Categories](#admin-categories)
 - [Admin Operations](#admin-operations)
@@ -129,6 +155,45 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 | PUT | `/api/auth/change-password` | Bearer | Change current user password | `authController.changePassword` | Body: `ChangePasswordRequest` |
 | POST | `/api/auth/change-password` | Bearer | Change current user password alias | `authController.changePassword` | Body: `ChangePasswordRequest` |
 
+
+## Content
+
+Use these APIs for global text-based CMS content on the Home and Publish pages.
+
+### GET /api/content
+
+Auth: Public
+
+Returns the global CMS document. The response keeps the standard envelope and also exposes top-level content fields for frontend compatibility.
+
+```json
+{
+  "success": true,
+  "data": {
+    "homeTitle": "You write, we print.\nYou dream, we publish",
+    "homeSubtitle": "Explore inspiring books from talented authors.",
+    "publishTitle": "Publish Your Book With Us",
+    "publishSubtitle": "Transform your manuscript into a published book.",
+    "packagesJson": "[]",
+    "hero": { "title": "You write, we print. You dream, we publish", "subtitle": "Explore inspiring books from talented authors.", "body": "" },
+    "about": { "title": "About Harglim Publishers", "subtitle": "", "body": "" },
+    "contact": { "email": "", "phone": "", "address": "" },
+    "faq": [],
+    "footer": { "title": "Harglim Publishers", "subtitle": "", "body": "" },
+    "socialLinks": {},
+    "seo": { "title": "Harglim Publishers", "description": "", "keywords": [], "image": "" },
+    "announcements": [],
+    "siteSettings": { "siteName": "Harglim Publishers", "supportEmail": "", "maintenanceMode": false }
+  }
+}
+```
+
+Frontend usage:
+
+```js
+const res = await fetch(`${API_BASE_URL}/content`);
+const content = await res.json();
+```
 ## Books
 
 | Method | Path | Auth | Summary | Controller | Contract Notes |
@@ -171,6 +236,7 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
+| GET | `/api/users/me` | Bearer | Get current user profile | `userController.getCurrentUser` | Use for logged-in user hydration. Response does not include password. |
 | GET | `/api/users/{id}/stats` | Bearer | Get user stats | `userController.getUserStats` | Params: `id` |
 | PUT | `/api/users/{id}` | Bearer | Update user profile | `userController.updateUserProfile` | Params: `id`<br>Body: `UserUpdateRequest` |
 | GET | `/api/users/me/author-application` | Bearer | Get current user author application | `authorApplicationController.getMyAuthorApplication` | - |
@@ -219,19 +285,62 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 | PATCH | `/api/admin/reviews/{id}/status` | Admin | Moderate review | `reviewController.moderateReview` | Params: `id`<br>Body: `ReviewModerationRequest` |
 | DELETE | `/api/admin/reviews/{id}` | Admin | Delete review as admin | `reviewController.deleteReview` | Params: `id` |
 | GET | `/api/admin/orders` | Admin | List orders | `adminController.getOrders` | - |
-| PUT | `/api/admin/orders/{id}/status` | Admin | Update order status | `adminController.updateOrderStatus` | Params: `id`<br>Body: `StatusUpdateRequest` |
+| PUT | `/api/admin/orders/{id}/status` | Admin | Update order status | `adminController.updateOrderStatus` | Params: `id`<br>Body: `StatusUpdateRequest`<br>Accepts frontend title-case statuses and stores uppercase enum values. |
 | GET | `/api/admin/publish-requests` | Admin | List publish requests | `adminController.getPublishRequests` | - |
 | PUT | `/api/admin/publish-requests/{id}/status` | Admin | Update publish request status | `adminController.updatePublishRequestStatus` | Params: `id`<br>Body: `StatusUpdateRequest` |
-| POST | `/api/admin/books` | Admin | Create book | `adminController.createBook` | Body: `BookCreateRequest` |
-| PUT | `/api/admin/books/{id}` | Admin | Update book | `adminController.updateBook` | Params: `id`<br>Body: `BookUpdateRequest` |
+| POST | `/api/admin/books` | Admin | Create book | `adminController.createBook` | Body: `BookCreateRequest`<br>Supports `royaltyPercentage` from 0 to 100. Defaults to 0. |
+| PUT | `/api/admin/books/{id}` | Admin | Update book | `adminController.updateBook` | Params: `id`<br>Body: `BookUpdateRequest`<br>Supports `royaltyPercentage` from 0 to 100. |
 | DELETE | `/api/admin/books/{id}` | Admin | Delete book | `adminController.deleteBook` | Params: `id` |
 
+
+## Admin Content
+
+### PUT /api/admin/content
+
+Auth: Admin
+
+Updates global CMS content. Payload is partial; send only fields that changed.
+
+```json
+{
+  "homeTitle": "You write, we print.\nYou dream, we publish",
+  "homeSubtitle": "Explore inspiring books from talented authors.",
+  "publishTitle": "Publish Your Book With Us",
+  "publishSubtitle": "Transform your manuscript into a published book.",
+  "packagesJson": "[{\"name\":\"Basic\",\"price\":5000}]",
+  "hero": {
+    "title": "You write, we print. You dream, we publish",
+    "subtitle": "Explore inspiring books from talented authors.",
+    "body": ""
+  },
+  "about": { "title": "About", "subtitle": "", "body": "" },
+  "contact": { "email": "support@example.com", "phone": "", "address": "" },
+  "faq": [{ "question": "How do I publish?", "answer": "Submit your manuscript from the Publish page." }],
+  "footer": { "title": "Harglim Publishers", "subtitle": "", "body": "" },
+  "socialLinks": { "instagram": "https://instagram.com/harglim" },
+  "seo": { "title": "Harglim Publishers", "description": "Books and publishing", "keywords": ["books", "publishing"], "image": "" },
+  "announcements": [{ "title": "New", "message": "Submissions open", "active": true }],
+  "siteSettings": { "siteName": "Harglim Publishers", "supportEmail": "support@example.com", "maintenanceMode": false }
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "homeTitle": "You write, we print.\nYou dream, we publish"
+  }
+}
+```
 ## Admin Users
 
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
 | GET | `/api/admin/users` | Admin | List users | `adminController.listUsers` | Query: `page`, `limit`, `role`, `isActive`, `search` |
 | GET | `/api/admin/users/{id}` | Admin | Get user | `adminController.getUser` | Params: `id` |
+| PUT | `/api/admin/users/{id}` | Admin | Update user | `adminController.updateUser` | Params: `id`<br>Body: `AdminUserUpdateRequest`<br>Supports partial updates. Accepts `role`, `isActive`, or frontend `status`. |
 | PATCH | `/api/admin/users/{id}/role` | Admin | Update user role | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |
 | PUT | `/api/admin/users/{id}/role` | Admin | Update user role alias | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |
 | PATCH | `/api/admin/users/{id}/status` | Admin | Update user active status | `adminController.updateUserStatus` | Params: `id`<br>Body: `UserStatusRequest` |
@@ -310,6 +419,41 @@ Admin APIs are mounted under `/api/admin` and require both Bearer auth and `admi
 | GET | `/api/admin/analytics/shipments` | Admin | Shipment metrics | `adminAnalyticsController.shipments` | Query: `from`, `to`, `page`, `limit` |
 | GET | `/api/admin/analytics/customers` | Admin | Customer metrics | `adminAnalyticsController.customers` | Query: `from`, `to`, `page`, `limit` |
 
+
+## Sprint 12 Payload Reference
+
+### AdminUserUpdateRequest
+
+```json
+{
+  "role": "user",
+  "status": "Suspended",
+  "isActive": false
+}
+```
+
+Rules:
+
+- `role` is optional. `user` is accepted and stored as `reader`.
+- `status` is optional. `Active` maps to `isActive=true`; `Suspended` maps to `isActive=false`.
+- `isActive` is optional and can be sent directly as a boolean.
+- Send one or more supported fields.
+
+### BookCreateRequest / BookUpdateRequest Royalty Field
+
+```json
+{
+  "title": "Book Title",
+  "description": "Book description",
+  "category": "66b4f5a2a44d2c0012a9c102",
+  "author": "66b4f5a2a44d2c0012a9c103",
+  "price": 499,
+  "royaltyPercentage": 10,
+  "status": "published"
+}
+```
+
+`royaltyPercentage` is optional and defaults to `0`.
 ## Documentation Artifacts
 
 | Artifact | Path |

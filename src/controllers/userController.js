@@ -1,5 +1,17 @@
 const userService = require('../services/userService');
 
+
+// @desc    Get current user profile
+// @route   GET /api/users/me
+// @access  Private
+const getCurrentUser = async (req, res) => {
+  try {
+    const data = await userService.getProfile(req.user);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
 // @desc    Get user stats
 // @route   GET /api/users/:id/stats
 // @access  Private
@@ -241,6 +253,7 @@ const archiveUserNotification = async (req, res) => {
   }
 };
 module.exports = {
+  getCurrentUser,
   getUserStats,
   updateUserProfile,
   getUserOrders,

@@ -21,6 +21,22 @@ const pageMeta = (page, limit) => {
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const allowedRoles = new Set(['visitor', 'reader', 'author', 'admin']);
+const orderStatusMap = {
+  Processing: 'PROCESSING',
+  Shipped: 'SHIPPED',
+  Delivered: 'DELIVERED',
+  Cancelled: 'CANCELLED',
+};
+
+const normalizeFrontendRole = (role) => (role === 'user' ? 'reader' : role);
+const normalizeFrontendActive = (status) => {
+  if (status === undefined) return undefined;
+  if (typeof status === 'boolean') return status;
+  if (status === 'Active') return true;
+  if (status === 'Suspended') return false;
+  return undefined;
+};
+const normalizeOrderStatus = (status) => orderStatusMap[status] || status;
 
 class AdminCoreService {
   constructor(repository = adminCoreRepository) {
@@ -62,6 +78,7 @@ class AdminCoreService {
   }
 
   async updateUserRole(id, role) {
+    role = normalizeFrontendRole(role);
     if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
     const user = await this.repository.updateUser(id, { role });
     if (!user) throw notFound('User not found');
@@ -69,12 +86,31 @@ class AdminCoreService {
   }
 
   async updateUserStatus(id, isActive) {
+    isActive = normalizeFrontendActive(isActive);
     if (isActive === undefined) throw serviceError('isActive is required');
-    const user = await this.repository.updateUser(id, { isActive: Boolean(isActive) });
+    const user = await this.repository.updateUser(id, { isActive });
     if (!user) throw notFound('User not found');
     return user;
   }
 
+
+  async updateUser(id, updates = {}) {
+    const data = {};
+    if (updates.role !== undefined) {
+      const role = normalizeFrontendRole(updates.role);
+      if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
+      data.role = role;
+    }
+    if (updates.isActive !== undefined || updates.status !== undefined) {
+      const isActive = normalizeFrontendActive(updates.isActive !== undefined ? updates.isActive : updates.status);
+      if (isActive === undefined) throw serviceError('Invalid user status');
+      data.isActive = isActive;
+    }
+    if (Object.keys(data).length === 0) throw serviceError('No supported user fields provided');
+    const user = await this.repository.updateUser(id, data);
+    if (!user) throw notFound('User not found');
+    return user;
+  }
   async resetUserPassword(id, password) {
     if (!password || String(password).length < 6) throw serviceError('Password must be at least 6 characters');
     const user = await this.repository.findUserById(id);
@@ -108,6 +144,7 @@ class AdminCoreService {
   }
 
   async updateOrderStatus(id, status) {
+    status = normalizeOrderStatus(status);
     const order = await this.repository.findOrderById(id);
     if (!order) throw notFound('Order not found');
     order.status = status;

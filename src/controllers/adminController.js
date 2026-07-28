@@ -116,6 +116,14 @@ const getUser = async (req, res) => {
   }
 };
 
+
+const updateUser = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.updateUser(req.params.id, req.body) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
 const updateUserRole = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.updateUserRole(req.params.id, req.body.role) });
@@ -150,6 +158,7 @@ module.exports = {
   updatePublishRequestStatus,
   listUsers,
   getUser,
+  updateUser,
   updateUserRole,
   updateUserStatus,
   resetUserPassword

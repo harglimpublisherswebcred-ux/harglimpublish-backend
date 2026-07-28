@@ -1,5 +1,6 @@
 const endpointInventory = [
   { method: 'GET', path: '/health', tag: 'System', summary: 'Health check', auth: 'Public', controller: 'server.js', notes: 'Returns server liveness only.' },
+  { method: 'GET', path: '/api/content', tag: 'Content', summary: 'Get global CMS content', auth: 'Public', controller: 'contentController.getContent' },
 
   { method: 'POST', path: '/api/auth/register', tag: 'Authentication', summary: 'Register user', auth: 'Public', controller: 'authController.registerUser', body: 'RegisterRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter.' },
   { method: 'POST', path: '/api/auth/login', tag: 'Authentication', summary: 'Login user', auth: 'Public', controller: 'authController.loginUser', body: 'LoginRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter and return a JWT token on success.' },
@@ -36,6 +37,7 @@ const endpointInventory = [
   { method: 'POST', path: '/api/uploads/image', tag: 'Uploads', summary: 'Upload image', auth: 'Bearer', controller: 'uploadController.uploadImage', body: 'MultipartImageRequest', notes: 'Multipart field: image. Allowed: jpg, jpeg, png, webp, gif. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.' },
   { method: 'POST', path: '/api/uploads/document', tag: 'Uploads', summary: 'Upload document', auth: 'Bearer', controller: 'uploadController.uploadDocument', body: 'MultipartDocumentRequest', notes: 'Multipart field: document. Allowed: pdf, doc, docx. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.' },
 
+  { method: 'GET', path: '/api/users/me', tag: 'Users', summary: 'Get current user profile', auth: 'Bearer', controller: 'userController.getCurrentUser' },
   { method: 'GET', path: '/api/users/{id}/stats', tag: 'Users', summary: 'Get user stats', auth: 'Bearer', controller: 'userController.getUserStats', params: ['id'] },
   { method: 'PUT', path: '/api/users/{id}', tag: 'Users', summary: 'Update user profile', auth: 'Bearer', controller: 'userController.updateUserProfile', params: ['id'], body: 'UserUpdateRequest' },
   
@@ -73,8 +75,10 @@ const endpointInventory = [
   { method: 'PATCH', path: '/api/admin/reviews/{id}/status', tag: 'Admin Core', summary: 'Moderate review', auth: 'Admin', controller: 'reviewController.moderateReview', params: ['id'], body: 'ReviewModerationRequest' },
   { method: 'DELETE', path: '/api/admin/reviews/{id}', tag: 'Admin Core', summary: 'Delete review as admin', auth: 'Admin', controller: 'reviewController.deleteReview', params: ['id'] },
   
+  { method: 'PUT', path: '/api/admin/content', tag: 'Admin Content', summary: 'Update global CMS content', auth: 'Admin', controller: 'contentController.updateContent', body: 'ContentUpdateRequest' },
   { method: 'GET', path: '/api/admin/users', tag: 'Admin Users', summary: 'List users', auth: 'Admin', controller: 'adminController.listUsers', query: ['page', 'limit', 'role', 'isActive', 'search'] },
   { method: 'GET', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Get user', auth: 'Admin', controller: 'adminController.getUser', params: ['id'] },
+  { method: 'PUT', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Update user', auth: 'Admin', controller: 'adminController.updateUser', params: ['id'], body: 'AdminUserUpdateRequest' },
   { method: 'PATCH', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
   { method: 'PUT', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role alias', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
   { method: 'PATCH', path: '/api/admin/users/{id}/status', tag: 'Admin Users', summary: 'Update user active status', auth: 'Admin', controller: 'adminController.updateUserStatus', params: ['id'], body: 'UserStatusRequest' },

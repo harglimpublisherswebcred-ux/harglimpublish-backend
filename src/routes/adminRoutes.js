@@ -11,6 +11,7 @@ const {
   updatePublishRequestStatus,
   listUsers,
   getUser,
+  updateUser,
   updateUserRole,
   updateUserStatus,
   resetUserPassword
@@ -21,6 +22,7 @@ const adminNotificationController = require('../controllers/adminNotificationCon
 const adminShipmentController = require('../controllers/adminShipmentController');
 const adminAnalyticsController = require('../controllers/adminAnalyticsController');
 const categoryController = require('../controllers/categoryController');
+const { updateContent } = require('../controllers/contentController');
 const { listReviews, moderateReview, deleteReview } = require('../controllers/reviewController');
 const { listAuthorApplications, updateAuthorApplicationStatus } = require('../controllers/authorApplicationController');
 const { protect } = require('../middleware/authMiddleware');
@@ -40,10 +42,12 @@ router.get('/analytics/shipments', adminAnalyticsController.shipments);
 router.get('/analytics/customers', adminAnalyticsController.customers);
 router.get('/users', listUsers);
 router.get('/users/:id', getUser);
+router.put('/users/:id', updateUser);
 router.patch('/users/:id/role', updateUserRole);
 router.put('/users/:id/role', updateUserRole);
 router.patch('/users/:id/status', updateUserStatus);
 router.post('/users/:id/reset-password', resetUserPassword);
+router.put('/content', updateContent);
 router.get('/author-applications', listAuthorApplications);
 router.put('/author-applications/:id/status', updateAuthorApplicationStatus);
 router.get('/reviews', listReviews);

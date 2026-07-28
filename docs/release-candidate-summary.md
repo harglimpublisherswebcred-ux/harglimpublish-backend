@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 117
+Endpoints documented: 121
 
 Models documented: 17
 
@@ -25,6 +25,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | Method | Path | Auth | Controller |
 | --- | --- | --- | --- |
 | GET | `/health` | Public | `server.js` |
+| GET | `/api/content` | Public | `contentController.getContent` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
 | POST | `/api/auth/login` | Public | `authController.loginUser` |
 | POST | `/api/auth/refresh` | Public/Bearer | `authController.refreshToken` |
@@ -53,6 +54,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/orders/track/{orderNumber}` | Public | `orderController.trackOrder` |
 | POST | `/api/uploads/image` | Bearer | `uploadController.uploadImage` |
 | POST | `/api/uploads/document` | Bearer | `uploadController.uploadDocument` |
+| GET | `/api/users/me` | Bearer | `userController.getCurrentUser` |
 | GET | `/api/users/{id}/stats` | Bearer | `userController.getUserStats` |
 | PUT | `/api/users/{id}` | Bearer | `userController.updateUserProfile` |
 | GET | `/api/users/me/author-application` | Bearer | `authorApplicationController.getMyAuthorApplication` |
@@ -85,8 +87,10 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/reviews` | Admin | `reviewController.listReviews` |
 | PATCH | `/api/admin/reviews/{id}/status` | Admin | `reviewController.moderateReview` |
 | DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
+| PUT | `/api/admin/content` | Admin | `contentController.updateContent` |
 | GET | `/api/admin/users` | Admin | `adminController.listUsers` |
 | GET | `/api/admin/users/{id}` | Admin | `adminController.getUser` |
+| PUT | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |
 | PATCH | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PUT | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PATCH | `/api/admin/users/{id}/status` | Admin | `adminController.updateUserStatus` |
