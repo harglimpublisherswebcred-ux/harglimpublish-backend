@@ -12,6 +12,7 @@ This document is generated from actual environment references in `server.js`, `s
 | `MONGODB_URI` | Required | None | `src/config/database.js` | MongoDB connection string. | Use a production MongoDB replica set/Atlas URI with credentials from a secret manager. | `mongodb://localhost:27017/hm_backend` | Yes |
 | `JWT_SECRET` | Required for production | `secret123` fallback exists | `src/utils/tokenUtils.js`, `src/middleware/authMiddleware.js`, tests | Signs and verifies JWTs. | Must be a long random secret; never use fallback in production. | `CHANGE_ME_TO_A_LONG_RANDOM_PRODUCTION_SECRET` | Yes |
 | `JWT_EXPIRE` | Optional | `30d` | `src/utils/tokenUtils.js` | JWT expiry duration. | Use short expiry aligned to frontend session policy. | `7d` | No |
+| `GOOGLE_CLIENT_ID` | Required for Google Login usage | None | `src/services/googleIdentityProvider.js` | Verifies Google ID token audience for `POST /api/auth/google`. | Configure the production Google OAuth web client ID; do not use placeholders. | `CHANGE_ME_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` | No |
 | `MERCHANT_UPI_ID` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant UPI VPA for dynamic QR generation. | Configure a valid production merchant VPA. | `merchant@upi` | No |
 | `MERCHANT_NAME` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant display name in UPI QR payload. | Use the legal payment receiver name. | `Harglim Publishers` | No |
 | `MERCHANT_CODE` | Optional | None | `src/config/payment.js` | Optional UPI merchant category/code. | Set only if required by payment operations. | `0000` | No |
@@ -37,6 +38,7 @@ The real `.env` was inspected by key name only; secret values were not printed o
 - `NODE_ENV`
 - `JWT_SECRET`
 - `JWT_EXPIRE`
+- `GOOGLE_CLIENT_ID`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
@@ -93,12 +95,17 @@ Required for production Cloudinary upload usage:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 
+Required for Google Login usage:
+
+- `GOOGLE_CLIENT_ID`
+
 ## Optional Variables
 
 - `NODE_ENV`
 - `PORT`
 - `REQUEST_BODY_LIMIT`
 - `JWT_EXPIRE`
+- `GOOGLE_CLIENT_ID`
 - `MERCHANT_CODE`
 - `PAYMENT_CURRENCY`
 - `QR_EXPIRY_MINUTES`
@@ -116,6 +123,7 @@ REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb://localhost:27017/hm_backend
 JWT_SECRET=dev_only_change_me
 JWT_EXPIRE=7d
+GOOGLE_CLIENT_ID=dev-google-client-id.apps.googleusercontent.com
 MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 PAYMENT_CURRENCY=INR
@@ -132,6 +140,7 @@ REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb+srv://USER:PASSWORD@staging-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_STAGING_SECRET
 JWT_EXPIRE=7d
+GOOGLE_CLIENT_ID=CHANGE_ME_STAGING_GOOGLE_CLIENT_ID.apps.googleusercontent.com
 MERCHANT_UPI_ID=stagingmerchant@upi
 MERCHANT_NAME=Harglim Publishers Staging
 PAYMENT_CURRENCY=INR
@@ -149,6 +158,7 @@ REQUEST_BODY_LIMIT=1mb
 MONGODB_URI=mongodb+srv://USER:PASSWORD@production-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_LONG_RANDOM_PRODUCTION_SECRET
 JWT_EXPIRE=7d
+GOOGLE_CLIENT_ID=CHANGE_ME_PRODUCTION_GOOGLE_CLIENT_ID.apps.googleusercontent.com
 MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 MERCHANT_CODE=
@@ -168,5 +178,6 @@ UPLOAD_MAX_BYTES=26214400
 - Rotate `JWT_SECRET` before production if it has ever been shared locally.
 - Do not use the code fallback `secret123` in production.
 - Store `MONGODB_URI`, `JWT_SECRET`, `RESEND_API_KEY`, and `CLOUDINARY_API_SECRET` in a secret manager.
+- `GOOGLE_CLIENT_ID` is not a secret, but it must match the frontend Google Identity Services client ID and the configured Google OAuth application.
 - The source contains non-secret fallback strings such as `secret123` and `onboarding@resend.dev`; these should be treated as development fallbacks, not production configuration.
 - No real API keys or credentials should be placed in `.env.example`.

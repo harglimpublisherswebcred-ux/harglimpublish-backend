@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const AuthSession = require('../models/AuthSession');
+const AuthIdentity = require('../models/AuthIdentity');
 
 class AuthRepository {
   findUserByEmail(email, options = {}) {
@@ -10,6 +11,24 @@ class AuthRepository {
 
   createUser(userData) {
     return User.create(userData);
+  }
+
+  createAuthIdentity(identityData) {
+    return AuthIdentity.create(identityData);
+  }
+
+  findAuthIdentity(provider, providerSubject, options = {}) {
+    const query = AuthIdentity.findOne({ provider, providerSubject });
+    if (options.populateUser) query.populate('user');
+    return query;
+  }
+
+  findAuthIdentityByUserAndProvider(userId, provider) {
+    return AuthIdentity.findOne({ user: userId, provider });
+  }
+
+  updateAuthIdentity(identityId, updates) {
+    return AuthIdentity.findByIdAndUpdate(identityId, updates, { returnDocument: 'after' });
   }
 
   findUserById(id) {

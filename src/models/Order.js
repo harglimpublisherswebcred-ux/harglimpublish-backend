@@ -21,6 +21,15 @@ const orderSchema = new mongoose.Schema(
         },
         quantity: { type: Number, required: true },
         price: { type: Number, required: true },
+        author: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
+        },
+        royaltyPercentage: {
+          type: Number,
+          min: 0,
+          max: 100
+        }
       },
     ],
     shippingAddress: {
@@ -86,5 +95,7 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+orderSchema.index({ 'items.author': 1, isPaid: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Order', orderSchema);

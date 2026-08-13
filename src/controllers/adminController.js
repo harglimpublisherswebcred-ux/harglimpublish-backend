@@ -20,7 +20,7 @@ const createBook = async (req, res) => {
     const createdBook = await adminCoreService.createBook(req.body, req.user);
     res.status(201).json({ success: true, data: createdBook });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -96,6 +96,42 @@ const updatePublishRequestStatus = async (req, res) => {
   }
 };
 
+// @desc    Request changes on publish request
+// @route   POST /api/admin/publish-requests/:id/request-changes
+// @access  Private (Admin)
+const requestChangesOnPublishRequest = async (req, res) => {
+  try {
+    const request = await adminCoreService.requestChangesOnPublishRequest(req.user, req.params.id, req.body.reason);
+    res.json({ success: true, data: request });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Reject publish request
+// @route   POST /api/admin/publish-requests/:id/reject
+// @access  Private (Admin)
+const rejectPublishRequest = async (req, res) => {
+  try {
+    const request = await adminCoreService.rejectPublishRequest(req.user, req.params.id, req.body.reason);
+    res.json({ success: true, data: request });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Approve publish request and publish book
+// @route   POST /api/admin/publish-requests/:id/approve
+// @access  Private (Admin)
+const approveAndPublishBook = async (req, res) => {
+  try {
+    const request = await adminCoreService.approveAndPublishBook(req.user, req.params.id, req.body.notes);
+    res.json({ success: true, data: request });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    List users
 // @route   GET /api/admin/users
 // @access  Private (Admin)
@@ -108,6 +144,9 @@ const listUsers = async (req, res) => {
   }
 };
 
+// @desc    Get user by ID
+// @route   GET /api/admin/users/:id
+// @access  Private (Admin)
 const getUser = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.getUser(req.params.id) });
@@ -116,7 +155,9 @@ const getUser = async (req, res) => {
   }
 };
 
-
+// @desc    Update user
+// @route   PUT /api/admin/users/:id
+// @access  Private (Admin)
 const updateUser = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.updateUser(req.params.id, req.body) });
@@ -124,6 +165,10 @@ const updateUser = async (req, res) => {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Update user role
+// @route   PATCH /api/admin/users/:id/role
+// @access  Private (Admin)
 const updateUserRole = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.updateUserRole(req.params.id, req.body.role) });
@@ -132,6 +177,9 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+// @desc    Update user status
+// @route   PATCH /api/admin/users/:id/status
+// @access  Private (Admin)
 const updateUserStatus = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.updateUserStatus(req.params.id, req.body.isActive) });
@@ -140,6 +188,9 @@ const updateUserStatus = async (req, res) => {
   }
 };
 
+// @desc    Reset user password
+// @route   POST /api/admin/users/:id/reset-password
+// @access  Private (Admin)
 const resetUserPassword = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.resetUserPassword(req.params.id, req.body.password) });
@@ -147,8 +198,48 @@ const resetUserPassword = async (req, res) => {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
+
+const authorDashboardService = require('../services/authorDashboardService');
+
+const getAdminAuthorDashboard = async (req, res) => {
+  try {
+    const data = await authorDashboardService.getDashboardSummary(req.params.authorId, req.user);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const getAdminAuthorRoyalties = async (req, res) => {
+  try {
+    const data = await authorDashboardService.getAuthorRoyaltyHistory(req.params.authorId, req.user, req.query);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const getAdminDashboardOverview = async (req, res) => {
+  try {
+    const data = await adminCoreService.getAdminDashboardOverview();
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const getAdminAuthorDetail = async (req, res) => {
+  try {
+    const data = await adminCoreService.getAdminAuthorDetail(req.params.authorId);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAdminAnalytics,
+  getAdminDashboardOverview,
   createBook,
   updateBook,
   deleteBook,
@@ -156,11 +247,16 @@ module.exports = {
   updateOrderStatus,
   getPublishRequests,
   updatePublishRequestStatus,
+  requestChangesOnPublishRequest,
+  rejectPublishRequest,
+  approveAndPublishBook,
   listUsers,
   getUser,
   updateUser,
   updateUserRole,
   updateUserStatus,
-  resetUserPassword
+  resetUserPassword,
+  getAdminAuthorDashboard,
+  getAdminAuthorRoyalties,
+  getAdminAuthorDetail
 };
-

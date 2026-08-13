@@ -192,6 +192,7 @@ test('supports book royalty percentage through admin book APIs', async () => {
       title: 'Royalty Book',
       description: 'Royalty enabled book',
       category: book.category,
+      mrp: 250,
       price: 250,
       royaltyPercentage: 15,
       status: 'published'
@@ -199,12 +200,46 @@ test('supports book royalty percentage through admin book APIs', async () => {
     .expect(201);
 
   expect(created.body.data.royaltyPercentage).toBe(15);
+  expect(created.body.data.mrp).toBe(250);
+  expect(created.body.data.price).toBe(250);
 
   const updated = await request(app)
     .put(`/api/admin/books/${created.body.data._id}`)
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ royaltyPercentage: 18 })
+    .send({ mrp: 275, royaltyPercentage: 18 })
     .expect(200);
 
   expect(updated.body.data.royaltyPercentage).toBe(18);
+  expect(updated.body.data.mrp).toBe(275);
+  expect(updated.body.data.price).toBe(275);
+});
+
+test('supports legacy book price compatibility and rejects mrp conflicts', async () => {
+  const legacy = await request(app)
+    .post('/api/admin/books')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      title: 'Legacy Price Book',
+      description: 'Legacy price compatibility book',
+      category: book.category,
+      price: 300,
+      status: 'published'
+    })
+    .expect(201);
+
+  expect(legacy.body.data.mrp).toBe(300);
+  expect(legacy.body.data.price).toBe(300);
+
+  await request(app)
+    .post('/api/admin/books')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      title: 'Conflicting Price Book',
+      description: 'Conflicting price compatibility book',
+      category: book.category,
+      mrp: 300,
+      price: 350,
+      status: 'published'
+    })
+    .expect(400);
 });

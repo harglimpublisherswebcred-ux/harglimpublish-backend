@@ -26,6 +26,12 @@ const registerShipmentSubscriber = ({
   }, { id: 'shipment:InvoiceGenerated' }));
 
   subscriptions.push(bus.subscribe(DOMAIN_EVENTS.PAYMENT_VERIFIED, async (event) => {
+    if (event.payload && event.payload.purpose && event.payload.purpose !== 'ORDER_PURCHASE') {
+      return;
+    }
+    if (!event.payload || !event.payload.paymentId) {
+      return;
+    }
     const invoice = await invoices.findByPayment(event.payload.paymentId);
     if (invoice) {
       await service.createShipmentForInvoice(invoice._id, {

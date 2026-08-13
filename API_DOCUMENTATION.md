@@ -74,7 +74,7 @@ Login/register/reset-password responses include an access token and refresh toke
 ### Checkout And Manual UPI Payment
 
 1. Create order: `POST /api/orders`.
-2. Backend creates order, payment intent, reservation, and QR data.
+2. Backend reloads authoritative Book data, uses `Book.mrp`, persists `tax=0`, keeps the existing shipping calculation, and creates order, payment intent, reservation, and QR data.
 3. Customer pays by UPI.
 4. Customer submits UTR: `PUT /api/orders/{id}/verify-payment`.
 5. Admin verifies payment through operations APIs.
@@ -96,6 +96,7 @@ These endpoints were added for the current Next.js frontend contract without bre
 | Current user profile | `GET /api/users/me` | Authenticated profile hydration endpoint. |
 | Combined admin user update | `PUT /api/admin/users/{id}` | Accepts partial `role`, `isActive`, or frontend `status`. |
 | Book royalty | `royaltyPercentage` | Supported in admin book create/update payloads. Defaults to `0`. |
+| Canonical book price | `mrp` | New book-commerce pricing source. Legacy `price` remains a deprecated synchronized compatibility alias. |
 
 Compatibility normalization happens in the service layer only:
 
@@ -439,7 +440,7 @@ Rules:
 - `isActive` is optional and can be sent directly as a boolean.
 - Send one or more supported fields.
 
-### BookCreateRequest / BookUpdateRequest Royalty Field
+### BookCreateRequest / BookUpdateRequest Pricing And Royalty Fields
 
 ```json
 {
@@ -447,11 +448,14 @@ Rules:
   "description": "Book description",
   "category": "66b4f5a2a44d2c0012a9c102",
   "author": "66b4f5a2a44d2c0012a9c103",
+  "mrp": 499,
   "price": 499,
   "royaltyPercentage": 10,
   "status": "published"
 }
 ```
+
+`mrp` is canonical for new checkout pricing. `price` is a deprecated compatibility alias and must match `mrp` when both are supplied. Existing clients may temporarily send `price` only; the backend stores it as `mrp` and synchronizes both fields. New book orders do not add the previous hardcoded 5% book tax. Historical orders and invoices keep their stored tax snapshots.
 
 `royaltyPercentage` is optional and defaults to `0`.
 ## Documentation Artifacts

@@ -9,6 +9,17 @@ const registerInvoiceSubscriber = ({ bus = eventBus, service = invoiceService, s
   if (registered) return [];
 
   const subscriptionId = bus.subscribe(DOMAIN_EVENTS.PAYMENT_VERIFIED, async (event) => {
+    if (event.payload && event.payload.purpose && event.payload.purpose !== 'ORDER_PURCHASE') {
+      serviceLogger.info('invoice.subscriber_skipped_non_order_payment', {
+        eventId: event.eventId,
+        paymentId: event.payload.paymentId,
+        purpose: event.payload.purpose
+      });
+      return;
+    }
+    if (!event.payload || !event.payload.orderId) {
+      return;
+    }
     const startedAt = Date.now();
     const invoice = await service.generateFromPaymentVerifiedEvent(event);
     serviceLogger.info('invoice.subscriber_generated', {

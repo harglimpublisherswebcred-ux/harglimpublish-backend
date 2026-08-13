@@ -5,6 +5,14 @@ const requestContext = (req) => ({
   ipAddress: req.ip
 });
 
+const sendAuthError = (res, error) => {
+  res.status(error.statusCode || 500).json({
+    success: false,
+    ...(error.code && { error: error.code }),
+    message: error.message
+  });
+};
+
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -13,7 +21,7 @@ const registerUser = async (req, res) => {
     const data = await authService.register(req.body, requestContext(req));
     res.status(201).json({ success: true, data });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
@@ -25,7 +33,19 @@ const loginUser = async (req, res) => {
     const data = await authService.login(req.body, requestContext(req));
     res.json({ success: true, data });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
+  }
+};
+
+// @desc    Authenticate with Google Identity Services credential
+// @route   POST /api/auth/google
+// @access  Public
+const googleLogin = async (req, res) => {
+  try {
+    const data = await authService.loginWithGoogle(req.body, requestContext(req));
+    res.json({ success: true, data });
+  } catch (error) {
+    sendAuthError(res, error);
   }
 };
 
@@ -49,7 +69,7 @@ const refreshToken = async (req, res) => {
     }, requestContext(req));
     res.json({ success: true, data });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
@@ -62,7 +82,7 @@ const logoutUser = async (req, res) => {
     });
     res.json({ success: true, data });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
@@ -70,7 +90,7 @@ const forgotPassword = async (req, res) => {
   try {
     res.json({ success: true, data: await authService.forgotPassword(req.body.email) });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
@@ -78,7 +98,7 @@ const resetPassword = async (req, res) => {
   try {
     res.json({ success: true, data: await authService.resetPassword(req.params.token, req.body.password, requestContext(req)) });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
@@ -87,13 +107,14 @@ const changePassword = async (req, res) => {
     const data = await authService.changePassword(req.user.id, req.body.currentPassword, req.body.password, requestContext(req));
     res.json({ success: true, data });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    sendAuthError(res, error);
   }
 };
 
 module.exports = {
   registerUser,
   loginUser,
+  googleLogin,
   getMe,
   refreshToken,
   logoutUser,

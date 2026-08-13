@@ -748,6 +748,9 @@ class PaymentRepository {
     if (filters.id) query._id = normalizeObjectId(filters.id);
     if (filters.order) query.order = normalizeObjectId(filters.order, 'order');
     if (filters.user) query.user = normalizeObjectId(filters.user, 'user');
+    if (filters.purpose) query.purpose = String(filters.purpose).trim().toUpperCase();
+    if (filters.subjectType) query.subjectType = String(filters.subjectType).trim().toUpperCase();
+    if (filters.subjectId) query.subjectId = normalizeObjectId(filters.subjectId, 'subjectId');
     if (filters.provider) query.provider = String(filters.provider).trim().toLowerCase();
     if (filters.paymentMethod) query.paymentMethod = String(filters.paymentMethod).trim().toUpperCase();
     if (filters.status) query.status = filters.status;

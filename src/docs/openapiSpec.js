@@ -22,7 +22,8 @@ const endpointExamples = {
   'Admin Invoices': { success: true, data: { invoiceNumber: 'INV-202607-000001', status: 'GENERATED', total: 998, currency: 'INR' } },
   'Admin Notifications': { success: true, data: { items: [], pagination: { total: 0, page: 1, limit: 20, pages: 0 } } },
   'Admin Shipments': { success: true, data: { shipmentNumber: 'SHP-202607-000001', status: 'CREATED' } },
-  'Admin Analytics': { success: true, data: { report: 'dashboard', generatedAt: '2026-07-10T00:00:00.000Z', data: {} } }
+  'Admin Analytics': { success: true, data: { report: 'dashboard', generatedAt: '2026-07-10T00:00:00.000Z', data: {} } },
+  'Royalty Settlements': { success: true, data: { settlementNumber: 'SETTLE-20260808-1001', status: 'APPROVED', totalRoyalty: 500, currency: 'INR' } }
 };
 
 const schemas = {
@@ -305,8 +306,7 @@ const schemas = {
     properties: {
       name: { type: 'string', minLength: 2 },
       email: { type: 'string', format: 'email' },
-      password: { type: 'string', minLength: 6 },
-      role: { type: 'string', enum: ['visitor', 'reader', 'author', 'admin'], default: 'reader' }
+      password: { type: 'string', minLength: 6 }
     }
   },
   LoginRequest: {
@@ -315,6 +315,18 @@ const schemas = {
     properties: {
       email: { type: 'string', format: 'email' },
       password: { type: 'string' }
+    }
+  },
+  GoogleLoginRequest: {
+    type: 'object',
+    required: ['credential'],
+    additionalProperties: false,
+    properties: {
+      credential: {
+        type: 'string',
+        maxLength: 4096,
+        description: 'Google Identity Services ID token. Backend verifies signature, expiry, issuer, and audience against GOOGLE_CLIENT_ID.'
+      }
     }
   },
   OrderCreateRequest: {
@@ -387,15 +399,45 @@ const schemas = {
       bookId: { type: 'string' }
     }
   },
-  BookCreateRequest: {
+  AuthorBookCreateRequest: {
     type: 'object',
-    required: ['title', 'description', 'category', 'price'],
+    required: ['title', 'description', 'category'],
+    properties: {
+      title: { type: 'string' },
+      description: { type: 'string' },
+      category: { type: 'string', description: 'Category ObjectId.' },
+      mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
+      price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' },
+      coverImage: { type: 'string', format: 'uri' },
+      isbn: { type: 'string' },
+      pages: { type: 'integer', minimum: 1 }
+    }
+  },
+  AuthorBookUpdateRequest: {
+    type: 'object',
+    properties: {
+      title: { type: 'string' },
+      description: { type: 'string' },
+      category: { type: 'string', description: 'Category ObjectId.' },
+      mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
+      price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] },
+      coverImage: { type: 'string', format: 'uri' },
+      isbn: { type: 'string' },
+      pages: { type: 'integer', minimum: 1 }
+    }
+  },
+  AdminBookCreateRequest: {
+    type: 'object',
+    required: ['title', 'description', 'category', 'mrp'],
     properties: {
       title: { type: 'string' },
       description: { type: 'string' },
       author: { type: 'string', description: 'Optional author ObjectId. Defaults to current admin user when omitted.' },
       category: { type: 'string', description: 'Category ObjectId.' },
-      price: { type: 'number' },
+      mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
+      price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
       royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
@@ -410,14 +452,15 @@ const schemas = {
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' }
     }
   },
-  BookUpdateRequest: {
+  AdminBookUpdateRequest: {
     type: 'object',
     properties: {
       title: { type: 'string' },
       description: { type: 'string' },
       author: { type: 'string' },
       category: { type: 'string' },
-      price: { type: 'number' },
+      mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
+      price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
       royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
@@ -430,6 +473,41 @@ const schemas = {
       isbn: { type: 'string' },
       pages: { type: 'integer', minimum: 1 },
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] }
+    }
+  },
+  BookCreateRequest: {
+    type: 'object',
+    description: 'Backward-compatible alias for AdminBookCreateRequest. New docs should prefer AdminBookCreateRequest or AuthorBookCreateRequest.',
+    allOf: [{ $ref: '#/components/schemas/AdminBookCreateRequest' }]
+  },
+  BookUpdateRequest: {
+    type: 'object',
+    description: 'Backward-compatible alias for AdminBookUpdateRequest. New docs should prefer AdminBookUpdateRequest or AuthorBookUpdateRequest.',
+    allOf: [{ $ref: '#/components/schemas/AdminBookUpdateRequest' }]
+  },
+  BookSubmissionRequest: {
+    type: 'object',
+    required: ['fileUrl'],
+    properties: {
+      fileUrl: { type: 'string', format: 'uri', description: 'Uploaded manuscript URL. documentUrl or manuscriptUrl are accepted compatibility aliases.' },
+      documentUrl: { type: 'string', format: 'uri', description: 'Compatibility alias for fileUrl.' },
+      manuscriptUrl: { type: 'string', format: 'uri', description: 'Compatibility alias for fileUrl.' },
+      packageId: { type: 'string', description: 'Optional PublishPackage ObjectId. Defaults to the first active package when omitted.' },
+      genre: { type: 'string', description: 'Optional. Defaults from category name or General.' },
+      wordCount: { type: 'integer', minimum: 1, description: 'Optional. Defaults from pages * 300 or 25000.' },
+      pages: { type: 'integer', minimum: 1, description: 'Optional helper for deriving wordCount when wordCount is omitted.' }
+    }
+  },
+  EditorialReasonRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string', description: 'Optional admin reason. Runtime supplies a default when omitted.' }
+    }
+  },
+  EditorialNotesRequest: {
+    type: 'object',
+    properties: {
+      notes: { type: 'string', description: 'Optional admin notes. Runtime supplies a default when omitted.' }
     }
   },
   CategoryCreateRequest: {
@@ -644,6 +722,66 @@ const schemas = {
       reason: { type: 'string' }
     }
   },
+  AuthorAccessPlanRequest: {
+    type: 'object',
+    required: ['amount'],
+    properties: {
+      name: { type: 'string', default: 'Author Dashboard Access' },
+      description: { type: 'string', default: 'One-time author dashboard operational access plan' },
+      amount: { type: 'number', minimum: 0 },
+      currency: { type: 'string', default: 'INR' },
+      status: { type: 'string', enum: ['DRAFT', 'ACTIVE', 'ARCHIVED'], default: 'ACTIVE' },
+      version: { type: 'integer', minimum: 1 }
+    }
+  },
+  AuthorAccessGrantRequest: {
+    type: 'object',
+    required: ['userId'],
+    properties: {
+      userId: { type: 'string', description: 'Author user ObjectId to grant dashboard entitlement.' },
+      reason: { type: 'string', description: 'Optional audit reason.' }
+    }
+  },
+  AuthorAccessReasonRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string', description: 'Optional audit reason. userId comes from the URL path.' }
+    }
+  },
+  SettlementPreviewRequest: {
+    type: 'object',
+    required: ['authorId'],
+    properties: {
+      authorId: { type: 'string', description: 'Author user ObjectId.' },
+      from: { type: 'string', format: 'date-time', description: 'Optional sales window start.' },
+      to: { type: 'string', format: 'date-time', description: 'Optional sales window end.' }
+    }
+  },
+  SettlementCreateRequest: {
+    type: 'object',
+    required: ['authorId', 'periodStart', 'periodEnd'],
+    properties: {
+      authorId: { type: 'string', description: 'Author user ObjectId.' },
+      periodStart: { type: 'string', format: 'date-time' },
+      periodEnd: { type: 'string', format: 'date-time' }
+    }
+  },
+  SettlementMarkPaidRequest: {
+    type: 'object',
+    required: ['transactionReference'],
+    properties: {
+      paymentMethod: { type: 'string', enum: ['MANUAL_BANK_TRANSFER', 'MANUAL_UPI', 'CHEQUE', 'OTHER'], default: 'MANUAL_BANK_TRANSFER' },
+      transactionReference: { type: 'string', description: 'External/manual payout reference recorded by admin.' },
+      paidAt: { type: 'string', format: 'date-time', description: 'Optional. Defaults to current server time.' },
+      notes: { type: 'string' }
+    }
+  },
+  SettlementCancelRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string', default: 'Cancelled by admin' }
+    }
+  },
   MultipartImageRequest: {
     type: 'object',
     required: ['image'],
@@ -672,12 +810,14 @@ const schemaExamples = {
   RegisterRequest: {
     name: 'Ghani Reader',
     email: 'user@example.com',
-    password: 'StrongPass123!',
-    role: 'reader'
+    password: 'StrongPass123!'
   },
   LoginRequest: {
     email: 'user@example.com',
     password: 'StrongPass123!'
+  },
+  GoogleLoginRequest: {
+    credential: '<GOOGLE_ID_TOKEN>'
   },
   OrderCreateRequest: {
     items: [
@@ -716,12 +856,26 @@ const schemaExamples = {
   WishlistRequest: {
     bookId: '66b4f5a2a44d2c0012a9c101'
   },
-  BookCreateRequest: {
+  AuthorBookCreateRequest: {
+    title: 'My Publishing Journey',
+    description: 'A draft manuscript prepared by the authenticated author.',
+    category: '66b4f5a2a44d2c0012a9c102',
+    mrp: 399,
+    coverImage: 'https://example.com/cover.jpg',
+    pages: 240,
+    format: 'paperback'
+  },
+  AuthorBookUpdateRequest: {
+    title: 'My Updated Publishing Journey',
+    mrp: 449,
+    pages: 260
+  },
+  AdminBookCreateRequest: {
     title: 'Enterprise Publishing Systems',
     description: 'A practical book about modern publishing operations.',
     category: '66b4f5a2a44d2c0012a9c102',
     author: '66b4f5a2a44d2c0012a9c103',
-    price: 499,
+    mrp: 499,
     royaltyPercentage: 10,
     coverImage: 'https://example.com/cover.jpg',
     stock: 100,
@@ -732,12 +886,67 @@ const schemaExamples = {
     pages: 320,
     format: 'paperback'
   },
-  BookUpdateRequest: {
-    price: 449,
+  AdminBookUpdateRequest: {
+    mrp: 449,
     royaltyPercentage: 12,
     stock: 120,
     status: 'published',
     isBestseller: true
+  },
+  BookCreateRequest: {
+    title: 'Enterprise Publishing Systems',
+    description: 'A practical book about modern publishing operations.',
+    category: '66b4f5a2a44d2c0012a9c102',
+    mrp: 499
+  },
+  BookUpdateRequest: {
+    mrp: 449,
+    stock: 120
+  },
+  BookSubmissionRequest: {
+    fileUrl: 'https://res.cloudinary.com/demo/raw/upload/manuscript.pdf',
+    packageId: '66b4f5a2a44d2c0012a9c104',
+    genre: 'Business',
+    wordCount: 52000
+  },
+  EditorialReasonRequest: {
+    reason: 'Please upload a higher-resolution cover image.'
+  },
+  EditorialNotesRequest: {
+    notes: 'Approved after editorial review.'
+  },
+  AuthorAccessPlanRequest: {
+    name: 'Author Dashboard Access',
+    description: 'One-time author dashboard operational access plan',
+    amount: 4999,
+    currency: 'INR',
+    status: 'ACTIVE'
+  },
+  AuthorAccessGrantRequest: {
+    userId: '66b4f5a2a44d2c0012a9c105',
+    reason: 'Manual access approved by operations.'
+  },
+  AuthorAccessReasonRequest: {
+    reason: 'Administrative entitlement update.'
+  },
+  SettlementPreviewRequest: {
+    authorId: '66b4f5a2a44d2c0012a9c105',
+    from: '2026-08-01T00:00:00.000Z',
+    to: '2026-08-31T23:59:59.999Z'
+  },
+  SettlementCreateRequest: {
+    authorId: '66b4f5a2a44d2c0012a9c105',
+    periodStart: '2026-08-01T00:00:00.000Z',
+    periodEnd: '2026-08-31T23:59:59.999Z'
+  },
+  SettlementMarkPaidRequest: {
+    paymentMethod: 'MANUAL_BANK_TRANSFER',
+    transactionReference: 'BANK-UTR-123456789',
+    paidAt: '2026-09-02T10:30:00.000Z',
+    notes: 'Paid through manual bank transfer.'
+  },
+  SettlementCancelRequest: {
+    reason: 'Incorrect settlement period selected.'
   },
   CategoryCreateRequest: {
     name: 'Business Books',
@@ -993,7 +1202,41 @@ function buildOpenApiSpec() {
       200: {
         description: 'Successful response.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { success: { value: successExampleFor(endpoint) } } } }
-      },
+  },
+  SettlementPreviewRequest: {
+    type: 'object',
+    required: ['authorId'],
+    properties: {
+      authorId: { type: 'string', description: 'Author user ObjectId.' },
+      from: { type: 'string', format: 'date-time', description: 'Optional sales window start.' },
+      to: { type: 'string', format: 'date-time', description: 'Optional sales window end.' }
+    }
+  },
+  SettlementCreateRequest: {
+    type: 'object',
+    required: ['authorId', 'periodStart', 'periodEnd'],
+    properties: {
+      authorId: { type: 'string', description: 'Author user ObjectId.' },
+      periodStart: { type: 'string', format: 'date-time' },
+      periodEnd: { type: 'string', format: 'date-time' }
+    }
+  },
+  SettlementMarkPaidRequest: {
+    type: 'object',
+    required: ['transactionReference'],
+    properties: {
+      paymentMethod: { type: 'string', enum: ['MANUAL_BANK_TRANSFER', 'MANUAL_UPI', 'CHEQUE', 'OTHER'], default: 'MANUAL_BANK_TRANSFER' },
+      transactionReference: { type: 'string', description: 'External/manual payout reference recorded by admin.' },
+      paidAt: { type: 'string', format: 'date-time', description: 'Optional. Defaults to current server time.' },
+      notes: { type: 'string' }
+    }
+  },
+  SettlementCancelRequest: {
+    type: 'object',
+    properties: {
+      reason: { type: 'string', default: 'Cancelled by admin' }
+    }
+  },
       201: {
         description: 'Created successfully where applicable.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { created: { value: successExampleFor(endpoint) } } } }

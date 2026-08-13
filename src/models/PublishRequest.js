@@ -7,6 +7,11 @@ const publishRequestSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    book: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Book',
+      index: true
+    },
     title: {
       type: String,
       required: true,
@@ -30,13 +35,28 @@ const publishRequestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'reviewed', 'accepted', 'rejected'],
-      default: 'pending',
+      enum: ['PENDING', 'UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'REJECTED', 'pending', 'reviewed', 'accepted', 'rejected'],
+      default: 'PENDING',
+      index: true
     },
+    adminNotes: {
+      type: String,
+      default: ''
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    reviewedAt: {
+      type: Date
+    }
   },
   {
     timestamps: true,
   }
 );
+
+publishRequestSchema.index({ user: 1, createdAt: -1 });
+publishRequestSchema.index({ book: 1, status: 1 });
 
 module.exports = mongoose.model('PublishRequest', publishRequestSchema);

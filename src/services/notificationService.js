@@ -49,6 +49,15 @@ class NotificationService {
 
   async handleDomainEvent(event, options = {}) {
     return this.execute('handleDomainEvent', async () => {
+      if (event.payload && event.payload.purpose && event.payload.purpose !== 'ORDER_PURCHASE') {
+        this.logger.info('notification.skipped_non_order_event', {
+          eventName: event.eventName,
+          eventId: event.eventId,
+          purpose: event.payload.purpose
+        });
+        return [];
+      }
+
       const context = await this.buildContext(event);
       const channels = this.selectChannels(event, context, options);
       const notifications = [];

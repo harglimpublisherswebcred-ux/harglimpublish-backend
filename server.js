@@ -110,7 +110,7 @@ mountSwagger(app);
 // Auth Specific Rate Limiting (Stricter)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10, // Limit each IP to 10 login/register requests per window
+  max: process.env.NODE_ENV === 'test' ? 1000 : 10, // Keep tests from tripping auth limits during regression.
   message: { success: false, message: 'Too many login attempts, please try again later.' }
 });
 

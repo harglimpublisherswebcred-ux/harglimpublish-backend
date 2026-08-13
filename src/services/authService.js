@@ -1,7 +1,9 @@
 const crypto = require('crypto');
 const authRepository = require('../repositories/authRepository');
+const googleIdentityProvider = require('./googleIdentityProvider');
 const { sendWelcomeEmail } = require('../utils/emailService');
 const { generateToken } = require('../utils/tokenUtils');
+const logger = require('../utils/logger');
 
 const REFRESH_TOKEN_BYTES = 48;
 const DEFAULT_REFRESH_DAYS = 30;
@@ -13,9 +15,10 @@ const toAuthUser = (user) => ({
   role: user.role
 });
 
-const serviceError = (message, statusCode) => {
+const serviceError = (message, statusCode, code) => {
   const error = new Error(message);
   error.statusCode = statusCode;
+  if (code) error.code = code;
   return error;
 };
 
@@ -27,8 +30,9 @@ const refreshExpiry = () => {
 };
 
 class AuthService {
-  constructor(repository = authRepository) {
+  constructor(repository = authRepository, googleProvider = googleIdentityProvider) {
     this.repository = repository;
+    this.googleProvider = googleProvider;
   }
 
   async issueTokens(user, context = {}) {
@@ -50,7 +54,7 @@ class AuthService {
     };
   }
 
-  async register({ name, email, password, role }, context = {}) {
+  async register({ name, email, password }, context = {}) {
     const existing = await this.repository.findUserByEmail(email);
     if (existing) throw serviceError('User already exists', 400);
 
@@ -58,7 +62,7 @@ class AuthService {
       name,
       email,
       password,
-      role: role || 'reader'
+      role: 'reader'
     });
 
     if (!user) throw serviceError('Invalid user data', 400);
@@ -77,6 +81,81 @@ class AuthService {
     if (user.isActive === false) throw serviceError('User account is inactive', 403);
 
     return this.issueTokens(user, context);
+  }
+
+  async loginWithGoogle({ credential }, context = {}) {
+    const identity = await this.googleProvider.verifyCredential(credential);
+
+    let authIdentity = await this.repository.findAuthIdentity(identity.provider, identity.providerSubject, { populateUser: true });
+    if (authIdentity) {
+      const user = authIdentity.user;
+      if (!user) throw serviceError('Linked account was not found', 404, 'GOOGLE_IDENTITY_USER_NOT_FOUND');
+      if (user.isActive === false) throw serviceError('User account is inactive', 403, 'USER_INACTIVE');
+
+      await this.repository.updateAuthIdentity(authIdentity._id, {
+        providerEmail: identity.email,
+        emailVerified: identity.emailVerified,
+        profilePicture: identity.picture,
+        lastLoginAt: new Date()
+      });
+
+      logger.info('auth.google_login_success', {
+        provider: identity.provider,
+        userId: user._id,
+        isNewUser: false
+      });
+      return this.issueTokens(user, context);
+    }
+
+    const existingEmailUser = await this.repository.findUserByEmail(identity.email);
+    if (existingEmailUser) {
+      throw serviceError(
+        'An HM account already exists for this email. Sign in to the existing account before linking Google.',
+        409,
+        'ACCOUNT_LINK_REQUIRED'
+      );
+    }
+
+    try {
+      const user = await this.repository.createUser({
+        name: identity.name,
+        email: identity.email,
+        profilePicture: identity.picture,
+        role: 'reader'
+      });
+
+      await this.repository.createAuthIdentity({
+        user: user._id,
+        provider: identity.provider,
+        providerSubject: identity.providerSubject,
+        providerEmail: identity.email,
+        emailVerified: identity.emailVerified,
+        profilePicture: identity.picture,
+        lastLoginAt: new Date()
+      });
+
+      sendWelcomeEmail(user);
+      logger.info('auth.google_login_success', {
+        provider: identity.provider,
+        userId: user._id,
+        isNewUser: true
+      });
+      return this.issueTokens(user, context);
+    } catch (error) {
+      if (error && error.code === 11000) {
+        authIdentity = await this.repository.findAuthIdentity(identity.provider, identity.providerSubject, { populateUser: true });
+        if (authIdentity && authIdentity.user) {
+          if (authIdentity.user.isActive === false) throw serviceError('User account is inactive', 403, 'USER_INACTIVE');
+          return this.issueTokens(authIdentity.user, context);
+        }
+        throw serviceError(
+          'An HM account already exists for this email. Sign in to the existing account before linking Google.',
+          409,
+          'ACCOUNT_LINK_REQUIRED'
+        );
+      }
+      throw error;
+    }
   }
 
   async refresh({ userId, refreshToken }, context = {}) {

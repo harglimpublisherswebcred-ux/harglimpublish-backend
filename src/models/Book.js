@@ -28,6 +28,12 @@ const bookSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: [true, 'Please add a price'],
+      min: [0, 'Price must be greater than or equal to 0'],
+    },
+    mrp: {
+      type: Number,
+      required: [true, 'Please add an MRP'],
+      min: [0, 'MRP must be greater than or equal to 0'],
     },
     royaltyPercentage: {
       type: Number,
@@ -95,5 +101,57 @@ const bookSchema = new mongoose.Schema(
 
 // Create a text index for search
 bookSchema.index({ title: 'text', description: 'text' });
+
+const hasValue = (value) => value !== undefined && value !== null;
+
+const normalizeCommercialPrice = (target) => {
+  const hasMrp = hasValue(target.mrp);
+  const hasPrice = hasValue(target.price);
+
+  if (hasMrp && hasPrice && Number(target.mrp) !== Number(target.price)) {
+    return false;
+  }
+
+  if (hasMrp && !hasPrice) {
+    target.price = target.mrp;
+  }
+
+  if (!hasMrp && hasPrice) {
+    target.mrp = target.price;
+  }
+
+  return true;
+};
+
+bookSchema.pre('validate', function normalizeMrpCompatibility() {
+  if (!normalizeCommercialPrice(this)) {
+    this.invalidate('mrp', 'MRP and legacy price must match during price compatibility migration');
+  }
+});
+
+bookSchema.pre(['findOneAndUpdate', 'updateOne', 'updateMany'], function normalizeMrpUpdateCompatibility() {
+  const update = this.getUpdate() || {};
+  const direct = { ...update };
+  const set = { ...(update.$set || {}) };
+  const mrp = hasValue(set.mrp) ? set.mrp : direct.mrp;
+  const price = hasValue(set.price) ? set.price : direct.price;
+
+  if (hasValue(mrp) && hasValue(price) && Number(mrp) !== Number(price)) {
+    throw new Error('MRP and legacy price must match during price compatibility migration');
+  }
+
+  if (hasValue(mrp) || hasValue(price)) {
+    const val = hasValue(mrp) ? mrp : price;
+    set.mrp = val;
+    set.price = val;
+    delete direct.mrp;
+    delete direct.price;
+  }
+
+  this.setUpdate({
+    ...direct,
+    ...(Object.keys(set).length > 0 && { $set: set })
+  });
+});
 
 module.exports = mongoose.model('Book', bookSchema);

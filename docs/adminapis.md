@@ -71,15 +71,16 @@ Compatibility mappings:
 
 Existing role/status routes still work.
 
-## Books Royalty
+## Books Pricing And Royalty
 
-Admin book create/update accepts optional `royaltyPercentage` from `0` to `100`.
+Admin book create/update uses `mrp` as the canonical book price. Legacy `price` remains a deprecated compatibility alias and must match `mrp` when both are supplied. `royaltyPercentage` remains optional from `0` to `100`.
 
 ```json
 {
   "title": "Book Title",
   "description": "Book description",
   "category": "66b4f5a2a44d2c0012a9c102",
+  "mrp": 499,
   "price": 499,
   "royaltyPercentage": 10,
   "status": "published"
@@ -528,6 +529,7 @@ Payload:
   "description": "A practical book about modern publishing operations.",
   "author": "66b4f5a2a44d2c0012a9c103",
   "category": "66b4f5a2a44d2c0012a9c102",
+  "mrp": 499,
   "price": 499,
   "coverImage": "https://example.com/cover.jpg",
   "stock": 100,
@@ -543,7 +545,9 @@ Payload:
 }
 ```
 
-Required: `title`, `description`, `category`, `price`.
+Required: `title`, `description`, `category`, and either `mrp` or legacy `price`.
+
+`mrp` is canonical. `price` is returned for compatibility and is synchronized with `mrp`.
 
 Allowed values:
 

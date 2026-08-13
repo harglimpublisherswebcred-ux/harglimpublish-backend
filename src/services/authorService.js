@@ -14,6 +14,8 @@ const authorizeAuthor = (authorId, actor) => {
   }
 };
 
+const authorDashboardService = require('./authorDashboardService');
+
 class AuthorService {
   constructor(repository = authorRepository) {
     this.repository = repository;
@@ -51,32 +53,20 @@ class AuthorService {
 
   async getAuthorStats(authorId, actor) {
     authorizeAuthor(authorId, actor);
-    const books = await this.repository.findBooksByAuthor(authorId);
-    const bookIds = books.map((book) => book._id);
-    const orders = await this.repository.findOrdersForBooks(bookIds);
-
-    let totalRevenue = 0;
-    let totalSales = 0;
-
-    orders.forEach((order) => {
-      order.items.forEach((item) => {
-        if (bookIds.some((id) => id.equals(item.book))) {
-          totalRevenue += item.price * item.quantity;
-          totalSales += item.quantity;
-        }
-      });
-    });
-
-    return { totalBooks: books.length, totalSales, totalRevenue };
+    const summary = await authorDashboardService.getDashboardSummary(authorId, actor);
+    return {
+      totalBooks: summary.books.total,
+      publishedBooks: summary.books.published,
+      totalSales: summary.sales.unitsSold,
+      totalRevenue: summary.sales.grossBookRevenue,
+      accruedRoyalty: summary.royalties.accrued,
+      summary
+    };
   }
 
-  async getRoyaltiesHistory(authorId, actor) {
+  async getRoyaltiesHistory(authorId, actor, query = {}) {
     authorizeAuthor(authorId, actor);
-    const user = await this.repository.findUserById(authorId);
-    return {
-      balance: user.royaltiesBalance || 0,
-      history: []
-    };
+    return authorDashboardService.getAuthorRoyaltyHistory(authorId, actor, query);
   }
 }
 

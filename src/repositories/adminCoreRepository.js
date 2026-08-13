@@ -77,11 +77,29 @@ class AdminCoreRepository {
   }
 
   listPublishRequests() {
-    return PublishRequest.find().populate('user', 'name email').populate('packageId', 'name').sort('-createdAt');
+    return PublishRequest.find()
+      .populate('user', 'name email')
+      .populate('book', 'title status coverImage mrp')
+      .populate('packageId', 'name')
+      .sort('-createdAt');
+  }
+
+  findPublishRequestById(id) {
+    return PublishRequest.findById(id)
+      .populate('user', 'name email')
+      .populate('book')
+      .populate('packageId', 'name');
   }
 
   updatePublishRequestStatus(id, status) {
     return PublishRequest.findByIdAndUpdate(id, { status }, { returnDocument: 'after' }).populate('user');
+  }
+
+  updatePublishRequestDetails(id, data) {
+    return PublishRequest.findByIdAndUpdate(id, { $set: data }, { returnDocument: 'after' })
+      .populate('user', 'name email')
+      .populate('book')
+      .populate('packageId', 'name');
   }
 }
 

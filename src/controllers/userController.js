@@ -1,5 +1,17 @@
 const userService = require('../services/userService');
+const userContextService = require('../services/userContextService');
 
+// @desc    Get current user session context & capabilities
+// @route   GET /api/users/me/context
+// @access  Private
+const getUserContext = async (req, res) => {
+  try {
+    const data = await userContextService.getUserContext(req.user);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Get current user profile
 // @route   GET /api/users/me
@@ -252,7 +264,9 @@ const archiveUserNotification = async (req, res) => {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
+
 module.exports = {
+  getUserContext,
   getCurrentUser,
   getUserStats,
   updateUserProfile,
@@ -275,5 +289,3 @@ module.exports = {
   markAllUserNotificationsRead,
   archiveUserNotification
 };
-
-

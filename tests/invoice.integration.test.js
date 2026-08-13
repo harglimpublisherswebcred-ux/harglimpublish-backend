@@ -138,7 +138,10 @@ describe('Invoice integration', () => {
 
     expect(invoice).toBeTruthy();
     expect(invoice.invoiceNumber).toMatch(/^INV-\d{6}-\d{6}$/);
-    expect(invoice.total).toBe(260);
+    expect(invoice.subtotal).toBe(200);
+    expect(invoice.taxTotal).toBe(0);
+    expect(invoice.shippingTotal).toBe(50);
+    expect(invoice.total).toBe(250);
     expect(generated).toEqual([invoice.invoiceNumber]);
   });
 
@@ -184,5 +187,42 @@ describe('Invoice integration', () => {
     });
 
     expect(await Invoice.countDocuments({ payment: payment._id })).toBe(1);
+  });
+
+  it('preserves historical order tax snapshots when generating invoices for old tax-bearing orders', async () => {
+    const historicalOrder = await Order.create({
+      orderNumber: 'HM-HISTORICAL-001',
+      user: reader._id,
+      items: [{ book: book._id, quantity: 1, price: 200 }],
+      shippingAddress,
+      subtotal: 200,
+      tax: 10,
+      shippingPrice: 50,
+      totalPrice: 260,
+      isPaid: true,
+      paymentMethod: 'UPI',
+      status: 'PROCESSING'
+    });
+
+    const historicalPayment = await Payment.create({
+      order: historicalOrder._id,
+      user: reader._id,
+      amount: 260,
+      currency: 'INR',
+      paymentMethod: 'UPI',
+      provider: 'manual_upi',
+      status: 'PAYMENT_VERIFIED',
+      successfulPayment: true,
+      activeIntent: false
+    });
+
+    const invoiceService = require('../src/services/invoiceService');
+    const invoice = await invoiceService.generateForPayment(historicalPayment._id);
+
+    expect(invoice).toBeTruthy();
+    expect(invoice.subtotal).toBe(200);
+    expect(invoice.taxTotal).toBe(10);
+    expect(invoice.shippingTotal).toBe(50);
+    expect(invoice.total).toBe(260);
   });
 });

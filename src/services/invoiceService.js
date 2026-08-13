@@ -60,6 +60,12 @@ class InvoiceService {
         session: options.session,
         lean: true
       });
+      if (payment.purpose && payment.purpose !== 'ORDER_PURCHASE') {
+        throw new InvoiceGenerationNotAllowedError('Invoice can only be generated for ORDER_PURCHASE payments', {
+          paymentId: normalizeId(payment._id),
+          purpose: payment.purpose
+        });
+      }
       this.assertPaymentVerified(payment);
 
       const existingByOrder = await this.repository.findByOrder(payment.order, { session: options.session });

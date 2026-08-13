@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getAdminAnalytics,
+  getAdminDashboardOverview,
   createBook,
   updateBook,
   deleteBook,
@@ -9,12 +10,18 @@ const {
   updateOrderStatus,
   getPublishRequests,
   updatePublishRequestStatus,
+  requestChangesOnPublishRequest,
+  rejectPublishRequest,
+  approveAndPublishBook,
   listUsers,
   getUser,
   updateUser,
   updateUserRole,
   updateUserStatus,
-  resetUserPassword
+  resetUserPassword,
+  getAdminAuthorDashboard,
+  getAdminAuthorRoyalties,
+  getAdminAuthorDetail
 } = require('../controllers/adminController');
 const adminOperationsController = require('../controllers/adminOperationsController');
 const adminInvoiceController = require('../controllers/adminInvoiceController');
@@ -31,6 +38,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 router.use(protect);
 router.use(authorize('admin'));
 
+router.get('/dashboard', getAdminDashboardOverview);
 router.get('/analytics', getAdminAnalytics);
 router.get('/stats', getAdminAnalytics);
 router.get('/analytics/dashboard', adminAnalyticsController.dashboard);
@@ -93,8 +101,39 @@ router.get('/orders', getOrders);
 router.put('/orders/:id/status', updateOrderStatus);
 router.get('/publish-requests', getPublishRequests);
 router.put('/publish-requests/:id/status', updatePublishRequestStatus);
+router.post('/publish-requests/:id/request-changes', requestChangesOnPublishRequest);
+router.post('/publish-requests/:id/reject', rejectPublishRequest);
+router.post('/publish-requests/:id/approve', approveAndPublishBook);
 router.route('/books').post(createBook);
 router.route('/books/:id').put(updateBook).delete(deleteBook);
+
+const adminAuthorAccessController = require('../controllers/adminAuthorAccessController');
+
+router.get('/author-access/plans', adminAuthorAccessController.listPlans);
+router.post('/author-access/plans', adminAuthorAccessController.createPlan);
+router.put('/author-access/plans/:id', adminAuthorAccessController.updatePlan);
+router.post('/author-access/plans/:id/activate', adminAuthorAccessController.activatePlan);
+router.post('/author-access/plans/:id/archive', adminAuthorAccessController.archivePlan);
+router.get('/author-access/purchases', adminAuthorAccessController.listPurchases);
+router.get('/author-access/entitlements', adminAuthorAccessController.listEntitlements);
+router.post('/author-access/entitlements/grant', adminAuthorAccessController.grantEntitlement);
+router.post('/author-access/entitlements/:userId/revoke', adminAuthorAccessController.revokeEntitlement);
+router.post('/author-access/entitlements/:userId/restore', adminAuthorAccessController.restoreEntitlement);
+
+router.get('/authors/:authorId', getAdminAuthorDetail);
+router.get('/authors/:authorId/dashboard', getAdminAuthorDashboard);
+router.get('/authors/:authorId/royalties', getAdminAuthorRoyalties);
+
+const royaltySettlementController = require('../controllers/royaltySettlementController');
+
+router.get('/royalty-settlements/reconcile', royaltySettlementController.reconcileSettlements);
+router.post('/royalty-settlements/preview', royaltySettlementController.previewSettlement);
+router.post('/royalty-settlements', royaltySettlementController.createDraftSettlement);
+router.get('/royalty-settlements', royaltySettlementController.listSettlementsForAdmin);
+router.get('/royalty-settlements/:id', royaltySettlementController.getSettlementDetailForAdmin);
+router.post('/royalty-settlements/:id/approve', royaltySettlementController.approveSettlement);
+router.post('/royalty-settlements/:id/mark-paid', royaltySettlementController.markPaid);
+router.post('/royalty-settlements/:id/cancel', royaltySettlementController.cancelSettlement);
 
 module.exports = router;
 

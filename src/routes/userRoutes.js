@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getUserContext,
   getCurrentUser,
   getUserStats,
   updateUserProfile,
@@ -28,6 +29,7 @@ const { getMyAuthorApplication } = require('../controllers/authorApplicationCont
 
 router.use(protect);
 
+router.get('/me/context', getUserContext);
 router.get('/me', getCurrentUser);
 
 router.get('/me/author-application', getMyAuthorApplication);

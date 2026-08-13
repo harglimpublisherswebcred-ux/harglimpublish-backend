@@ -215,6 +215,7 @@ const seedBooks = async () => {
       title: 'Midnight Letters',
       category: 'fiction',
       price: 399,
+      mrp: 399,
       discountPrice: 299,
       stock: 45,
       flags: { isBestseller: true, isFeatured: true, isNewRelease: false },
@@ -225,6 +226,7 @@ const seedBooks = async () => {
       title: 'The Founder Playbook',
       category: 'business',
       price: 549,
+      mrp: 549,
       discountPrice: 449,
       stock: 32,
       flags: { isBestseller: false, isFeatured: true, isNewRelease: true },
@@ -235,6 +237,7 @@ const seedBooks = async () => {
       title: 'Small Habits, Big Days',
       category: 'self-help',
       price: 299,
+      mrp: 299,
       stock: 60,
       flags: { isBestseller: true, isFeatured: false, isNewRelease: true },
       format: 'paperback'
@@ -244,6 +247,7 @@ const seedBooks = async () => {
       title: 'Node APIs in Production',
       category: 'technology',
       price: 699,
+      mrp: 699,
       discountPrice: 599,
       stock: 20,
       flags: { isBestseller: false, isFeatured: true, isNewRelease: false },
@@ -254,6 +258,7 @@ const seedBooks = async () => {
       title: 'Moon Map Adventures',
       category: 'children',
       price: 249,
+      mrp: 249,
       stock: 80,
       flags: { isBestseller: false, isFeatured: false, isNewRelease: true },
       format: 'paperback'
@@ -273,6 +278,7 @@ const seedBooks = async () => {
         author: created.users.author._id,
         category: category._id,
         price: book.price,
+        mrp: book.mrp,
         discountPrice: book.discountPrice,
         coverImage: `https://placehold.co/720x1080/png?text=${encodeURIComponent(book.title)}`,
         stock: book.stock,
@@ -289,6 +295,7 @@ const seedBooks = async () => {
         author: created.users.author._id,
         category: category._id,
         price: book.price,
+        mrp: book.mrp,
         discountPrice: book.discountPrice,
         stock: book.stock,
         status: 'published',
@@ -374,9 +381,11 @@ const seedOrderPaymentInventory = async () => {
   print('Seeding order, payment, inventory, invoice, shipment...');
   const book = created.books['midnight-letters'];
   const secondBook = created.books['founder-playbook'];
-  const subtotal = 299 + 449;
+  const firstUnitPrice = Number(book.mrp || book.price);
+  const secondUnitPrice = Number(secondBook.mrp || secondBook.price);
+  const subtotal = firstUnitPrice + secondUnitPrice;
   const tax = 0;
-  const shippingPrice = 50;
+  const shippingPrice = subtotal > 500 ? 0 : 50;
   const totalPrice = subtotal + tax + shippingPrice;
   const orderNumber = `${SEED_PREFIX.toUpperCase()}-ORDER-1001`;
   const utr = `${SEED_PREFIX.toUpperCase()}UTR1001`.replace(/-/g, '');
@@ -389,8 +398,8 @@ const seedOrderPaymentInventory = async () => {
       orderNumber,
       user: created.users.reader._id,
       items: [
-        { book: book._id, quantity: 1, price: 299 },
-        { book: secondBook._id, quantity: 1, price: 449 }
+        { book: book._id, quantity: 1, price: firstUnitPrice },
+        { book: secondBook._id, quantity: 1, price: secondUnitPrice }
       ],
       shippingAddress: {
         fullName: 'Demo Reader',
@@ -555,12 +564,12 @@ const seedOrderPaymentInventory = async () => {
       payment: payment._id,
       customer: created.users.reader._id,
       items: [
-        { book: book._id, title: book.title, quantity: 1, unitPrice: 299, taxAmount: 0, discountAmount: 100, lineTotal: 299 },
-        { book: secondBook._id, title: secondBook.title, quantity: 1, unitPrice: 449, taxAmount: 0, discountAmount: 100, lineTotal: 449 }
+        { book: book._id, title: book.title, quantity: 1, unitPrice: firstUnitPrice, taxAmount: 0, discountAmount: 0, lineTotal: firstUnitPrice },
+        { book: secondBook._id, title: secondBook.title, quantity: 1, unitPrice: secondUnitPrice, taxAmount: 0, discountAmount: 0, lineTotal: secondUnitPrice }
       ],
       subtotal,
       taxTotal: tax,
-      discountTotal: 200,
+      discountTotal: 0,
       shippingTotal: shippingPrice,
       total: totalPrice,
       currency: 'INR',

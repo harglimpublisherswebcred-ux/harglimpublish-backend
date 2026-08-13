@@ -4,6 +4,7 @@ const logger = require('../utils/logger');
 const upiQRCodeService = require('../payments/qr/upiQRCodeService');
 const eventBus = require('../events/eventBus');
 const { DOMAIN_EVENTS } = require('../events/eventCatalog');
+const { PAYMENT_PURPOSE } = require('../models/Payment');
 
 const {
   PaymentRepositoryError,
@@ -254,16 +255,22 @@ class PaymentService {
 
   async createPayment(paymentData, options = {}) {
     return this.execute('createPayment', async () => {
-      await this.assertCanCreatePaymentAttempt(paymentData.order, options);
+      if (paymentData.order) {
+        await this.assertCanCreatePaymentAttempt(paymentData.order, options);
+      }
 
       const payment = await this.repository.create({
         ...paymentData,
+        purpose: paymentData.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+        subjectType: paymentData.subjectType || (paymentData.order ? 'ORDER' : undefined),
+        subjectId: paymentData.subjectId || paymentData.order,
         status: paymentData.status || PAYMENT_STATUS.INTENT_CREATED
       }, { session: options.session });
 
       this.logInfo('payment.created', {
         paymentId: normalizeId(payment._id),
-        order: normalizeId(payment.order),
+        order: payment.order ? normalizeId(payment.order) : undefined,
+        purpose: payment.purpose,
         provider: payment.provider,
         status: payment.status
       });
@@ -299,41 +306,46 @@ class PaymentService {
 
       this.validateIntentAmount(intentData.amount, orderAmount);
 
-      if (!(await this.canCreateIntent(intentData.order, options))) {
-        this.logWarn('payment_intent.create_blocked', {
-          order: normalizeId(intentData.order),
-          orderStatus: options.orderStatus
+      if (intentData.order) {
+        if (!(await this.canCreateIntent(intentData.order, options))) {
+          this.logWarn('payment_intent.create_blocked', {
+            order: normalizeId(intentData.order),
+            orderStatus: options.orderStatus
+          });
+          throw new PaymentCreationNotAllowedError({ order: normalizeId(intentData.order), orderStatus: options.orderStatus });
+        }
+
+        const previousActiveIntent = await this.repository.findActiveIntent(intentData.order, {
+          session: options.session,
+          now
         });
-        throw new PaymentCreationNotAllowedError({ order: normalizeId(intentData.order), orderStatus: options.orderStatus });
-      }
 
-      const previousActiveIntent = await this.repository.findActiveIntent(intentData.order, {
-        session: options.session,
-        now
-      });
-
-      const expiredIntentResult = await this.repository.expireActiveIntent(intentData.order, {
-        session: options.session,
-        now,
-        reason: 'Replaced by a new payment intent'
-      });
-
-      if (previousActiveIntent && expiredIntentResult.modifiedCount > 0) {
-        await this.recordLedgerEvent({
-          ...previousActiveIntent,
-          status: PAYMENT_STATUS.PAYMENT_EXPIRED,
-          activeIntent: false
-        }, PAYMENT_STATUS.PAYMENT_EXPIRED, {
-          previousStatus: previousActiveIntent.status,
-          actor: options.actor,
-          actorType: options.actorType || 'SYSTEM',
-          reason: 'Replaced by a new payment intent',
-          session: options.session
+        const expiredIntentResult = await this.repository.expireActiveIntent(intentData.order, {
+          session: options.session,
+          now,
+          reason: 'Replaced by a new payment intent'
         });
+
+        if (previousActiveIntent && expiredIntentResult.modifiedCount > 0) {
+          await this.recordLedgerEvent({
+            ...previousActiveIntent,
+            status: PAYMENT_STATUS.PAYMENT_EXPIRED,
+            activeIntent: false
+          }, PAYMENT_STATUS.PAYMENT_EXPIRED, {
+            previousStatus: previousActiveIntent.status,
+            actor: options.actor,
+            actorType: options.actorType || 'SYSTEM',
+            reason: 'Replaced by a new payment intent',
+            session: options.session
+          });
+        }
       }
 
       const intent = await this.repository.createIntent({
         order: intentData.order,
+        purpose: intentData.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+        subjectType: intentData.subjectType || (intentData.order ? 'ORDER' : undefined),
+        subjectId: intentData.subjectId || intentData.order,
         user: intentData.user,
         amount: intentData.amount,
         currency: intentData.currency || 'INR',
@@ -672,9 +684,11 @@ class PaymentService {
       const payment = await this.repository.getById(paymentId, { ...options, lean: true });
       this.canVerifyPayment(payment, verifier, options);
 
-      const successfulPayment = await this.repository.findSuccessfulPayment(payment.order, { session: options.session });
-      if (successfulPayment && normalizeId(successfulPayment._id) !== normalizeId(payment._id)) {
-        throw new PaymentAlreadyVerifiedError({ order: normalizeId(payment.order) });
+      if (payment.order) {
+        const successfulPayment = await this.repository.findSuccessfulPayment(payment.order, { session: options.session });
+        if (successfulPayment && normalizeId(successfulPayment._id) !== normalizeId(payment._id)) {
+          throw new PaymentAlreadyVerifiedError({ order: normalizeId(payment.order) });
+        }
       }
 
       const currentStatus = toCanonicalStatus(payment.status);
@@ -686,7 +700,7 @@ class PaymentService {
 
       this.logInfo('payment.verification_started', {
         paymentId: normalizeId(payment._id),
-        order: normalizeId(payment.order),
+        order: payment.order ? normalizeId(payment.order) : undefined,
         verifier: normalizeId(verifier.userId)
       });
 
@@ -700,7 +714,7 @@ class PaymentService {
 
       this.logInfo('payment.verified', {
         paymentId: normalizeId(updated._id),
-        order: normalizeId(updated.order),
+        order: updated.order ? normalizeId(updated.order) : undefined,
         verifier: verifier.userId ? normalizeId(verifier.userId) : undefined
       });
 
@@ -746,7 +760,7 @@ class PaymentService {
 
       this.logWarn('payment.rejected', {
         paymentId: normalizeId(updated._id),
-        order: normalizeId(updated.order)
+        order: updated.order ? normalizeId(updated.order) : undefined
       });
 
       await this.recordLedgerEvent(updated, PAYMENT_STATUS.PAYMENT_REJECTED, {
@@ -846,9 +860,11 @@ class PaymentService {
       this.ensurePaymentNotExpired(payment, options.now);
       this.ensurePaymentIsNotCompleted(payment);
 
-      const successfulPayment = await this.repository.findSuccessfulPayment(payment.order, { session: options.session });
-      if (successfulPayment && normalizeId(successfulPayment._id) !== normalizeId(payment._id)) {
-        throw new PaymentAlreadyVerifiedError({ order: normalizeId(payment.order) });
+      if (payment.order) {
+        const successfulPayment = await this.repository.findSuccessfulPayment(payment.order, { session: options.session });
+        if (successfulPayment && normalizeId(successfulPayment._id) !== normalizeId(payment._id)) {
+          throw new PaymentAlreadyVerifiedError({ order: normalizeId(payment.order) });
+        }
       }
 
       this.validatePaymentTransition(payment.status, PAYMENT_STATUS.PAYMENT_VERIFIED);
@@ -1049,7 +1065,10 @@ class PaymentService {
   toQRCodeResponse(payment) {
     return {
       paymentId: normalizeId(payment._id),
-      order: normalizeId(payment.order),
+      order: payment.order ? normalizeId(payment.order) : undefined,
+      purpose: payment.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+      subjectType: payment.subjectType || (payment.order ? 'ORDER' : undefined),
+      subjectId: payment.subjectId ? normalizeId(payment.subjectId) : (payment.order ? normalizeId(payment.order) : undefined),
       status: payment.status,
       amount: payment.amount,
       currency: payment.currency,
@@ -1072,7 +1091,10 @@ class PaymentService {
     const ledgerEntry = {
       eventKey: options.dedupe === false ? undefined : this.buildLedgerEventKey(payment, eventType, currentStatus, options.reference),
       paymentId: payment._id,
-      orderId: payment.order,
+      orderId: payment.order || undefined,
+      purpose: payment.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+      subjectType: payment.subjectType || (payment.order ? 'ORDER' : undefined),
+      subjectId: payment.subjectId || payment.order || undefined,
       userId: payment.user,
       eventType,
       previousStatus: options.previousStatus,
@@ -1094,7 +1116,8 @@ class PaymentService {
     this.logInfo('payment_ledger.entry_created', {
       ledgerId: ledger.ledgerId,
       paymentId: normalizeId(payment._id),
-      order: normalizeId(payment.order),
+      order: payment.order ? normalizeId(payment.order) : undefined,
+      purpose: ledger.purpose,
       eventType,
       reference: maskReference(options.reference)
     });
@@ -1103,7 +1126,10 @@ class PaymentService {
       ledgerId: ledger.ledgerId,
       ledgerType: 'payment',
       paymentId: normalizeId(payment._id),
-      orderId: normalizeId(payment.order),
+      orderId: payment.order ? normalizeId(payment.order) : undefined,
+      purpose: payment.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+      subjectType: payment.subjectType || (payment.order ? 'ORDER' : undefined),
+      subjectId: payment.subjectId ? normalizeId(payment.subjectId) : (payment.order ? normalizeId(payment.order) : undefined),
       userId: normalizeId(payment.user),
       eventType,
       currentStatus,
@@ -1122,7 +1148,10 @@ class PaymentService {
 
     return eventBus.publish(eventName, {
       paymentId: normalizeId(payment._id),
-      orderId: normalizeId(payment.order),
+      orderId: payment.order ? normalizeId(payment.order) : undefined,
+      purpose: payment.purpose || PAYMENT_PURPOSE.ORDER_PURCHASE,
+      subjectType: payment.subjectType || (payment.order ? 'ORDER' : undefined),
+      subjectId: payment.subjectId ? normalizeId(payment.subjectId) : (payment.order ? normalizeId(payment.order) : undefined),
       userId: normalizeId(payment.user),
       amount: payment.amount,
       currency: payment.currency,
@@ -1241,6 +1270,7 @@ class PaymentService {
 
 module.exports = new PaymentService();
 module.exports.PaymentService = PaymentService;
+module.exports.PAYMENT_PURPOSE = PAYMENT_PURPOSE;
 module.exports.PAYMENT_STATUS = PAYMENT_STATUS;
 module.exports.ALLOWED_TRANSITIONS = ALLOWED_TRANSITIONS;
 module.exports.PaymentServiceError = PaymentServiceError;

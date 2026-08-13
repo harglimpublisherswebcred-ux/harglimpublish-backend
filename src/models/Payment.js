@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+const PAYMENT_PURPOSE = Object.freeze({
+  ORDER_PURCHASE: 'ORDER_PURCHASE',
+  AUTHOR_ACCESS: 'AUTHOR_ACCESS'
+});
+const PAYMENT_PURPOSES = Object.values(PAYMENT_PURPOSE);
+
 const PAYMENT_STATUSES = [
   'INTENT_CREATED',
   'QR_PENDING',
@@ -95,10 +101,27 @@ const paymentRefundSchema = new mongoose.Schema(
 
 const paymentSchema = new mongoose.Schema(
   {
+    purpose: {
+      type: String,
+      enum: PAYMENT_PURPOSES,
+      default: PAYMENT_PURPOSE.ORDER_PURCHASE,
+      required: true,
+      index: true
+    },
+    subjectType: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      default: 'ORDER'
+    },
+    subjectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true
+    },
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
-      required: true,
+      required: false,
       index: true
     },
     user: {
@@ -248,6 +271,8 @@ paymentSchema.index({ status: 1, createdAt: -1 });
 paymentSchema.index({ createdAt: -1 });
 paymentSchema.index({ provider: 1, status: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, expiresAt: 1 });
+paymentSchema.index({ purpose: 1, createdAt: -1 });
+paymentSchema.index({ subjectType: 1, subjectId: 1 });
 paymentSchema.index(
   { provider: 1, providerOrderId: 1 },
   {
@@ -273,7 +298,7 @@ paymentSchema.index(
   { order: 1, successfulPayment: 1 },
   {
     unique: true,
-    partialFilterExpression: { successfulPayment: true }
+    partialFilterExpression: { successfulPayment: true, order: { $type: 'objectId' } }
   }
 );
 paymentSchema.index(
@@ -281,11 +306,31 @@ paymentSchema.index(
   {
     name: 'unique_active_payment_intent_per_order',
     unique: true,
-    partialFilterExpression: { activeIntent: true }
+    partialFilterExpression: { activeIntent: true, order: { $type: 'objectId' } }
   }
 );
 
 paymentSchema.pre('validate', function () {
+  if (!this.purpose) {
+    this.purpose = PAYMENT_PURPOSE.ORDER_PURCHASE;
+  }
+
+  if (this.purpose === PAYMENT_PURPOSE.ORDER_PURCHASE) {
+    if (!this.order) {
+      this.invalidate('order', 'Order is required for ORDER_PURCHASE payments');
+    }
+    if (!this.subjectType) {
+      this.subjectType = 'ORDER';
+    }
+    if (this.order && !this.subjectId) {
+      this.subjectId = this.order;
+    }
+  }
+
+  if (this.subjectType === 'ORDER' && this.order && this.subjectId && String(this.order) !== String(this.subjectId)) {
+    this.invalidate('subjectId', 'subjectId must match order id for ORDER payments');
+  }
+
   this.successfulPayment = SUCCESSFUL_PAYMENT_STATUSES.includes(this.status);
 
   if (['PAYMENT_SUBMITTED', 'SUBMITTED'].includes(this.status) && !this.submittedAt) {
@@ -315,3 +360,5 @@ const Payment = mongoose.model('Payment', paymentSchema);
 module.exports = Payment;
 module.exports.PAYMENT_STATUSES = PAYMENT_STATUSES;
 module.exports.SUCCESSFUL_PAYMENT_STATUSES = SUCCESSFUL_PAYMENT_STATUSES;
+module.exports.PAYMENT_PURPOSE = PAYMENT_PURPOSE;
+module.exports.PAYMENT_PURPOSES = PAYMENT_PURPOSES;

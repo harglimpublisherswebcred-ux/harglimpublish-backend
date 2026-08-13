@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 121
+Endpoints documented: 166
 
 Models documented: 17
 
@@ -28,6 +28,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/content` | Public | `contentController.getContent` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
 | POST | `/api/auth/login` | Public | `authController.loginUser` |
+| POST | `/api/auth/google` | Public | `authController.googleLogin` |
 | POST | `/api/auth/refresh` | Public/Bearer | `authController.refreshToken` |
 | POST | `/api/auth/logout` | Public/Bearer | `authController.logoutUser` |
 | POST | `/api/auth/forgot-password` | Public | `authController.forgotPassword` |
@@ -80,7 +81,23 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/authors/{id}/books` | Public | `authorController.getAuthorBooks` |
 | GET | `/api/authors/{id}/stats` | Bearer | `authorController.getAuthorStats` |
 | GET | `/api/authors/{id}/analytics` | Bearer | `authorController.getAuthorStats` |
-| GET | `/api/authors/{id}/royalties/history` | Bearer | `authorController.getAuthorRoyaltiesHistory` |
+| GET | `/api/authors/me/dashboard-access` | Author | `authorAccessController.getDashboardAccessStatus` |
+| POST | `/api/authors/me/dashboard-access/purchase` | Author | `authorAccessController.initiatePurchase` |
+| PUT | `/api/authors/me/dashboard-access/purchases/{purchaseId}/verify-payment` | Author | `authorAccessController.submitPurchaseUTR` |
+| GET | `/api/authors/me/dashboard` | Author | `authorController.getMyDashboard` |
+| GET | `/api/authors/me/analytics` | Author | `authorController.getMyAnalytics` |
+| GET | `/api/authors/me/books/performance` | Author | `authorController.getMyBookPerformance` |
+| GET | `/api/authors/me/royalties` | Author | `authorController.getMyRoyalties` |
+| GET | `/api/authors/me/books` | Author | `authorBookController.getMyBooks` |
+| POST | `/api/authors/me/books` | Author | `authorBookController.createBookDraft` |
+| GET | `/api/authors/me/books/{bookId}` | Author | `authorBookController.getMyBookDetail` |
+| PUT | `/api/authors/me/books/{bookId}` | Author | `authorBookController.updateBookDraft` |
+| DELETE | `/api/authors/me/books/{bookId}` | Author | `authorBookController.deleteBookDraft` |
+| POST | `/api/authors/me/books/{bookId}/submit` | Author | `authorBookController.submitBookForReview` |
+| POST | `/api/authors/me/uploads/document` | Author | `uploadController.uploadDocument` |
+| POST | `/api/authors/me/uploads/image` | Author | `uploadController.uploadImage` |
+| POST | `/api/uploads/publishing-document` | Author/Admin | `uploadController.uploadDocument` |
+| POST | `/api/uploads/publishing-image` | Author/Admin | `uploadController.uploadImage` |
 | POST | `/api/publish-requests` | Author/Admin | `publishController.createPublishRequest` |
 | GET | `/api/publish-packages` | Public | `publishController.getPublishPackages` |
 | GET | `/api/admin/analytics` | Admin | `adminController.getAdminAnalytics` |
@@ -99,6 +116,9 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | PUT | `/api/admin/orders/{id}/status` | Admin | `adminController.updateOrderStatus` |
 | GET | `/api/admin/publish-requests` | Admin | `adminController.getPublishRequests` |
 | PUT | `/api/admin/publish-requests/{id}/status` | Admin | `adminController.updatePublishRequestStatus` |
+| POST | `/api/admin/publish-requests/{id}/request-changes` | Admin | `adminController.requestChangesOnPublishRequest` |
+| POST | `/api/admin/publish-requests/{id}/reject` | Admin | `adminController.rejectPublishRequest` |
+| POST | `/api/admin/publish-requests/{id}/approve` | Admin | `adminController.approveAndPublishBook` |
 | POST | `/api/admin/books` | Admin | `adminController.createBook` |
 | PUT | `/api/admin/books/{id}` | Admin | `adminController.updateBook` |
 | DELETE | `/api/admin/books/{id}` | Admin | `adminController.deleteBook` |
@@ -108,6 +128,18 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | PUT | `/api/admin/categories/{id}` | Admin | `categoryController.updateCategory` |
 | PATCH | `/api/admin/categories/{id}/status` | Admin | `categoryController.updateCategoryStatus` |
 | DELETE | `/api/admin/categories/{id}` | Admin | `categoryController.deleteCategory` |
+| GET | `/api/admin/author-access/plans` | Admin | `adminAuthorAccessController.listPlans` |
+| POST | `/api/admin/author-access/plans` | Admin | `adminAuthorAccessController.createPlan` |
+| PUT | `/api/admin/author-access/plans/{id}` | Admin | `adminAuthorAccessController.updatePlan` |
+| POST | `/api/admin/author-access/plans/{id}/activate` | Admin | `adminAuthorAccessController.activatePlan` |
+| POST | `/api/admin/author-access/plans/{id}/archive` | Admin | `adminAuthorAccessController.archivePlan` |
+| GET | `/api/admin/author-access/purchases` | Admin | `adminAuthorAccessController.listPurchases` |
+| GET | `/api/admin/author-access/entitlements` | Admin | `adminAuthorAccessController.listEntitlements` |
+| POST | `/api/admin/author-access/entitlements/grant` | Admin | `adminAuthorAccessController.grantEntitlement` |
+| POST | `/api/admin/author-access/entitlements/{userId}/revoke` | Admin | `adminAuthorAccessController.revokeEntitlement` |
+| POST | `/api/admin/author-access/entitlements/{userId}/restore` | Admin | `adminAuthorAccessController.restoreEntitlement` |
+| GET | `/api/admin/authors/{authorId}/dashboard` | Admin | `adminController.getAdminAuthorDashboard` |
+| GET | `/api/admin/authors/{authorId}/royalties` | Admin | `adminController.getAdminAuthorRoyalties` |
 | GET | `/api/admin/operations/dashboard` | Admin | `adminOperationsController.dashboardSummary` |
 | GET | `/api/admin/operations/search` | Admin | `adminOperationsController.globalSearch` |
 | GET | `/api/admin/operations/payments` | Admin | `adminOperationsController.listPayments` |
@@ -145,3 +177,16 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/analytics/inventory` | Admin | `adminAnalyticsController.inventory` |
 | GET | `/api/admin/analytics/shipments` | Admin | `adminAnalyticsController.shipments` |
 | GET | `/api/admin/analytics/customers` | Admin | `adminAnalyticsController.customers` |
+| GET | `/api/users/me/context` | Bearer | `userController.getUserContext` |
+| GET | `/api/authors/me/royalty-settlements` | Bearer (Author Entitled) | `royaltySettlementController.getAuthorSettlements` |
+| GET | `/api/authors/me/royalty-settlements/{id}` | Bearer (Author Entitled) | `royaltySettlementController.getAuthorSettlementDetail` |
+| GET | `/api/admin/dashboard` | Admin | `adminController.getAdminDashboardOverview` |
+| GET | `/api/admin/authors/{authorId}` | Admin | `adminController.getAdminAuthorDetail` |
+| GET | `/api/admin/royalty-settlements/reconcile` | Admin | `royaltySettlementController.reconcileSettlements` |
+| POST | `/api/admin/royalty-settlements/preview` | Admin | `royaltySettlementController.previewSettlement` |
+| POST | `/api/admin/royalty-settlements` | Admin | `royaltySettlementController.createDraftSettlement` |
+| GET | `/api/admin/royalty-settlements` | Admin | `royaltySettlementController.listSettlementsForAdmin` |
+| GET | `/api/admin/royalty-settlements/{id}` | Admin | `royaltySettlementController.getSettlementDetailForAdmin` |
+| POST | `/api/admin/royalty-settlements/{id}/approve` | Admin | `royaltySettlementController.approveSettlement` |
+| POST | `/api/admin/royalty-settlements/{id}/mark-paid` | Admin | `royaltySettlementController.markPaid` |
+| POST | `/api/admin/royalty-settlements/{id}/cancel` | Admin | `royaltySettlementController.cancelSettlement` |

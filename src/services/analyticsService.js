@@ -78,8 +78,10 @@ class AnalyticsService {
       case 'OrderCreated':
         return { ...base, amount: Number(payload.totalPrice || 0) };
       case 'PaymentVerified':
-        return { ...base, amount: Number(payload.amount || 0) };
       case 'PaymentRejected':
+        if (payload.purpose && payload.purpose !== 'ORDER_PURCHASE') {
+          return null;
+        }
         return { ...base, amount: Number(payload.amount || 0) };
       case 'InvoiceGenerated':
         return { ...base, amount: Number(payload.total || 0) };

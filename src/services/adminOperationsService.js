@@ -129,12 +129,21 @@ class AdminOperationsService {
 
   async approvePayment(paymentId, admin, options = {}) {
     const payment = await paymentService.getPayment(paymentId);
-    await orderPaymentBridgeService.verifyOrderPayment(payment.order, {
-      userId: admin._id
-    }, {
-      reason: options.reason || 'Admin payment approved',
-      actorType: 'ADMIN'
-    });
+    if (payment.order && payment.purpose === 'ORDER_PURCHASE') {
+      await orderPaymentBridgeService.verifyOrderPayment(payment.order, {
+        userId: admin._id
+      }, {
+        reason: options.reason || 'Admin payment approved',
+        actorType: 'ADMIN'
+      });
+    } else {
+      await paymentService.verifyPayment(payment._id, {
+        userId: admin._id
+      }, {
+        reason: options.reason || 'Admin payment approved',
+        actorType: 'ADMIN'
+      });
+    }
     await this.publishAdminPaymentEvent(DOMAIN_EVENTS.ADMIN_APPROVED_PAYMENT, paymentId, admin, options);
 
     return this.getPaymentDetail(paymentId);
@@ -142,12 +151,21 @@ class AdminOperationsService {
 
   async rejectPayment(paymentId, admin, options = {}) {
     const payment = await paymentService.getPayment(paymentId);
-    await orderPaymentBridgeService.rejectOrderPayment(payment.order, {
-      userId: admin._id
-    }, {
-      reason: options.reason || 'Admin payment rejected',
-      actorType: 'ADMIN'
-    });
+    if (payment.order && payment.purpose === 'ORDER_PURCHASE') {
+      await orderPaymentBridgeService.rejectOrderPayment(payment.order, {
+        userId: admin._id
+      }, {
+        reason: options.reason || 'Admin payment rejected',
+        actorType: 'ADMIN'
+      });
+    } else {
+      await paymentService.rejectPayment(payment._id, {
+        userId: admin._id
+      }, {
+        reason: options.reason || 'Admin payment rejected',
+        actorType: 'ADMIN'
+      });
+    }
     await this.publishAdminPaymentEvent(DOMAIN_EVENTS.ADMIN_REJECTED_PAYMENT, paymentId, admin, options);
 
     return this.getPaymentDetail(paymentId);
@@ -160,12 +178,14 @@ class AdminOperationsService {
         reason: options.reason || 'Admin cancelled payment intent',
         actorType: 'ADMIN'
       });
-      await inventoryService.releaseByPayment(payment._id, {
-        session,
-        actor: { userId: admin._id },
-        actorType: 'ADMIN',
-        reason: 'Inventory released after admin payment cancellation'
-      });
+      if (payment.order && payment.purpose === 'ORDER_PURCHASE') {
+        await inventoryService.releaseByPayment(payment._id, {
+          session,
+          actor: { userId: admin._id },
+          actorType: 'ADMIN',
+          reason: 'Inventory released after admin payment cancellation'
+        });
+      }
       await this.publishAdminPaymentEvent(DOMAIN_EVENTS.ADMIN_CANCELLED_PAYMENT, paymentId, admin, {
         ...options,
         session

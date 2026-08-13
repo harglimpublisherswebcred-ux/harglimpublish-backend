@@ -39,10 +39,28 @@ const paymentLedgerSchema = new mongoose.Schema(
       index: true,
       immutable: true
     },
+    purpose: {
+      type: String,
+      enum: ['ORDER_PURCHASE', 'AUTHOR_ACCESS'],
+      default: 'ORDER_PURCHASE',
+      immutable: true,
+      index: true
+    },
+    subjectType: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      immutable: true
+    },
+    subjectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      immutable: true,
+      index: true
+    },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order',
-      required: true,
+      required: false,
       index: true,
       immutable: true
     },
@@ -148,7 +166,8 @@ paymentLedgerSchema.index({ orderId: 1, createdAt: 1 });
 paymentLedgerSchema.index({ userId: 1, createdAt: -1 });
 paymentLedgerSchema.index({ eventType: 1, createdAt: -1 });
 paymentLedgerSchema.index({ createdAt: -1 });
-paymentLedgerSchema.index({ provider: 1, eventType: 1, createdAt: -1 });
+paymentLedgerSchema.index({ purpose: 1, createdAt: -1 });
+paymentLedgerSchema.index({ subjectType: 1, subjectId: 1 });
 
 const preventMutation = function () {
   throw new Error('Payment ledger is append-only');
@@ -157,6 +176,10 @@ const preventMutation = function () {
 paymentLedgerSchema.pre('save', function () {
   if (!this.isNew) {
     throw new Error('Payment ledger is append-only');
+  }
+
+  if (!this.purpose) {
+    this.purpose = 'ORDER_PURCHASE';
   }
 });
 

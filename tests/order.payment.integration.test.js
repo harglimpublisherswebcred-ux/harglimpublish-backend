@@ -46,7 +46,8 @@ describe('Order payment bridge integration', () => {
     process.env.MERCHANT_UPI_ID = 'merchant@upi';
     process.env.MERCHANT_NAME = 'Harglim Publishers';
     replSet = await MongoMemoryReplSet.create({
-      replSet: { count: 1 }
+      replSet: { count: 1 },
+      instanceOpts: [{ launchTimeout: 60000 }]
     });
     await mongoose.connect(replSet.getUri());
     await Order.syncIndexes();
@@ -111,7 +112,7 @@ describe('Order payment bridge integration', () => {
     expect(body.data.payment).toEqual(expect.objectContaining({
       upiUrl: expect.stringContaining('upi://pay?'),
       qrCodeDataUrl: expect.stringMatching(/^data:image\/png;base64,/),
-      amount: 470
+      amount: 450
     }));
 
     const payment = await Payment.findOne({ order: body.data.order._id }).lean();
@@ -120,6 +121,12 @@ describe('Order payment bridge integration', () => {
 
     expect(payment).toBeTruthy();
     expect(String(body.data.order.payment)).toBe(String(payment._id));
+    expect(body.data.order.items[0].price).toBe(200);
+    expect(body.data.order.subtotal).toBe(400);
+    expect(body.data.order.tax).toBe(0);
+    expect(body.data.order.shippingPrice).toBe(50);
+    expect(body.data.order.totalPrice).toBe(450);
+    expect(payment.amount).toBe(450);
     expect(payment.status).toBe('QR_GENERATED');
     const reservation = await InventoryReservation.findOne({ order: body.data.order._id }).lean();
     expect(updatedBook.stock).toBe(5);
@@ -156,6 +163,65 @@ describe('Order payment bridge integration', () => {
     expect(body.data.trackingUpdates[0].status).toBe('Payment Submitted');
     expect(payment.status).toBe('VERIFICATION_PENDING');
     expect(payment.utr).toBe('UTR123456789');
+  });
+
+  it('uses MRP as canonical checkout price and keeps shipping threshold unchanged', async () => {
+    book.mrp = 600;
+    book.price = 600;
+    await book.save();
+
+    const checkout = await orderPaymentBridgeService.createOrderWithPaymentIntent({
+      user,
+      items: [{ bookId: book._id, quantity: 1 }],
+      shippingAddress,
+      paymentMethod: 'UPI'
+    });
+    const payment = await Payment.findById(checkout.order.payment).lean();
+
+    expect(checkout.order.items[0].price).toBe(600);
+    expect(checkout.order.subtotal).toBe(600);
+    expect(checkout.order.tax).toBe(0);
+    expect(checkout.order.shippingPrice).toBe(0);
+    expect(checkout.order.totalPrice).toBe(600);
+    expect(payment.amount).toBe(600);
+  });
+
+  it('preserves existing shipping behavior at and below the threshold', async () => {
+    book.mrp = 250;
+    book.price = 250;
+    await book.save();
+
+    const atThreshold = await orderPaymentBridgeService.createOrderWithPaymentIntent({
+      user,
+      items: [{ bookId: book._id, quantity: 2 }],
+      shippingAddress,
+      paymentMethod: 'UPI'
+    });
+
+    expect(atThreshold.order.subtotal).toBe(500);
+    expect(atThreshold.order.tax).toBe(0);
+    expect(atThreshold.order.shippingPrice).toBe(50);
+    expect(atThreshold.order.totalPrice).toBe(550);
+
+    await Order.deleteMany({});
+    await Payment.deleteMany({});
+    await PaymentLedger.collection.deleteMany({});
+    await InventoryReservation.deleteMany({});
+    await InventoryLedger.collection.deleteMany({});
+    book.reservedStock = 0;
+    await book.save();
+
+    const belowThreshold = await orderPaymentBridgeService.createOrderWithPaymentIntent({
+      user,
+      items: [{ bookId: book._id, quantity: 1 }],
+      shippingAddress,
+      paymentMethod: 'UPI'
+    });
+
+    expect(belowThreshold.order.subtotal).toBe(250);
+    expect(belowThreshold.order.tax).toBe(0);
+    expect(belowThreshold.order.shippingPrice).toBe(50);
+    expect(belowThreshold.order.totalPrice).toBe(300);
   });
 
   it('synchronizes paid compatibility fields after internal payment verification', async () => {

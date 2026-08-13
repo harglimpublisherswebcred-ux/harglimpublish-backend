@@ -37,6 +37,21 @@ const normalizeFrontendActive = (status) => {
   return undefined;
 };
 const normalizeOrderStatus = (status) => orderStatusMap[status] || status;
+const hasValue = (value) => value !== undefined && value !== null;
+const normalizeBookPricingInput = (payload = {}) => {
+  const data = { ...payload };
+  const hasMrp = hasValue(data.mrp);
+  const hasPrice = hasValue(data.price);
+
+  if (hasMrp && hasPrice && Number(data.mrp) !== Number(data.price)) {
+    throw serviceError('MRP and legacy price must match');
+  }
+
+  if (hasMrp && !hasPrice) data.price = data.mrp;
+  if (!hasMrp && hasPrice) data.mrp = data.price;
+
+  return data;
+};
 
 class AdminCoreService {
   constructor(repository = adminCoreRepository) {
@@ -122,13 +137,13 @@ class AdminCoreService {
 
   createBook(data, actor) {
     return this.repository.createBook({
-      ...data,
+      ...normalizeBookPricingInput(data),
       author: data.author || actor._id
     });
   }
 
   async updateBook(id, data) {
-    const book = await this.repository.updateBook(id, data);
+    const book = await this.repository.updateBook(id, normalizeBookPricingInput(data));
     if (!book) throw notFound('Book not found');
     return book;
   }
@@ -164,6 +179,160 @@ class AdminCoreService {
     if (!request) throw notFound('Request not found');
     if (request.user) sendPublishRequestUpdate(request.user, request, status);
     return request;
+  }
+
+  async requestChangesOnPublishRequest(adminUser, id, reason = 'Changes requested by editor') {
+    const request = await this.repository.findPublishRequestById(id);
+    if (!request) throw notFound('Publish request not found');
+
+    const updated = await this.repository.updatePublishRequestDetails(id, {
+      status: 'CHANGES_REQUESTED',
+      adminNotes: reason,
+      reviewedBy: adminUser._id,
+      reviewedAt: new Date()
+    });
+
+    if (updated.user) sendPublishRequestUpdate(updated.user, updated, 'CHANGES_REQUESTED');
+    return updated;
+  }
+
+  async rejectPublishRequest(adminUser, id, reason = 'Publish request rejected') {
+    const request = await this.repository.findPublishRequestById(id);
+    if (!request) throw notFound('Publish request not found');
+
+    const updated = await this.repository.updatePublishRequestDetails(id, {
+      status: 'REJECTED',
+      adminNotes: reason,
+      reviewedBy: adminUser._id,
+      reviewedAt: new Date()
+    });
+
+    if (updated.user) sendPublishRequestUpdate(updated.user, updated, 'REJECTED');
+    return updated;
+  }
+
+  async approveAndPublishBook(adminUser, id, notes = 'Approved and published') {
+    const request = await this.repository.findPublishRequestById(id);
+    if (!request) throw notFound('Publish request not found');
+
+    const updated = await this.repository.updatePublishRequestDetails(id, {
+      status: 'APPROVED',
+      adminNotes: notes,
+      reviewedBy: adminUser._id,
+      reviewedAt: new Date()
+    });
+
+    if (request.book) {
+      const bookId = request.book._id || request.book;
+      await this.repository.updateBook(bookId, { status: 'published' });
+    }
+
+    if (updated.user) sendPublishRequestUpdate(updated.user, updated, 'APPROVED');
+    return updated;
+  }
+
+  async getAdminDashboardOverview() {
+    const AuthorApplication = require('../models/AuthorApplication');
+    const PublishRequest = require('../models/PublishRequest');
+    const Payment = require('../models/Payment');
+    const Order = require('../models/Order');
+    const Book = require('../models/Book');
+    const User = require('../models/User');
+    const RoyaltySettlement = require('../models/RoyaltySettlement');
+
+    const [
+      pendingAuthorApplications,
+      pendingPublishRequests,
+      paymentsAwaitingVerification,
+      orderPaymentsAwaitingVerification,
+      authorAccessPaymentsAwaitingVerification,
+      ordersRequiringAction,
+      activeAuthors,
+      publishedBooks,
+      royaltySettlementsAwaitingApproval,
+      royaltySettlementsAwaitingPayment
+    ] = await Promise.all([
+      AuthorApplication.countDocuments({ status: { $in: ['pending', 'PENDING'] } }),
+      PublishRequest.countDocuments({ status: { $in: ['pending', 'PENDING', 'submitted', 'SUBMITTED', 'under_review', 'UNDER_REVIEW'] } }),
+      Payment.countDocuments({ status: { $in: ['VERIFICATION_PENDING', 'SUBMITTED'] } }),
+      Payment.countDocuments({ purpose: 'ORDER_PURCHASE', status: { $in: ['VERIFICATION_PENDING', 'SUBMITTED'] } }),
+      Payment.countDocuments({ purpose: 'AUTHOR_ACCESS', status: { $in: ['VERIFICATION_PENDING', 'SUBMITTED'] } }),
+      Order.countDocuments({ status: { $in: ['PENDING', 'PROCESSING'] } }),
+      User.countDocuments({ role: 'author' }),
+      Book.countDocuments({ status: 'published' }),
+      RoyaltySettlement.countDocuments({ status: { $in: ['DRAFT', 'READY_FOR_APPROVAL'] } }),
+      RoyaltySettlement.countDocuments({ status: { $in: ['APPROVED', 'PAYMENT_PENDING'] } })
+    ]);
+
+    return {
+      operationalCounts: {
+        pendingAuthorApplications,
+        pendingPublishRequests,
+        paymentsAwaitingVerification,
+        orderPaymentsAwaitingVerification,
+        authorAccessPaymentsAwaitingVerification,
+        ordersRequiringAction,
+        activeAuthors,
+        publishedBooks,
+        royaltySettlementsAwaitingApproval,
+        royaltySettlementsAwaitingPayment
+      }
+    };
+  }
+
+  async getAdminAuthorDetail(authorId) {
+    const User = require('../models/User');
+    const AuthorApplication = require('../models/AuthorApplication');
+    const AuthorAccessEntitlement = require('../models/AuthorAccessEntitlement');
+    const Book = require('../models/Book');
+    const PublishRequest = require('../models/PublishRequest');
+    const authorDashboardService = require('./authorDashboardService');
+
+    const user = await User.findById(authorId).select('-password').lean();
+    if (!user || user.role !== 'author') {
+      throw notFound('Author not found');
+    }
+
+    const [application, entitlement, publishedBookCount, draftBookCount, publishRequestCount, dashboardSummary] = await Promise.all([
+      AuthorApplication.findOne({ user: authorId }).sort('-createdAt').lean(),
+      AuthorAccessEntitlement.findOne({ user: authorId }).lean(),
+      Book.countDocuments({ author: authorId, status: 'published' }),
+      Book.countDocuments({ author: authorId, status: { $ne: 'published' } }),
+      PublishRequest.countDocuments({ user: authorId }),
+      authorDashboardService.getDashboardSummary(authorId, { role: 'admin' })
+    ]);
+
+    return {
+      author: {
+        id: user._id.toString(),
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        authorApprovalStatus: user.authorApprovalStatus || 'approved',
+        createdAt: user.createdAt
+      },
+      application: application ? {
+        id: application._id.toString(),
+        status: application.status,
+        submittedAt: application.createdAt,
+        reviewedAt: application.reviewedAt || null
+      } : null,
+      entitlement: entitlement ? {
+        id: entitlement._id.toString(),
+        status: entitlement.status,
+        grantedAt: entitlement.grantedAt,
+        source: entitlement.source
+      } : null,
+      bookCounts: {
+        published: publishedBookCount,
+        drafts: draftBookCount,
+        total: publishedBookCount + draftBookCount
+      },
+      publishRequestCount,
+      royalties: dashboardSummary.royalties
+    };
   }
 }
 

@@ -80,6 +80,9 @@ class OrderPaymentBridgeService {
       const createdOrder = await order.save({ session });
       const intent = await this.paymentService.createPaymentIntent({
         order: createdOrder._id,
+        purpose: 'ORDER_PURCHASE',
+        subjectType: 'ORDER',
+        subjectId: createdOrder._id,
         user: user._id,
         amount: createdOrder.totalPrice,
         currency: 'INR',
@@ -375,16 +378,22 @@ class OrderPaymentBridgeService {
   }
 
   async resolveOrderPayment(order, session) {
+    let payment = null;
     if (order.payment) {
-      return this.paymentService.getPayment(order.payment, { session, lean: true });
+      payment = await this.paymentService.getPayment(order.payment, { session, lean: true });
+    } else {
+      payment = await this.paymentService.findActivePayment(order._id, { session });
     }
 
-    const activePayment = await this.paymentService.findActivePayment(order._id, { session });
-    if (activePayment) {
-      return activePayment;
+    if (!payment) {
+      throw new OrderValidationError('Payment intent not found for order', { orderId: normalizeId(order._id) });
     }
 
-    throw new OrderValidationError('Payment intent not found for order', { orderId: normalizeId(order._id) });
+    if (payment.purpose && payment.purpose !== 'ORDER_PURCHASE') {
+      throw new OrderValidationError('Payment is not an order purchase payment', { paymentId: normalizeId(payment._id), purpose: payment.purpose });
+    }
+
+    return payment;
   }
 
   async buildOrderItems(items, session) {
@@ -405,18 +414,21 @@ class OrderPaymentBridgeService {
         throw new OrderValidationError(`Insufficient stock for book: ${book.title}`, { bookId });
       }
 
-      const itemTotal = book.price * item.quantity;
+      const unitPrice = book.mrp;
+      const itemTotal = unitPrice * item.quantity;
       subtotal += itemTotal;
 
       orderItems.push({
         book: book._id,
         quantity: item.quantity,
-        price: book.price
+        price: unitPrice,
+        author: book.author || null,
+        royaltyPercentage: typeof book.royaltyPercentage === 'number' ? book.royaltyPercentage : 0
       });
 
     }
 
-    const tax = Number((0.05 * subtotal).toFixed(2));
+    const tax = 0;
     const shippingPrice = subtotal > 500 ? 0 : 50;
 
     return {
