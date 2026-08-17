@@ -12,6 +12,18 @@ const getAdminAnalytics = async (req, res) => {
   }
 };
 
+// @desc    List books for admin inventory management
+// @route   GET /api/admin/books
+// @access  Private (Admin)
+const listBooks = async (req, res) => {
+  try {
+    const result = await adminCoreService.listBooks(req.query);
+    res.json({ success: true, data: result.data, pagination: result.pagination });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Create a new book (Inventory Management)
 // @route   POST /api/admin/books
 // @access  Private (Admin)
@@ -240,6 +252,7 @@ const getAdminAuthorDetail = async (req, res) => {
 module.exports = {
   getAdminAnalytics,
   getAdminDashboardOverview,
+  listBooks,
   createBook,
   updateBook,
   deleteBook,

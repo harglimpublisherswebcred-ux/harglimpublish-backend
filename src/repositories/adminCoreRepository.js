@@ -27,6 +27,20 @@ class AdminCoreRepository {
     return Book.countDocuments();
   }
 
+  listBooks(query = {}, { skip = 0, limit = 20, sort = { createdAt: -1 } } = {}) {
+    return Book.find(query)
+      .populate('author', 'name email role')
+      .populate('category', 'name slug')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  countBooksByQuery(query = {}) {
+    return Book.countDocuments(query);
+  }
+
   countUsers() {
     return User.countDocuments();
   }

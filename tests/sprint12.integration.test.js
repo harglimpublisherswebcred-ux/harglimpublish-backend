@@ -214,6 +214,60 @@ test('supports book royalty percentage through admin book APIs', async () => {
   expect(updated.body.data.price).toBe(275);
 });
 
+test('supports admin book listing with pagination, search, filters, and authorization', async () => {
+  await Book.create({
+    title: 'Admin Listed Draft',
+    slug: 'admin-listed-draft',
+    description: 'Draft book visible only in admin inventory',
+    author: author._id,
+    category: book.category,
+    mrp: 180,
+    price: 180,
+    status: 'draft',
+    isFeatured: true
+  });
+
+  await Book.create({
+    title: 'Admin Listed Published',
+    slug: 'admin-listed-published',
+    description: 'Published book visible in admin inventory',
+    author: author._id,
+    category: book.category,
+    mrp: 220,
+    price: 220,
+    status: 'published'
+  });
+
+  await request(app)
+    .get('/api/admin/books')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .expect(403);
+
+  const allBooks = await request(app)
+    .get('/api/admin/books?page=1&limit=10&sort=title')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+
+  expect(allBooks.body.success).toBe(true);
+  expect(allBooks.body.pagination.total).toBe(3);
+  expect(allBooks.body.data.map((item) => item.title)).toEqual([
+    'Admin Listed Draft',
+    'Admin Listed Published',
+    'Sprint 12 Book'
+  ]);
+  expect(allBooks.body.data[0].author.email).toBe(author.email);
+  expect(allBooks.body.data[0].category.slug).toBe('sprint-12');
+
+  const filtered = await request(app)
+    .get('/api/admin/books?status=draft&search=Listed&isFeatured=true&page=1&limit=5')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+
+  expect(filtered.body.pagination.total).toBe(1);
+  expect(filtered.body.data[0].title).toBe('Admin Listed Draft');
+  expect(filtered.body.data[0].status).toBe('draft');
+});
+
 test('supports legacy book price compatibility and rejects mrp conflicts', async () => {
   const legacy = await request(app)
     .post('/api/admin/books')

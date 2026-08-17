@@ -40,6 +40,27 @@ const normalizeFrontendActive = (status) => {
 const normalizeOrderStatus = (status) => orderStatusMap[status] || status;
 const hasValue = (value) => value !== undefined && value !== null;
 const MAX_BOOK_SLUG_ATTEMPTS = 50;
+const allowedBookStatuses = new Set(['draft', 'published', 'archived']);
+const allowedBookSortFields = new Set(['createdAt', 'title', 'mrp', 'price', 'stock', 'status']);
+
+const parseBooleanFilter = (value) => {
+  if (value === undefined) return undefined;
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value).trim().toLowerCase();
+  if (['true', '1', 'yes'].includes(normalized)) return true;
+  if (['false', '0', 'no'].includes(normalized)) return false;
+  return undefined;
+};
+
+const buildBookSort = (value) => {
+  if (!value) return { createdAt: -1 };
+  const raw = String(value);
+  const direction = raw.startsWith('-') ? -1 : 1;
+  const field = raw.replace(/^-/, '');
+  if (!allowedBookSortFields.has(field)) return { createdAt: -1 };
+  return { [field]: direction };
+};
+
 const normalizeBookPricingInput = (payload = {}) => {
   const data = { ...payload };
   delete data.slug;
@@ -86,6 +107,34 @@ class AdminCoreService {
       this.repository.listUsers(query, { skip, limit: limitNum }),
       this.repository.countUsersByQuery(query)
     ]);
+    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
+  }
+
+  async listBooks(filters = {}) {
+    const { pageNum, limitNum, skip } = pageMeta(filters.page, filters.limit);
+    const query = {};
+
+    if (filters.status && allowedBookStatuses.has(String(filters.status).toLowerCase())) {
+      query.status = String(filters.status).toLowerCase();
+    }
+    if (filters.category) query.category = filters.category;
+    if (filters.author) query.author = filters.author;
+
+    ['isFeatured', 'isBestseller', 'isNewRelease'].forEach((field) => {
+      const parsed = parseBooleanFilter(filters[field]);
+      if (parsed !== undefined) query[field] = parsed;
+    });
+
+    if (filters.search || filters.q) {
+      const regex = new RegExp(escapeRegex(filters.search || filters.q), 'i');
+      query.$or = [{ title: regex }, { description: regex }, { isbn: regex }, { slug: regex }];
+    }
+
+    const [data, total] = await Promise.all([
+      this.repository.listBooks(query, { skip, limit: limitNum, sort: buildBookSort(filters.sort) }),
+      this.repository.countBooksByQuery(query)
+    ]);
+
     return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 

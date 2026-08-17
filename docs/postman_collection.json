@@ -3219,6 +3219,39 @@
           ]
         },
         {
+          "name": "List books",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/books",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "books"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Create book",
           "request": {
             "method": "POST",

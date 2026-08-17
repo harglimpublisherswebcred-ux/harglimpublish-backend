@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAdminAnalytics,
   getAdminDashboardOverview,
+  listBooks,
   createBook,
   updateBook,
   deleteBook,
@@ -104,7 +105,7 @@ router.put('/publish-requests/:id/status', updatePublishRequestStatus);
 router.post('/publish-requests/:id/request-changes', requestChangesOnPublishRequest);
 router.post('/publish-requests/:id/reject', rejectPublishRequest);
 router.post('/publish-requests/:id/approve', approveAndPublishBook);
-router.route('/books').post(createBook);
+router.route('/books').get(listBooks).post(createBook);
 router.route('/books/:id').put(updateBook).delete(deleteBook);
 
 const adminAuthorAccessController = require('../controllers/adminAuthorAccessController');

@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 166
+Endpoints documented: 167
 
 Models documented: 17
 
@@ -119,6 +119,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/admin/publish-requests/{id}/request-changes` | Admin | `adminController.requestChangesOnPublishRequest` |
 | POST | `/api/admin/publish-requests/{id}/reject` | Admin | `adminController.rejectPublishRequest` |
 | POST | `/api/admin/publish-requests/{id}/approve` | Admin | `adminController.approveAndPublishBook` |
+| GET | `/api/admin/books` | Admin | `adminController.listBooks` |
 | POST | `/api/admin/books` | Admin | `adminController.createBook` |
 | PUT | `/api/admin/books/{id}` | Admin | `adminController.updateBook` |
 | DELETE | `/api/admin/books/{id}` | Admin | `adminController.deleteBook` |

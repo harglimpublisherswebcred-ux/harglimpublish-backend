@@ -17381,6 +17381,253 @@
       }
     },
     "/api/admin/books": {
+      "get": {
+        "tags": [
+          "Admin Core"
+        ],
+        "summary": "List books",
+        "description": "List books. Controller: adminController.listBooks. Authentication: Admin. API routes are rate limited and return standard error envelopes. Admin inventory list. Returns draft, published, and archived books unless filtered. Supports pagination, search, and safe sort fields.",
+        "operationId": "get_api_admin_books",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFeatured",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isBestseller",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isNewRelease",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Admin Core"
