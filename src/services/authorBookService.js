@@ -1,6 +1,7 @@
 const authorBookRepository = require('../repositories/authorBookRepository');
 const Category = require('../models/Category');
 const logger = require('../utils/logger');
+const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
 
 class AuthorBookError extends Error {
   constructor(message, code = 'AUTHOR_BOOK_ERROR', statusCode = 400, details = {}) {
@@ -64,6 +65,7 @@ const PROTECTED_ADMIN_FIELDS = new Set([
 ]);
 
 const hasValue = (val) => val !== undefined && val !== null;
+const MAX_BOOK_SLUG_ATTEMPTS = 50;
 
 const filterAndNormalizeAuthorPayload = (payload = {}, isUpdate = false) => {
   const filtered = {};
@@ -169,11 +171,10 @@ class AuthorBookService {
 
     const bookData = {
       ...sanitizedData,
-      author: user._id,
-      slug: `${String(payload.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Date.now()}`
+      author: user._id
     };
 
-    const book = await this.repository.createDraft(bookData);
+    const book = await this.createDraftWithServerSlug(bookData);
 
     logger.info('author_book.draft_created', {
       service: 'hm-backend',
@@ -182,6 +183,25 @@ class AuthorBookService {
     });
 
     return book;
+  }
+
+  async createDraftWithServerSlug(bookData) {
+    const baseSlug = createBaseSlug(bookData.title);
+
+    for (let attempt = 0; attempt < MAX_BOOK_SLUG_ATTEMPTS; attempt += 1) {
+      const slug = slugCandidate(baseSlug, attempt);
+      const existing = await this.repository.findBookBySlug(slug);
+      if (existing) continue;
+
+      try {
+        return await this.repository.createDraft({ ...bookData, slug });
+      } catch (error) {
+        if (isBookSlugDuplicateError(error)) continue;
+        throw error;
+      }
+    }
+
+    throw new AuthorBookValidationError('Unable to generate a unique book slug');
   }
 
   async updateAuthorBookDraft(user, bookId, payload = {}) {

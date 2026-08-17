@@ -430,6 +430,7 @@ const schemas = {
   },
   AdminBookCreateRequest: {
     type: 'object',
+    description: 'Admin book creation payload. slug is server-owned, generated from title, URL-safe, and unique. Frontend should not send slug. Book.mrp is canonical; price is a temporary compatibility alias.',
     required: ['title', 'description', 'category', 'mrp'],
     properties: {
       title: { type: 'string' },
@@ -454,6 +455,7 @@ const schemas = {
   },
   AdminBookUpdateRequest: {
     type: 'object',
+    description: 'Admin book update payload. slug is stable after creation and remains server-owned. Title updates do not regenerate slug.',
     properties: {
       title: { type: 'string' },
       description: { type: 'string' },

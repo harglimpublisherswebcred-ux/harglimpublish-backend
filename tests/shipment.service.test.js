@@ -49,7 +49,7 @@ describe('ShipmentService', () => {
     await ShipmentLedger.collection.deleteMany({});
 
     user = await User.create({ name: 'Reader One', email: 'ship-reader@example.com', password: 'password123', role: 'reader' });
-    const book = await Book.create({ title: 'Ship Book', description: 'Ship book', author: user._id, category: new mongoose.Types.ObjectId(), price: 100, stock: 5 });
+    const book = await Book.create({ title: 'Ship Book', slug: 'ship-book', description: 'Ship book', author: user._id, category: new mongoose.Types.ObjectId(), price: 100, stock: 5 });
     order = await Order.create({
       orderNumber: 'HM-SHIP',
       user: user._id,

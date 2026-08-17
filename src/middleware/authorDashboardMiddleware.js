@@ -1,4 +1,5 @@
 const authorAccessRepository = require('../repositories/authorAccessRepository');
+const { isPaidAuthorDashboardAccessEnabled } = require('../config/features');
 
 const requireAuthorDashboardAccess = (repository = authorAccessRepository) => {
   return async (req, res, next) => {
@@ -32,6 +33,10 @@ const requireAuthorDashboardAccess = (repository = authorAccessRepository) => {
           error: 'AUTHOR_DASHBOARD_ACCESS_DENIED',
           message: 'Cannot access another author dashboard'
         });
+      }
+
+      if (!isPaidAuthorDashboardAccessEnabled()) {
+        return next();
       }
 
       const entitlement = await repository.findEntitlementByUserId(req.user._id);

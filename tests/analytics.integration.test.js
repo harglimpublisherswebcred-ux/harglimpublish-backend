@@ -43,7 +43,7 @@ describe('Analytics integration', () => {
     await User.deleteMany({});
     await Book.deleteMany({});
     admin = await User.create({ name: 'Admin', email: 'analytics-admin@example.com', password: 'password123', role: 'admin' });
-    book = await Book.create({ title: 'Best Book', description: 'Book', author: admin._id, category: new mongoose.Types.ObjectId(), price: 100 });
+    book = await Book.create({ title: 'Best Book', slug: 'best-book', description: 'Book', author: admin._id, category: new mongoose.Types.ObjectId(), price: 100 });
     token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET || 'secret123');
   });
 

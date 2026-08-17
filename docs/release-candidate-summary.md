@@ -178,8 +178,8 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/analytics/shipments` | Admin | `adminAnalyticsController.shipments` |
 | GET | `/api/admin/analytics/customers` | Admin | `adminAnalyticsController.customers` |
 | GET | `/api/users/me/context` | Bearer | `userController.getUserContext` |
-| GET | `/api/authors/me/royalty-settlements` | Bearer (Author Entitled) | `royaltySettlementController.getAuthorSettlements` |
-| GET | `/api/authors/me/royalty-settlements/{id}` | Bearer (Author Entitled) | `royaltySettlementController.getAuthorSettlementDetail` |
+| GET | `/api/authors/me/royalty-settlements` | Bearer (Author Dashboard) | `royaltySettlementController.getAuthorSettlements` |
+| GET | `/api/authors/me/royalty-settlements/{id}` | Bearer (Author Dashboard) | `royaltySettlementController.getAuthorSettlementDetail` |
 | GET | `/api/admin/dashboard` | Admin | `adminController.getAdminDashboardOverview` |
 | GET | `/api/admin/authors/{authorId}` | Admin | `adminController.getAdminAuthorDetail` |
 | GET | `/api/admin/royalty-settlements/reconcile` | Admin | `royaltySettlementController.reconcileSettlements` |

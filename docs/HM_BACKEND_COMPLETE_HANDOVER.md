@@ -291,7 +291,7 @@ Out of scope:
 
 ## 1. Document Purpose
 
-HM Backend is a production Node.js, Express, MongoDB backend for a publishing and book-commerce platform. It supports public catalog browsing, reader accounts, checkout with manual UPI verification, author applications, author-owned publishing, paid author dashboard access, admin operations, invoices, shipments, notifications, analytics, and royalty settlement accounting.
+HM Backend is a production Node.js, Express, MongoDB backend for a publishing and book-commerce platform. It supports public catalog browsing, reader accounts, checkout with manual UPI verification, author applications, author-owned publishing, feature-flagged author dashboard access, admin operations, invoices, shipments, notifications, analytics, and royalty settlement accounting.
 
 This guide is for frontend developers, admin-panel developers, mobile developers, QA engineers, backend maintainers, DevOps engineers, and future coding agents. A developer should be able to integrate the platform by reading this file without opening backend source files.
 
@@ -356,7 +356,7 @@ Events and subscribers decouple side effects. Payment verification can create in
 - Shipping: shipment records and tracking after order payment/invoice flow.
 - Uploads: Cloudinary-backed image and document upload with config checks.
 - Author Applications: reader applies; admin approves/rejects; approval promotes user to author.
-- Author Access: paid author dashboard entitlement using `AUTHOR_ACCESS` payment purpose.
+- Author Access: feature-flagged paid author dashboard entitlement using `AUTHOR_ACCESS` payment purpose. When `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false`, approved authors receive dashboard access without payment and new dashboard purchases are blocked.
 - Author Books: author-created drafts and editorial submission.
 - Publish Requests: legacy/new publishing workflow tied to editorial review.
 - Author Dashboard: metrics, analytics, book performance, royalty history.
@@ -808,7 +808,7 @@ Application payload:
 
 ## 38. Permanent Author Permission Rule
 
-**Author role equals publishing access. Paid author dashboard equals dashboard access only.** A revoked or unpaid dashboard plan must not block author book publishing.
+**Author role equals publishing access. Author dashboard access is feature-flagged.** When `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false`, approved authors receive dashboard access automatically. A revoked or unpaid legacy dashboard plan must not block author book publishing.
 
 ## 39. Author Publishing Architecture
 
@@ -934,22 +934,24 @@ Admin approval publishes the linked book. Public catalog should rely on backend 
 
 ## 50. Dashboard Access Overview
 
-Paid author dashboard access is separate from author publishing. States include no plan/purchase, payment pending, verification pending, active, and revoked.
+Author dashboard access is separate from author publishing. Paid dashboard gating is controlled by `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED`, which defaults to `true` when missing. When disabled, approved authors can access dashboard routes without creating an entitlement or purchase, while historical entitlement/purchase states remain visible.
 
 ## 51. Dashboard Access State API
 
 `GET /api/authors/me/dashboard-access` returns current author dashboard entitlement, active plan, and purchase/payment status where available.
+
+Responses include `features.paidAuthorDashboardAccess`. Frontend must hide Buy Dashboard Access, plan selection, payment pending, verification pending, and dashboard paywall screens when this value is `false`.
 
 ## 52. Dashboard Access State Machine
 
 | State | UI |
 | --- | --- |
 | `NOT_AUTHOR` | Hide dashboard purchase. |
-| `APPROVED_AUTHOR_NO_PLAN` | Show purchase CTA if plan exists. |
-| `PAYMENT_PENDING` | Show QR/payment instructions. |
-| `VERIFICATION_PENDING` | Show waiting for admin verification. |
-| `ACTIVE` | Unlock dashboard. |
-| `REVOKED` | Lock dashboard and show support/admin message. |
+| `APPROVED_AUTHOR_NO_PLAN` | If `features.paidAuthorDashboardAccess=true`, show purchase CTA if plan exists. If false, unlock dashboard for approved authors. |
+| `PAYMENT_PENDING` | Historical/in-flight paid state. If paid feature is enabled, show QR/payment instructions; if disabled, dashboard remains available to approved author. |
+| `VERIFICATION_PENDING` | Historical/in-flight paid state. If paid feature is enabled, show waiting for admin verification; if disabled, dashboard remains available to approved author. |
+| `ACTIVE` | Historical entitlement active. Unlock dashboard. |
+| `REVOKED` | Historical entitlement revoked. If paid feature is enabled, lock dashboard; if disabled, approved author dashboard remains allowed because legacy paid entitlement is not the gate. |
 
 ## 53. Dashboard Plan
 
@@ -957,12 +959,14 @@ Admin controls plan amount and status. Frontend should display returned plan dat
 
 ## 54. Purchase Dashboard Access
 
-`POST /api/authors/me/dashboard-access/purchase` requires no body. Backend snapshots active plan and creates an `AUTHOR_ACCESS` payment/purchase.
+`POST /api/authors/me/dashboard-access/purchase` requires no body. When `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=true`, backend snapshots active plan and creates an `AUTHOR_ACCESS` payment/purchase. When the flag is `false`, the endpoint returns `409 AUTHOR_DASHBOARD_PAID_ACCESS_DISABLED` and creates no purchase/payment.
 
 ## 55. Dashboard Payment Flow
 
 ```text
-Author -> Purchase dashboard plan -> QR/payment pending -> Submit UTR -> Admin verification -> ACTIVE entitlement
+Flag ON: Author -> Purchase dashboard plan -> QR/payment pending -> Submit UTR -> Admin verification -> ACTIVE entitlement
+
+Flag OFF: Reader -> Apply -> Admin approves -> Author -> Dashboard access without payment
 ```
 
 Submit UTR:
@@ -981,7 +985,7 @@ Frontend cannot control `amount`, `currency`, `purpose`, `subjectType`, `subject
 
 ## 57. Dashboard Access Error Handling
 
-Handle `AUTHOR_DASHBOARD_ACCESS_REQUIRED` by showing purchase/pending state. Handle revoked access separately from unpaid/no-plan. Publishing screens should remain available to authors even when dashboard access is not active.
+Handle `AUTHOR_DASHBOARD_ACCESS_REQUIRED` by showing purchase/pending state only when `features.paidAuthorDashboardAccess=true`. Handle `AUTHOR_DASHBOARD_PAID_ACCESS_DISABLED` by hiding paid dashboard purchase UI and loading the author dashboard for approved authors. Publishing screens should remain available to authors regardless of dashboard access state.
 
 ## 58. Dashboard Summary API
 
@@ -2405,10 +2409,10 @@ Response envelopes below are representative of the current controllers. Some pop
 `POST /api/auth/register` and `POST /api/auth/login` return auth tokens and a user. Public register always returns `role: "reader"` even if a legacy client sends a role field.
 
 ```json
-{ "success": true, "data": { "user": { "id": "userId", "_id": "userId", "role": "author", "isActive": true }, "capabilities": { "canPublish": true, "canAccessAuthorDashboard": false, "canAdminister": false }, "states": { "authorApplicationStatus": "APPROVED", "dashboardAccessStatus": "NOT_PURCHASED", "publishingStatus": "APPROVED" } } }
+{ "success": true, "data": { "user": { "id": "userId", "_id": "userId", "role": "author", "isActive": true }, "capabilities": { "canPublish": true, "canAccessAuthorDashboard": true, "canAdminister": false }, "states": { "authorApplicationStatus": "APPROVED", "dashboardAccessStatus": "NOT_PURCHASED", "publishingStatus": "APPROVED" }, "features": { "paidAuthorDashboardAccess": false } } }
 ```
 
-`GET /api/users/me/context` uses `NOT_PURCHASED` for an approved author with no dashboard entitlement/purchase. `GET /api/authors/me/dashboard-access` uses `APPROVED_AUTHOR_NO_PLAN` for the same paywall condition. Treat them as equivalent frontend UI states but do not send either as a backend enum.
+`GET /api/users/me/context` uses `NOT_PURCHASED` for an approved author with no dashboard entitlement/purchase. `GET /api/authors/me/dashboard-access` uses `APPROVED_AUTHOR_NO_PLAN` for the same historical paid-access condition. When `features.paidAuthorDashboardAccess=false`, these states do not block dashboard capability.
 
 ```json
 { "success": true, "data": [{ "_id": "bookId", "title": "Book", "slug": "book", "mrp": 499, "price": 499, "status": "published" }], "pagination": { "page": 1, "limit": 10, "total": 1 } }
@@ -2453,7 +2457,7 @@ Admin dashboard and operations endpoints return optimized summary/list/detail DT
 | Dashboard Access | `ACTIVE` | `dashboardUnlocked` | Allow author dashboard. |
 | Dashboard Access | `REVOKED` | `accessRevoked` | Show support/admin message. |
 | Dashboard Access | `PAYMENT_PENDING`, `VERIFICATION_PENDING` | `purchaseInProgress` | Show payment/verification status. |
-| Dashboard Access | `APPROVED_AUTHOR_NO_PLAN` or user-context `NOT_PURCHASED` | `showPaywall` | Approved author can buy dashboard access. |
+| Dashboard Access | `APPROVED_AUTHOR_NO_PLAN` or user-context `NOT_PURCHASED` | `showPaywall` only when `paidAuthorDashboardAccess=true`; otherwise `dashboardUnlocked` | Approved author can access dashboard without payment when feature is disabled. |
 | Settlement | `DRAFT`, `READY_FOR_APPROVAL` | `needsAdminReview` | Admin can approve/cancel. |
 | Settlement | `APPROVED`, `PAYMENT_PENDING` | `awaitingManualPayout` | Admin must transfer externally and mark paid. |
 | Settlement | `PAID` | `paid` | Author can view paid record. |
@@ -2620,7 +2624,7 @@ await api.post(`/api/admin/operations/payments/${paymentId}/approve`, {
 | F8 | Order tracking | orders, shipments, tracking |
 | F9 | Author application | author applications |
 | F10 | Author publishing | author books/uploads/submit |
-| F11 | Dashboard access purchase | author access purchase/payment |
+| F11 | Dashboard access purchase | author access purchase/payment only when `paidAuthorDashboardAccess=true` |
 | F12 | Author dashboard | dashboard/analytics/performance |
 | F13 | Royalties | royalty history |
 | F14 | Settlements | author settlement list/detail |
@@ -2648,7 +2652,7 @@ Each phase below includes the implementation detail required for frontend delive
 | F8 | Order tracking | Orders, order detail, invoices, shipments | `GET /api/orders`, `GET /api/orders/{id}`, `GET /api/invoices`, `GET /api/invoices/{id}/download`, `GET /api/shipments`, `GET /api/shipments/{id}/tracking` | `{orders, selectedOrder, invoice, shipment}` | Bearer owner/admin | Loading tables. Empty: no orders. Test owner-only access and download blob. |
 | F9 | Author application | Become author form/status | `POST /api/author-applications`, `GET /api/users/me/author-application` | `{application}` | Bearer | If 404 show form. Success: pending banner. Test approved/rejected/pending views. |
 | F10 | Author publishing | Draft list, draft form, uploads, submit | `GET/POST /api/authors/me/books`, `GET/PUT/DELETE /api/authors/me/books/{bookId}`, `POST /api/authors/me/uploads/image`, `POST /api/authors/me/uploads/document`, `POST /api/authors/me/books/{bookId}/submit` | `{drafts, selectedDraft, upload, submission}` | Author | Empty: no drafts. Block protected fields. Test multipart, submit duplicate, ownership. |
-| F11 | Dashboard access purchase | Paywall, plan purchase, UTR submit | `GET /api/authors/me/dashboard-access`, `POST /api/authors/me/dashboard-access/purchase`, `PUT /api/authors/me/dashboard-access/purchases/{purchaseId}/verify-payment` | `{dashboardAccess, purchase, payment}` | Author | States: `ACTIVE`, `REVOKED`, `PAYMENT_PENDING`, `VERIFICATION_PENDING`, `APPROVED_AUTHOR_NO_PLAN`, `NOT_AUTHOR`. Test paywall and UTR double-submit. |
+| F11 | Dashboard access purchase | Paywall, plan purchase, UTR submit when `paidAuthorDashboardAccess=true`; hidden when false | `GET /api/authors/me/dashboard-access`, `POST /api/authors/me/dashboard-access/purchase`, `PUT /api/authors/me/dashboard-access/purchases/{purchaseId}/verify-payment` | `{dashboardAccess, purchase, payment, features}` | Author | States: `ACTIVE`, `REVOKED`, `PAYMENT_PENDING`, `VERIFICATION_PENDING`, `APPROVED_AUTHOR_NO_PLAN`, `NOT_AUTHOR`. Test flag ON paywall and flag OFF direct dashboard access. |
 | F12 | Author dashboard | Metrics overview | `GET /api/authors/me/dashboard`, `GET /api/authors/me/analytics`, `GET /api/authors/me/books/performance` | `{summary, series, performance}` | Author + entitlement | Empty: no sales. Error: entitlement required/paywall. Test route guard and date filters. |
 | F13 | Royalties | Royalty history | `GET /api/authors/me/royalties` | `{items, pagination, filters}` | Author + entitlement | Show `null` royalty as unknown, not zero. Test filters and historical unavailable marker. |
 | F14 | Settlements | Author settlement list/detail | `GET /api/authors/me/royalty-settlements`, `GET /api/authors/me/royalty-settlements/{id}` | `{settlements, selected}` | Author + entitlement | Empty: no settlements. Test IDOR blocked and paid/cancelled states. |
@@ -2775,7 +2779,7 @@ Backend enforces ownership, but frontend should still scope user routes to the c
 
 ## 123. Frontend Integration Test Checklist
 
-Customer: login, catalog, book detail, cart, order create, UTR submit, payment pending, invoice, tracking, notification, wishlist. Author: application, approval, draft, upload, submit, dashboard purchase, dashboard metrics, royalty history, settlement detail. Admin: author approval, payment approval/rejection, publishing moderation, user updates, content updates, shipment actions, settlement payout.
+Customer: login, catalog, book detail, cart, order create, UTR submit, payment pending, invoice, tracking, notification, wishlist. Author: application, approval, draft, upload, submit, dashboard metrics, royalty history, settlement detail; dashboard purchase only when `paidAuthorDashboardAccess=true`. Admin: author approval, payment approval/rejection, publishing moderation, user updates, content updates, shipment actions, settlement payout.
 
 ## 124. Error Test Checklist
 
@@ -2844,7 +2848,7 @@ Admin SOP: review eligible royalty -> preview settlement -> create draft -> appr
 | --- | --- |
 | MRP | Canonical book selling price used by checkout. |
 | ORDER_PURCHASE | Payment purpose for customer book orders. |
-| AUTHOR_ACCESS | Payment purpose for paid author dashboard access. |
+| AUTHOR_ACCESS | Payment purpose for paid author dashboard access when the paid access feature is enabled. Historical records remain valid when the feature is disabled. |
 | PublishRequest | Editorial review record for manuscript/book publishing. |
 | Dashboard Entitlement | Active paid access record for author dashboard. |
 | Accrued Royalty | Royalty generated from sales. |

@@ -1,6 +1,12 @@
 const authorAccessService = require('../services/authorAccessService');
 
-exports.getDashboardAccessStatus = async (req, res, next) => {
+const sendAuthorAccessError = (res, error) => res.status(error.statusCode || error.status || 500).json({
+  success: false,
+  ...(error.code && { error: error.code }),
+  message: error.message || 'Internal Server Error'
+});
+
+exports.getDashboardAccessStatus = async (req, res) => {
   try {
     const status = await authorAccessService.getAuthorDashboardStatus(req.user);
     res.status(200).json({
@@ -8,11 +14,11 @@ exports.getDashboardAccessStatus = async (req, res, next) => {
       data: status
     });
   } catch (error) {
-    next(error);
+    sendAuthorAccessError(res, error);
   }
 };
 
-exports.initiatePurchase = async (req, res, next) => {
+exports.initiatePurchase = async (req, res) => {
   try {
     const result = await authorAccessService.createDashboardAccessPurchase(req.user);
     res.status(201).json({
@@ -20,11 +26,11 @@ exports.initiatePurchase = async (req, res, next) => {
       data: result
     });
   } catch (error) {
-    next(error);
+    sendAuthorAccessError(res, error);
   }
 };
 
-exports.submitPurchaseUTR = async (req, res, next) => {
+exports.submitPurchaseUTR = async (req, res) => {
   try {
     const { utr } = req.body;
     const { purchaseId } = req.params;
@@ -42,6 +48,6 @@ exports.submitPurchaseUTR = async (req, res, next) => {
       data: result
     });
   } catch (error) {
-    next(error);
+    sendAuthorAccessError(res, error);
   }
 };

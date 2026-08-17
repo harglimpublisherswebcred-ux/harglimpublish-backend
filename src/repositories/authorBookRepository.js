@@ -59,6 +59,10 @@ class AuthorBookRepository {
     return this.Book.findById(bookId).populate('category', 'name slug');
   }
 
+  async findBookBySlug(slug) {
+    return this.Book.findOne({ slug });
+  }
+
   async createDraft(bookData) {
     const book = new this.Book({
       ...bookData,

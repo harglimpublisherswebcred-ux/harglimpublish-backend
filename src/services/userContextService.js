@@ -2,6 +2,7 @@ const User = require('../models/User');
 const AuthorApplication = require('../models/AuthorApplication');
 const AuthorAccessEntitlement = require('../models/AuthorAccessEntitlement');
 const AuthorAccessPurchase = require('../models/AuthorAccessPurchase');
+const { getFeatureFlags, isPaidAuthorDashboardAccessEnabled } = require('../config/features');
 
 class UserContextService {
   async getUserContext(actor) {
@@ -16,6 +17,7 @@ class UserContextService {
     const isAuthorRole = user.role === 'author';
     const isAdminRole = user.role === 'admin';
     const isApprovedAuthor = isAuthorRole;
+    const paidAuthorDashboardAccessEnabled = isPaidAuthorDashboardAccessEnabled();
 
     let authorApplicationStatus = 'NOT_APPLIED';
     if (isAuthorRole || user.role === 'reader') {
@@ -60,7 +62,7 @@ class UserContextService {
 
     const capabilities = {
       canPublish: isAdminRole || isApprovedAuthor,
-      canAccessAuthorDashboard: isAdminRole || hasActiveEntitlement,
+      canAccessAuthorDashboard: isAdminRole || (isApprovedAuthor && !paidAuthorDashboardAccessEnabled) || hasActiveEntitlement,
       canAdminister: isAdminRole
     };
 
@@ -82,7 +84,8 @@ class UserContextService {
         createdAt: user.createdAt
       },
       capabilities,
-      states
+      states,
+      features: getFeatureFlags()
     };
   }
 }

@@ -3,6 +3,7 @@ const paymentRepository = require('../repositories/paymentRepository');
 const paymentService = require('./paymentService');
 const User = require('../models/User');
 const logger = require('../utils/logger');
+const { getFeatureFlags, isPaidAuthorDashboardAccessEnabled } = require('../config/features');
 
 const maskReference = (value) => {
   if (!value) return undefined;
@@ -17,6 +18,7 @@ class AuthorAccessError extends Error {
     this.name = this.constructor.name;
     this.code = code;
     this.status = status;
+    this.statusCode = status;
     this.details = details;
   }
 }
@@ -57,6 +59,12 @@ class AuthorAccessUnauthorizedError extends AuthorAccessError {
   }
 }
 
+class AuthorDashboardPaidAccessDisabledError extends AuthorAccessError {
+  constructor(message = 'Paid author dashboard access is currently disabled', details = {}) {
+    super(message, 'AUTHOR_DASHBOARD_PAID_ACCESS_DISABLED', 409, details);
+  }
+}
+
 class AuthorAccessService {
   constructor({
     repository = authorAccessRepository,
@@ -77,11 +85,13 @@ class AuthorAccessService {
         dashboardAccess: {
           status: 'NOT_AUTHOR',
           hasAccess: false
-        }
+        },
+        features: getFeatureFlags()
       };
     }
 
     const entitlement = await this.authorAccessRepository.findEntitlementByUserId(user._id);
+    const paidAccessEnabled = isPaidAuthorDashboardAccessEnabled();
     if (entitlement) {
       if (entitlement.status === 'ACTIVE') {
         return {
@@ -91,7 +101,8 @@ class AuthorAccessService {
             hasAccess: true,
             grantedAt: entitlement.grantedAt,
             source: entitlement.source
-          }
+          },
+          features: getFeatureFlags()
         };
       }
 
@@ -100,10 +111,11 @@ class AuthorAccessService {
           author: true,
           dashboardAccess: {
             status: 'REVOKED',
-            hasAccess: false,
+            hasAccess: !paidAccessEnabled,
             revokedAt: entitlement.revokedAt,
             reason: entitlement.revocationReason
-          }
+          },
+          features: getFeatureFlags()
         };
       }
     }
@@ -134,16 +146,17 @@ class AuthorAccessService {
         author: true,
         dashboardAccess: {
           status: paymentState,
-          hasAccess: false,
+          hasAccess: !paidAccessEnabled,
           purchaseId: pendingPurchase._id,
           paymentId: pendingPurchase.payment
         },
         plan: {
           id: pendingPurchase.plan,
           name: pendingPurchase.planNameSnapshot,
-          amount: pendingPurchase.amount,
-          currency: pendingPurchase.currency
-        }
+            amount: pendingPurchase.amount,
+            currency: pendingPurchase.currency
+        },
+        features: getFeatureFlags()
       };
     }
 
@@ -152,7 +165,7 @@ class AuthorAccessService {
       author: true,
       dashboardAccess: {
         status: 'APPROVED_AUTHOR_NO_PLAN',
-        hasAccess: false
+        hasAccess: !paidAccessEnabled
       },
       plan: activePlan
         ? {
@@ -161,13 +174,18 @@ class AuthorAccessService {
             amount: activePlan.amount,
             currency: activePlan.currency
           }
-        : null
+        : null,
+      features: getFeatureFlags()
     };
   }
 
   async createDashboardAccessPurchase(user, options = {}) {
     if (!user || user.role !== 'author') {
       throw new AuthorAccessUnauthorizedError('Only approved authors can purchase dashboard access');
+    }
+
+    if (!isPaidAuthorDashboardAccessEnabled()) {
+      throw new AuthorDashboardPaidAccessDisabledError();
     }
 
     const existingEntitlement = await this.authorAccessRepository.findEntitlementByUserId(user._id);
@@ -518,3 +536,4 @@ module.exports.AuthorAccessAlreadyHasEntitlementError = AuthorAccessAlreadyHasEn
 module.exports.AuthorAccessRevokedError = AuthorAccessRevokedError;
 module.exports.AuthorAccessInvalidPaymentError = AuthorAccessInvalidPaymentError;
 module.exports.AuthorAccessUnauthorizedError = AuthorAccessUnauthorizedError;
+module.exports.AuthorDashboardPaidAccessDisabledError = AuthorDashboardPaidAccessDisabledError;

@@ -61,6 +61,7 @@ describe('InventoryService reservation engine', () => {
     await InventoryLedger.collection.deleteMany({});
     book = await Book.create({
       title: 'Inventory Book',
+      slug: 'inventory-book',
       description: 'Inventory test',
       author: new mongoose.Types.ObjectId(),
       category: new mongoose.Types.ObjectId(),

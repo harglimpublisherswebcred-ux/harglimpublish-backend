@@ -8046,7 +8046,7 @@ Related APIs: See endpoints with tag `Users`.
 
 Purpose: List author royalty settlements.
 
-Authentication: Bearer (Author Entitled).
+Authentication: Bearer (Author Dashboard).
 
 Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
 
@@ -8098,7 +8098,7 @@ Related APIs: See endpoints with tag `Royalty Settlements`.
 
 Purpose: Get author settlement detail.
 
-Authentication: Bearer (Author Entitled).
+Authentication: Bearer (Author Dashboard).
 
 Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
 

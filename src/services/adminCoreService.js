@@ -1,5 +1,6 @@
 const adminCoreRepository = require('../repositories/adminCoreRepository');
 const { sendPublishRequestUpdate } = require('../utils/emailService');
+const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
 
 const notFound = (message) => {
   const error = new Error(message);
@@ -38,8 +39,10 @@ const normalizeFrontendActive = (status) => {
 };
 const normalizeOrderStatus = (status) => orderStatusMap[status] || status;
 const hasValue = (value) => value !== undefined && value !== null;
+const MAX_BOOK_SLUG_ATTEMPTS = 50;
 const normalizeBookPricingInput = (payload = {}) => {
   const data = { ...payload };
+  delete data.slug;
   const hasMrp = hasValue(data.mrp);
   const hasPrice = hasValue(data.price);
 
@@ -136,10 +139,29 @@ class AdminCoreService {
   }
 
   createBook(data, actor) {
-    return this.repository.createBook({
+    return this.createBookWithServerSlug({
       ...normalizeBookPricingInput(data),
       author: data.author || actor._id
     });
+  }
+
+  async createBookWithServerSlug(data) {
+    const baseSlug = createBaseSlug(data.title);
+
+    for (let attempt = 0; attempt < MAX_BOOK_SLUG_ATTEMPTS; attempt += 1) {
+      const slug = slugCandidate(baseSlug, attempt);
+      const existing = await this.repository.findBookBySlug(slug);
+      if (existing) continue;
+
+      try {
+        return await this.repository.createBook({ ...data, slug });
+      } catch (error) {
+        if (isBookSlugDuplicateError(error)) continue;
+        throw error;
+      }
+    }
+
+    throw serviceError('Unable to generate a unique book slug', 409);
   }
 
   async updateBook(id, data) {

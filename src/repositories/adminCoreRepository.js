@@ -56,6 +56,10 @@ class AdminCoreRepository {
     return book.save();
   }
 
+  findBookBySlug(slug) {
+    return Book.findOne({ slug });
+  }
+
   updateBook(id, data) {
     return Book.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true });
   }

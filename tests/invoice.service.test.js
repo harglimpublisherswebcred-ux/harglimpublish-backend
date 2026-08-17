@@ -62,6 +62,7 @@ describe('InvoiceService', () => {
     });
     book = await Book.create({
       title: 'Invoice Book',
+      slug: 'invoice-book',
       description: 'Invoice service book',
       author: user._id,
       category: new mongoose.Types.ObjectId(),

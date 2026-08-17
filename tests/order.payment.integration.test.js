@@ -82,6 +82,7 @@ describe('Order payment bridge integration', () => {
     await InventoryLedger.collection.deleteMany({});
     book = await Book.create({
       title: 'Production Book',
+      slug: 'production-book',
       description: 'A production-ready test book',
       author: new mongoose.Types.ObjectId(),
       category: new mongoose.Types.ObjectId(),

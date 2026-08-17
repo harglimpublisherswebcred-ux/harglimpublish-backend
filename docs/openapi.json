@@ -10609,7 +10609,7 @@
           "Author Access"
         ],
         "summary": "Get current author dashboard access status",
-        "description": "Get current author dashboard access status. Controller: authorAccessController.getDashboardAccessStatus. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Get current author dashboard access status. Controller: authorAccessController.getDashboardAccessStatus. Authentication: Author. API routes are rate limited and return standard error envelopes. Returns historical dashboard entitlement/purchase state and features.paidAuthorDashboardAccess. When the feature is false, approved authors can access dashboard without paid entitlement.",
         "operationId": "get_api_authors_me_dashboard_access",
         "security": [
           {
@@ -10764,7 +10764,7 @@
           "Author Access"
         ],
         "summary": "Initiate author dashboard plan purchase",
-        "description": "Initiate author dashboard plan purchase. Controller: authorAccessController.initiatePurchase. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Initiate author dashboard plan purchase. Controller: authorAccessController.initiatePurchase. Authentication: Author. API routes are rate limited and return standard error envelopes. When AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false, returns 409 AUTHOR_DASHBOARD_PAID_ACCESS_DISABLED and creates no purchase/payment.",
         "operationId": "post_api_authors_me_dashboard_access_purchase",
         "security": [
           {
@@ -11101,7 +11101,7 @@
           "Author Dashboard"
         ],
         "summary": "Get authenticated author dashboard metrics summary",
-        "description": "Get authenticated author dashboard metrics summary. Controller: authorController.getMyDashboard. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Get authenticated author dashboard metrics summary. Controller: authorController.getMyDashboard. Authentication: Author. API routes are rate limited and return standard error envelopes. Requires author role plus active entitlement when paid feature is enabled; author role alone when disabled. Admin always allowed.",
         "operationId": "get_api_authors_me_dashboard",
         "security": [
           {
@@ -11256,7 +11256,7 @@
           "Author Dashboard"
         ],
         "summary": "Get authenticated author sales time-series analytics",
-        "description": "Get authenticated author sales time-series analytics. Controller: authorController.getMyAnalytics. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Get authenticated author sales time-series analytics. Controller: authorController.getMyAnalytics. Authentication: Author. API routes are rate limited and return standard error envelopes. Uses canonical author dashboard authorization gate.",
         "operationId": "get_api_authors_me_analytics",
         "security": [
           {
@@ -11438,7 +11438,7 @@
           "Author Dashboard"
         ],
         "summary": "Get authenticated author book performance breakdown",
-        "description": "Get authenticated author book performance breakdown. Controller: authorController.getMyBookPerformance. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Get authenticated author book performance breakdown. Controller: authorController.getMyBookPerformance. Authentication: Author. API routes are rate limited and return standard error envelopes. Uses canonical author dashboard authorization gate.",
         "operationId": "get_api_authors_me_books_performance",
         "security": [
           {
@@ -11593,7 +11593,7 @@
           "Author Dashboard"
         ],
         "summary": "Get authenticated author paginated royalty history",
-        "description": "Get authenticated author paginated royalty history. Controller: authorController.getMyRoyalties. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Get authenticated author paginated royalty history. Controller: authorController.getMyRoyalties. Authentication: Author. API routes are rate limited and return standard error envelopes. Uses canonical author dashboard authorization gate.",
         "operationId": "get_api_authors_me_royalties",
         "security": [
           {
@@ -17386,7 +17386,7 @@
           "Admin Core"
         ],
         "summary": "Create book",
-        "description": "Create book. Controller: adminController.createBook. Authentication: Admin. API routes are rate limited and return standard error envelopes. Book.mrp is canonical. Legacy price is accepted temporarily only as a synchronized compatibility alias.",
+        "description": "Create book. Controller: adminController.createBook. Authentication: Admin. API routes are rate limited and return standard error envelopes. Book.slug is server-owned and generated from title. Book.mrp is canonical. Legacy price is accepted temporarily only as a synchronized compatibility alias.",
         "operationId": "post_api_admin_books",
         "security": [
           {
@@ -28960,7 +28960,7 @@
           "Users"
         ],
         "summary": "Get current user session context & capabilities",
-        "description": "Get current user session context & capabilities. Controller: userController.getUserContext. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Returns user profile, capabilities (canPublish, canAccessAuthorDashboard, canAdminister) and UI domain state codes.",
+        "description": "Get current user session context & capabilities. Controller: userController.getUserContext. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Returns user profile, capabilities, states, and features.paidAuthorDashboardAccess. When paidAuthorDashboardAccess=false, approved authors receive canAccessAuthorDashboard=true without fake entitlement records.",
         "operationId": "get_api_users_me_context",
         "security": [
           {
@@ -29115,7 +29115,7 @@
           "Royalty Settlements"
         ],
         "summary": "List author royalty settlements",
-        "description": "List author royalty settlements. Controller: royaltySettlementController.getAuthorSettlements. Authentication: Bearer (Author Entitled). API routes are rate limited and return standard error envelopes.",
+        "description": "List author royalty settlements. Controller: royaltySettlementController.getAuthorSettlements. Authentication: Bearer (Author Dashboard). API routes are rate limited and return standard error envelopes. Uses canonical author dashboard authorization gate.",
         "operationId": "get_api_authors_me_royalty_settlements",
         "security": [
           {
@@ -29302,7 +29302,7 @@
           "Royalty Settlements"
         ],
         "summary": "Get author settlement detail",
-        "description": "Get author settlement detail. Controller: royaltySettlementController.getAuthorSettlementDetail. Authentication: Bearer (Author Entitled). API routes are rate limited and return standard error envelopes.",
+        "description": "Get author settlement detail. Controller: royaltySettlementController.getAuthorSettlementDetail. Authentication: Bearer (Author Dashboard). API routes are rate limited and return standard error envelopes. Uses canonical author dashboard authorization gate.",
         "operationId": "get_api_authors_me_royalty_settlements_id",
         "security": [
           {
@@ -32343,6 +32343,7 @@
       },
       "AdminBookCreateRequest": {
         "type": "object",
+        "description": "Admin book creation payload. slug is server-owned, generated from title, URL-safe, and unique. Frontend should not send slug. Book.mrp is canonical; price is a temporary compatibility alias.",
         "required": [
           "title",
           "description",
@@ -32434,6 +32435,7 @@
       },
       "AdminBookUpdateRequest": {
         "type": "object",
+        "description": "Admin book update payload. slug is stable after creation and remains server-owned. Title updates do not regenerate slug.",
         "properties": {
           "title": {
             "type": "string"

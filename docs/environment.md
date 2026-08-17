@@ -13,6 +13,7 @@ This document is generated from actual environment references in `server.js`, `s
 | `JWT_SECRET` | Required for production | `secret123` fallback exists | `src/utils/tokenUtils.js`, `src/middleware/authMiddleware.js`, tests | Signs and verifies JWTs. | Must be a long random secret; never use fallback in production. | `CHANGE_ME_TO_A_LONG_RANDOM_PRODUCTION_SECRET` | Yes |
 | `JWT_EXPIRE` | Optional | `30d` | `src/utils/tokenUtils.js` | JWT expiry duration. | Use short expiry aligned to frontend session policy. | `7d` | No |
 | `GOOGLE_CLIENT_ID` | Required for Google Login usage | None | `src/services/googleIdentityProvider.js` | Verifies Google ID token audience for `POST /api/auth/google`. | Configure the production Google OAuth web client ID; do not use placeholders. | `CHANGE_ME_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` | No |
+| `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED` | Optional | `true` | `src/config/features.js`, `src/middleware/authorDashboardMiddleware.js`, `src/services/userContextService.js`, `src/services/authorAccessService.js` | Feature flag for paid Author Dashboard gating. | Set explicitly to `false` for the client requirement where approved authors get dashboard access without payment. Missing value keeps old paid-entitlement behavior. | `false` | No |
 | `MERCHANT_UPI_ID` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant UPI VPA for dynamic QR generation. | Configure a valid production merchant VPA. | `merchant@upi` | No |
 | `MERCHANT_NAME` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant display name in UPI QR payload. | Use the legal payment receiver name. | `Harglim Publishers` | No |
 | `MERCHANT_CODE` | Optional | None | `src/config/payment.js` | Optional UPI merchant category/code. | Set only if required by payment operations. | `0000` | No |
@@ -39,6 +40,7 @@ The real `.env` was inspected by key name only; secret values were not printed o
 - `JWT_SECRET`
 - `JWT_EXPIRE`
 - `GOOGLE_CLIENT_ID`
+- `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
@@ -124,6 +126,7 @@ MONGODB_URI=mongodb://localhost:27017/hm_backend
 JWT_SECRET=dev_only_change_me
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=dev-google-client-id.apps.googleusercontent.com
+AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=true
 MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 PAYMENT_CURRENCY=INR
@@ -141,6 +144,7 @@ MONGODB_URI=mongodb+srv://USER:PASSWORD@staging-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_STAGING_SECRET
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=CHANGE_ME_STAGING_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false
 MERCHANT_UPI_ID=stagingmerchant@upi
 MERCHANT_NAME=Harglim Publishers Staging
 PAYMENT_CURRENCY=INR
@@ -159,6 +163,7 @@ MONGODB_URI=mongodb+srv://USER:PASSWORD@production-cluster.example/hm_backend
 JWT_SECRET=CHANGE_ME_LONG_RANDOM_PRODUCTION_SECRET
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=CHANGE_ME_PRODUCTION_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false
 MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 MERCHANT_CODE=

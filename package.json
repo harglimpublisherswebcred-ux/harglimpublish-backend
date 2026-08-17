@@ -13,6 +13,8 @@
     "seed:dummy:dry-run": "node scripts/seedDummyData.js --dry-run",
     "migrate:book-mrp": "node scripts/bookMrpMigration.js --apply",
     "migrate:book-mrp:dry-run": "node scripts/bookMrpMigration.js",
+    "migrate:book-slug": "node scripts/bookSlugMigration.js --apply",
+    "migrate:book-slug:dry-run": "node scripts/bookSlugMigration.js",
     "migrate:payment-purpose": "node scripts/paymentPurposeMigration.js --apply",
     "migrate:payment-purpose:dry-run": "node scripts/paymentPurposeMigration.js",
     "audit:author-access": "node scripts/authorAccessAudit.js",

@@ -29,7 +29,7 @@ describe('AnalyticsRepository', () => {
     await Book.deleteMany({});
     await User.deleteMany({});
     user = await User.create({ name: 'Reader One', email: 'analytics-reader@example.com', password: 'password123' });
-    book = await Book.create({ title: 'Analytics Book', description: 'A book', author: user._id, category: new mongoose.Types.ObjectId(), price: 100 });
+    book = await Book.create({ title: 'Analytics Book', slug: 'analytics-book', description: 'A book', author: user._id, category: new mongoose.Types.ObjectId(), price: 100 });
   });
 
   it('records events idempotently and aggregates revenue by period', async () => {
