@@ -90,9 +90,11 @@ class AuthorApplicationService {
 
     if (status === 'approved') {
       await this.repository.updateUserRole(application.user._id, 'author');
+    } else if (status === 'rejected' && application.user.role === 'author') {
+      await this.repository.updateUserRole(application.user._id, 'reader');
     }
 
-    return updated;
+    return this.repository.findById(updated._id);
   }
 
   normalizePayload(payload = {}) {

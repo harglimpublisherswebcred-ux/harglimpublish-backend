@@ -70,6 +70,25 @@ test('supports author application frontend contract and admin approval promotes 
   expect((await User.findById(reader._id)).role).toBe('author');
 });
 
+test('rejecting an author application rolls an author user back to reader', async () => {
+  const application = await AuthorApplication.create({
+    user: author._id,
+    penName: 'Rejected Author',
+    status: 'approved'
+  });
+
+  const rejected = await request(app)
+    .put(`/api/admin/author-applications/${application._id}/status`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'rejected' })
+    .expect(200);
+
+  expect(rejected.body.success).toBe(true);
+  expect(rejected.body.data.status).toBe('rejected');
+  expect(rejected.body.data.user.role).toBe('reader');
+  expect((await User.findById(author._id)).role).toBe('reader');
+});
+
 test('supports customer order, invoice, and notification account APIs', async () => {
   const orderRes = await request(app).get(`/api/orders/${order._id}`).set('Authorization', `Bearer ${readerToken}`).expect(200);
   expect(orderRes.body.data.orderNumber).toBe('HM-S12-1');
