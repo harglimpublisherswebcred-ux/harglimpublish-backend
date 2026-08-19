@@ -38,7 +38,7 @@ book.price is legacy alias.
 ```text
 Cart
   -> POST /api/orders
-  -> Backend calculates MRP/tax/shipping/total
+  -> Backend calculates MRP subtotal with tax=0 and shippingPrice=0
   -> Backend creates ORDER_PURCHASE payment + QR
   -> Customer pays externally through UPI
   -> PUT /api/orders/:id/verify-payment

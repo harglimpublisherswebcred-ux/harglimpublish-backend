@@ -74,6 +74,13 @@ class AdminCoreRepository {
     return Book.findOne({ slug });
   }
 
+  findBookById(id) {
+    return Book.findById(id)
+      .populate('author', 'name email role')
+      .populate('category', 'name slug')
+      .lean();
+  }
+
   updateBook(id, data) {
     return Book.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true });
   }

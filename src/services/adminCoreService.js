@@ -138,6 +138,12 @@ class AdminCoreService {
     return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 
+  async getBook(id) {
+    const book = await this.repository.findBookById(id);
+    if (!book) throw notFound('Book not found');
+    return book;
+  }
+
   async getUser(id) {
     const user = await this.repository.findUserById(id);
     if (!user) throw notFound('User not found');

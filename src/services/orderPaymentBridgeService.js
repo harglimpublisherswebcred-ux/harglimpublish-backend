@@ -429,7 +429,7 @@ class OrderPaymentBridgeService {
     }
 
     const tax = 0;
-    const shippingPrice = subtotal > 500 ? 0 : 50;
+    const shippingPrice = 0;
 
     return {
       orderItems,

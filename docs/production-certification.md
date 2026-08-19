@@ -67,7 +67,7 @@ Event-driven side effects are registered through `src/events/registerSubscribers
 - New checkout uses server-side `Book.mrp`; client price is not trusted.
 - Legacy `Book.price` remains synchronized for backward compatibility.
 - New checkout book tax is zero; historical order tax values remain preserved.
-- Shipping rules remain unchanged.
+- New checkout shipping charge is disabled; `Order.shippingPrice` is `0` for new book orders.
 - Order line royalties use purchase-time snapshots.
 - Current `Book.royaltyPercentage` is not used to rewrite historical royalty values.
 - Legacy sale lines without royalty snapshots are excluded from settlement eligibility.

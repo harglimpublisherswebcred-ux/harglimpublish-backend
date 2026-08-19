@@ -8,11 +8,11 @@ New checkout uses:
 
 ```text
 Book.mrp * quantity
-+ existing shipping calculation
++ shippingPrice 0
 = Order.totalPrice
 ```
 
-New book orders persist `Order.tax = 0`. Historical orders and invoices keep their stored tax snapshots.
+New book orders persist `Order.tax = 0` and `Order.shippingPrice = 0`. Historical orders and invoices keep their stored tax and shipping snapshots.
 
 `discountPrice` remains available for catalog/display compatibility, but checkout does not use it in this phase.
 

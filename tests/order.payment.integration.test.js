@@ -113,7 +113,7 @@ describe('Order payment bridge integration', () => {
     expect(body.data.payment).toEqual(expect.objectContaining({
       upiUrl: expect.stringContaining('upi://pay?'),
       qrCodeDataUrl: expect.stringMatching(/^data:image\/png;base64,/),
-      amount: 450
+      amount: 400
     }));
 
     const payment = await Payment.findOne({ order: body.data.order._id }).lean();
@@ -125,9 +125,9 @@ describe('Order payment bridge integration', () => {
     expect(body.data.order.items[0].price).toBe(200);
     expect(body.data.order.subtotal).toBe(400);
     expect(body.data.order.tax).toBe(0);
-    expect(body.data.order.shippingPrice).toBe(50);
-    expect(body.data.order.totalPrice).toBe(450);
-    expect(payment.amount).toBe(450);
+    expect(body.data.order.shippingPrice).toBe(0);
+    expect(body.data.order.totalPrice).toBe(400);
+    expect(payment.amount).toBe(400);
     expect(payment.status).toBe('QR_GENERATED');
     const reservation = await InventoryReservation.findOne({ order: body.data.order._id }).lean();
     expect(updatedBook.stock).toBe(5);
@@ -166,7 +166,7 @@ describe('Order payment bridge integration', () => {
     expect(payment.utr).toBe('UTR123456789');
   });
 
-  it('uses MRP as canonical checkout price and keeps shipping threshold unchanged', async () => {
+  it('uses MRP as canonical checkout price without adding shipping charges', async () => {
     book.mrp = 600;
     book.price = 600;
     await book.save();
@@ -187,7 +187,7 @@ describe('Order payment bridge integration', () => {
     expect(payment.amount).toBe(600);
   });
 
-  it('preserves existing shipping behavior at and below the threshold', async () => {
+  it('does not add shipping charges at or below the previous threshold', async () => {
     book.mrp = 250;
     book.price = 250;
     await book.save();
@@ -201,8 +201,8 @@ describe('Order payment bridge integration', () => {
 
     expect(atThreshold.order.subtotal).toBe(500);
     expect(atThreshold.order.tax).toBe(0);
-    expect(atThreshold.order.shippingPrice).toBe(50);
-    expect(atThreshold.order.totalPrice).toBe(550);
+    expect(atThreshold.order.shippingPrice).toBe(0);
+    expect(atThreshold.order.totalPrice).toBe(500);
 
     await Order.deleteMany({});
     await Payment.deleteMany({});
@@ -221,8 +221,8 @@ describe('Order payment bridge integration', () => {
 
     expect(belowThreshold.order.subtotal).toBe(250);
     expect(belowThreshold.order.tax).toBe(0);
-    expect(belowThreshold.order.shippingPrice).toBe(50);
-    expect(belowThreshold.order.totalPrice).toBe(300);
+    expect(belowThreshold.order.shippingPrice).toBe(0);
+    expect(belowThreshold.order.totalPrice).toBe(250);
   });
 
   it('synchronizes paid compatibility fields after internal payment verification', async () => {

@@ -140,8 +140,8 @@ describe('Invoice integration', () => {
     expect(invoice.invoiceNumber).toMatch(/^INV-\d{6}-\d{6}$/);
     expect(invoice.subtotal).toBe(200);
     expect(invoice.taxTotal).toBe(0);
-    expect(invoice.shippingTotal).toBe(50);
-    expect(invoice.total).toBe(250);
+    expect(invoice.shippingTotal).toBe(0);
+    expect(invoice.total).toBe(200);
     expect(generated).toEqual([invoice.invoiceNumber]);
   });
 

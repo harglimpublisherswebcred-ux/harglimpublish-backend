@@ -5021,6 +5021,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Admin Core`.
 
+## GET /api/admin/books/{id}
+
+Purpose: Get book detail.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/books/:id`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/books/:id', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/books/:id', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Core`.
+
 ## PUT /api/admin/books/{id}
 
 Purpose: Update book.

@@ -287,6 +287,35 @@ test('supports admin book listing with pagination, search, filters, and authoriz
   expect(filtered.body.data[0].status).toBe('draft');
 });
 
+test('supports admin book detail by id including non-public book states', async () => {
+  const draft = await Book.create({
+    title: 'Admin Detail Draft',
+    slug: 'admin-detail-draft',
+    description: 'Draft detail for admin edit screen',
+    author: author._id,
+    category: book.category,
+    mrp: 190,
+    price: 190,
+    status: 'draft'
+  });
+
+  await request(app)
+    .get(`/api/admin/books/${draft._id}`)
+    .set('Authorization', `Bearer ${readerToken}`)
+    .expect(403);
+
+  const detail = await request(app)
+    .get(`/api/admin/books/${draft._id}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+
+  expect(detail.body.success).toBe(true);
+  expect(detail.body.data._id).toBe(draft._id.toString());
+  expect(detail.body.data.status).toBe('draft');
+  expect(detail.body.data.author.email).toBe(author.email);
+  expect(detail.body.data.category.slug).toBe('sprint-12');
+});
+
 test('supports legacy book price compatibility and rejects mrp conflicts', async () => {
   const legacy = await request(app)
     .post('/api/admin/books')

@@ -4,6 +4,7 @@ const {
   getAdminAnalytics,
   getAdminDashboardOverview,
   listBooks,
+  getBook,
   createBook,
   updateBook,
   deleteBook,
@@ -106,7 +107,7 @@ router.post('/publish-requests/:id/request-changes', requestChangesOnPublishRequ
 router.post('/publish-requests/:id/reject', rejectPublishRequest);
 router.post('/publish-requests/:id/approve', approveAndPublishBook);
 router.route('/books').get(listBooks).post(createBook);
-router.route('/books/:id').put(updateBook).delete(deleteBook);
+router.route('/books/:id').get(getBook).put(updateBook).delete(deleteBook);
 
 const adminAuthorAccessController = require('../controllers/adminAuthorAccessController');
 

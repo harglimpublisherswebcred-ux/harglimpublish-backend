@@ -74,7 +74,7 @@ Login/register/reset-password responses include an access token and refresh toke
 ### Checkout And Manual UPI Payment
 
 1. Create order: `POST /api/orders`.
-2. Backend reloads authoritative Book data, uses `Book.mrp`, persists `tax=0`, keeps the existing shipping calculation, and creates order, payment intent, reservation, and QR data.
+2. Backend reloads authoritative Book data, uses `Book.mrp`, persists `tax=0` and `shippingPrice=0`, and creates order, payment intent, reservation, and QR data.
 3. Customer pays by UPI.
 4. Customer submits UTR: `PUT /api/orders/{id}/verify-payment`.
 5. Admin verifies payment through operations APIs.
@@ -455,7 +455,7 @@ Rules:
 }
 ```
 
-`mrp` is canonical for new checkout pricing. `price` is a deprecated compatibility alias and must match `mrp` when both are supplied. Existing clients may temporarily send `price` only; the backend stores it as `mrp` and synchronizes both fields. New book orders do not add the previous hardcoded 5% book tax. Historical orders and invoices keep their stored tax snapshots.
+`mrp` is canonical for new checkout pricing. `price` is a deprecated compatibility alias and must match `mrp` when both are supplied. Existing clients may temporarily send `price` only; the backend stores it as `mrp` and synchronizes both fields. New book orders do not add the previous hardcoded 5% book tax or shipping charge. Historical orders and invoices keep their stored tax and shipping snapshots.
 
 `royaltyPercentage` is optional and defaults to `0`.
 ## Documentation Artifacts

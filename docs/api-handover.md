@@ -205,8 +205,8 @@ Success response:
       "orderNumber": "HM-XXXX",
       "subtotal": 499,
       "tax": 0,
-      "shippingPrice": 50,
-      "totalPrice": 549,
+      "shippingPrice": 0,
+      "totalPrice": 499,
       "isPaid": false,
       "payment": "<PAYMENT_ID>",
       "status": "PENDING"

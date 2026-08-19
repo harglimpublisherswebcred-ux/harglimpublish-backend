@@ -4610,7 +4610,7 @@
           "Orders"
         ],
         "summary": "Create order with payment, inventory, QR bridge",
-        "description": "Create order with payment, inventory, QR bridge. Controller: orderController.createOrder. Authentication: Bearer. API routes are rate limited and return standard error envelopes. New book checkout reloads Book.mrp from the database, keeps existing shipping logic, and persists tax=0. Client price/tax/total fields are not trusted.",
+        "description": "Create order with payment, inventory, QR bridge. Controller: orderController.createOrder. Authentication: Bearer. API routes are rate limited and return standard error envelopes. New book checkout reloads Book.mrp from the database, sets shippingPrice=0 and tax=0, and charges only the canonical MRP subtotal. Client price/tax/shipping/total fields are not trusted.",
         "operationId": "post_api_orders",
         "security": [
           {
@@ -17814,6 +17814,168 @@
       }
     },
     "/api/admin/books/{id}": {
+      "get": {
+        "tags": [
+          "Admin Core"
+        ],
+        "summary": "Get book detail",
+        "description": "Get book detail. Controller: adminController.getBook. Authentication: Admin. API routes are rate limited and return standard error envelopes. Admin detail view by Mongo ID. Includes draft, published, and archived books with populated author and category.",
+        "operationId": "get_api_admin_books_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "Admin Core"
