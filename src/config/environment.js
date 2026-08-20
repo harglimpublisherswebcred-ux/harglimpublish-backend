@@ -33,6 +33,14 @@ const validateNumber = (key, errors, { min } = {}) => {
   }
 };
 
+const validateDuration = (key, errors) => {
+  if (!process.env[key]) return;
+  const value = process.env[key].trim();
+  if (!/^\d+(\.\d+)?\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|month|months)?$/i.test(value)) {
+    errors.push(`${key} must be a valid duration such as 24h, 1d, 2 days, 1month, or minutes as a number`);
+  }
+};
+
 const validateEnvironment = ({ strict = isProduction() } = {}) => {
   const errors = [];
 
@@ -48,6 +56,7 @@ const validateEnvironment = ({ strict = isProduction() } = {}) => {
     }
   }
 
+  validateDuration('PAYMENT_EXPIRY_DURATION', errors);
   validateNumber('QR_EXPIRY_MINUTES', errors, { min: 1 });
   validateNumber('UPLOAD_MAX_BYTES', errors, { min: 1 });
 

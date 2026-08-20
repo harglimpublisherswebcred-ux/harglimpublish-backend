@@ -5,6 +5,7 @@ const upiQRCodeService = require('../payments/qr/upiQRCodeService');
 const eventBus = require('../events/eventBus');
 const { DOMAIN_EVENTS } = require('../events/eventCatalog');
 const { PAYMENT_PURPOSE } = require('../models/Payment');
+const { parseDurationToMinutes } = require('../utils/duration');
 
 const {
   PaymentRepositoryError,
@@ -119,6 +120,10 @@ const ALLOWED_TRANSITIONS = {
 };
 
 const DEFAULT_INTENT_EXPIRY_MINUTES = 15;
+const getConfiguredPaymentExpiryMinutes = () => parseDurationToMinutes(
+  process.env.PAYMENT_EXPIRY_DURATION || process.env.QR_EXPIRY_MINUTES,
+  DEFAULT_INTENT_EXPIRY_MINUTES
+);
 
 class PaymentServiceError extends Error {
   constructor(message, code, details = {}) {
@@ -301,7 +306,7 @@ class PaymentService {
   async createPaymentIntent(intentData, options = {}) {
     return this.execute('createPaymentIntent', async () => {
       const now = options.now || new Date();
-      const expiryMinutes = options.expiryMinutes || DEFAULT_INTENT_EXPIRY_MINUTES;
+      const expiryMinutes = options.expiryMinutes || getConfiguredPaymentExpiryMinutes();
       const orderAmount = options.orderAmount !== undefined ? options.orderAmount : intentData.orderAmount;
 
       this.validateIntentAmount(intentData.amount, orderAmount);
@@ -1053,7 +1058,7 @@ class PaymentService {
 
   resolveQRCodeExpiry(payment, options = {}, now = new Date()) {
     const requestedExpiry = options.qrExpiresAt || (options.qrExpiryMinutes && addMinutes(now, options.qrExpiryMinutes));
-    const qrExpiresAt = requestedExpiry ? new Date(requestedExpiry) : new Date(payment.expiresAt || addMinutes(now, DEFAULT_INTENT_EXPIRY_MINUTES));
+    const qrExpiresAt = requestedExpiry ? new Date(requestedExpiry) : new Date(payment.expiresAt || addMinutes(now, getConfiguredPaymentExpiryMinutes()));
 
     if (payment.expiresAt && qrExpiresAt > new Date(payment.expiresAt)) {
       return new Date(payment.expiresAt);

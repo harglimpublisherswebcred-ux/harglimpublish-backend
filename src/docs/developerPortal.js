@@ -1310,7 +1310,7 @@ Node: ${html(process.version)}</code></pre>
         <div class="section-head"><div><h2>Environment Variables</h2><p class="muted">Source-driven env guide is available in <code>docs/environment.md</code>. No secret values are rendered here.</p></div></div>
         <div class="grid module-grid">
           <article class="surface doc-card"><h3>Required Runtime</h3><p class="muted"><code>MONGODB_URI</code>, <code>JWT_SECRET</code></p></article>
-          <article class="surface doc-card"><h3>Payment QR</h3><p class="muted"><code>MERCHANT_UPI_ID</code>, <code>MERCHANT_NAME</code>, <code>QR_EXPIRY_MINUTES</code></p></article>
+          <article class="surface doc-card"><h3>Payment QR</h3><p class="muted"><code>MERCHANT_UPI_ID</code>, <code>MERCHANT_NAME</code>, <code>PAYMENT_EXPIRY_DURATION</code>, <code>QR_EXPIRY_MINUTES</code></p></article>
         </div>
       </section>
 

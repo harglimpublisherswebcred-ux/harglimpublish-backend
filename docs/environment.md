@@ -18,7 +18,8 @@ This document is generated from actual environment references in `server.js`, `s
 | `MERCHANT_NAME` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant display name in UPI QR payload. | Use the legal payment receiver name. | `Harglim Publishers` | No |
 | `MERCHANT_CODE` | Optional | None | `src/config/payment.js` | Optional UPI merchant category/code. | Set only if required by payment operations. | `0000` | No |
 | `PAYMENT_CURRENCY` | Optional | `INR` | `src/config/payment.js` | Payment currency for QR config. | Keep `INR` for current UPI flow. | `INR` | No |
-| `QR_EXPIRY_MINUTES` | Optional | `15` | `src/config/payment.js` | Dynamic QR expiry window. | Use a short window, commonly `10` to `15`. | `15` | No |
+| `PAYMENT_EXPIRY_DURATION` | Optional | `QR_EXPIRY_MINUTES` or `15` minutes | `src/services/paymentService.js` | Payment intent expiry duration for manual UPI orders. Accepts minutes or values like `24h`, `1d`, `2 days`, `1month`. | Set to the business-approved payment window. Common values: `24h`, `2d`, `30d`. | `24h` | No |
+| `QR_EXPIRY_MINUTES` | Optional | `15` | `src/config/payment.js`, `src/services/paymentService.js` fallback | Legacy numeric QR/payment expiry fallback in minutes. | Prefer `PAYMENT_EXPIRY_DURATION` for new deployments. Keep numeric if used. | `15` | No |
 | `RESEND_API_KEY` | Optional | email sending disabled when absent | `src/utils/emailService.js` | Enables Resend email delivery. | Store in secret manager; leave empty only for local/stub environments. | `re_CHANGE_ME` | Yes |
 | `FROM_EMAIL` | Optional | `onboarding@resend.dev` | `src/utils/emailService.js` | Sender address for Resend emails. | Use a verified production sender/domain. | `noreply@example.com` | No |
 | `CLOUDINARY_CLOUD_NAME` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary account name. | Required if `/api/uploads/*` image/document upload routes are used. | `your_cloud_name` | No |
@@ -49,6 +50,7 @@ The real `.env` was inspected by key name only; secret values were not printed o
 - `MERCHANT_NAME`
 - `MERCHANT_CODE`
 - `PAYMENT_CURRENCY`
+- `PAYMENT_EXPIRY_DURATION`
 - `QR_EXPIRY_MINUTES`
 - `RESEND_API_KEY`
 - `FROM_EMAIL`
@@ -77,7 +79,7 @@ These keys are present in the current `.env` but are not read by the source code
 - `JWT_EXPIRY` is not used. The runtime reads `JWT_EXPIRE`.
 - `AWS_REGION` and `AWS_S3_REGION` are not used by the current runtime.
 - `EMAIL_FROM` is not used. The runtime reads `FROM_EMAIL`.
-- `UPI_ID`, `UPI_PAYEE_NAME`, and `PAYMENT_QR_EXPIRES_MINUTES` are not used. The runtime reads `MERCHANT_UPI_ID`, `MERCHANT_NAME`, and `QR_EXPIRY_MINUTES`.
+- `UPI_ID`, `UPI_PAYEE_NAME`, and `PAYMENT_QR_EXPIRES_MINUTES` are not used. The runtime reads `MERCHANT_UPI_ID`, `MERCHANT_NAME`, `PAYMENT_EXPIRY_DURATION`, and `QR_EXPIRY_MINUTES`.
 
 ## Required Runtime Values
 
@@ -110,6 +112,7 @@ Required for Google Login usage:
 - `GOOGLE_CLIENT_ID`
 - `MERCHANT_CODE`
 - `PAYMENT_CURRENCY`
+- `PAYMENT_EXPIRY_DURATION`
 - `QR_EXPIRY_MINUTES`
 - `RESEND_API_KEY`
 - `FROM_EMAIL`
@@ -130,6 +133,7 @@ AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=true
 MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 PAYMENT_CURRENCY=INR
+PAYMENT_EXPIRY_DURATION=24h
 QR_EXPIRY_MINUTES=15
 FROM_EMAIL=onboarding@resend.dev
 ```
@@ -148,6 +152,7 @@ AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED=false
 MERCHANT_UPI_ID=stagingmerchant@upi
 MERCHANT_NAME=Harglim Publishers Staging
 PAYMENT_CURRENCY=INR
+PAYMENT_EXPIRY_DURATION=24h
 QR_EXPIRY_MINUTES=15
 RESEND_API_KEY=CHANGE_ME_STAGING_RESEND_KEY
 FROM_EMAIL=noreply-staging@example.com
@@ -168,6 +173,7 @@ MERCHANT_UPI_ID=merchant@upi
 MERCHANT_NAME=Harglim Publishers
 MERCHANT_CODE=
 PAYMENT_CURRENCY=INR
+PAYMENT_EXPIRY_DURATION=24h
 QR_EXPIRY_MINUTES=15
 RESEND_API_KEY=CHANGE_ME_PRODUCTION_RESEND_KEY
 FROM_EMAIL=noreply@example.com

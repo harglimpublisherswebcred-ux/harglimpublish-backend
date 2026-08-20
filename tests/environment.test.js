@@ -9,6 +9,7 @@ const ENV_KEYS = [
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
+  'PAYMENT_EXPIRY_DURATION',
   'QR_EXPIRY_MINUTES',
   'UPLOAD_MAX_BYTES'
 ];
@@ -69,5 +70,15 @@ describe('Environment validation', () => {
 
     process.env.NODE_ENV = 'production';
     expect(() => getJwtSecret()).toThrow(/JWT_SECRET is required/);
+  });
+
+  it('accepts friendly payment expiry duration values and rejects invalid ones', () => {
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/hm_backend';
+    process.env.PAYMENT_EXPIRY_DURATION = '2 days';
+
+    expect(() => validateEnvironment({ strict: false })).not.toThrow();
+
+    process.env.PAYMENT_EXPIRY_DURATION = 'later';
+    expect(() => validateEnvironment({ strict: false })).toThrow(/PAYMENT_EXPIRY_DURATION/);
   });
 });

@@ -27,6 +27,8 @@ describe('Payment Intent lifecycle', () => {
   let replSet;
   let orderId;
   let userId;
+  let originalPaymentExpiryDuration;
+  let originalQrExpiryMinutes;
 
   const intentData = (overrides = {}) => ({
     order: orderId,
@@ -36,6 +38,8 @@ describe('Payment Intent lifecycle', () => {
   });
 
   beforeAll(async () => {
+    originalPaymentExpiryDuration = process.env.PAYMENT_EXPIRY_DURATION;
+    originalQrExpiryMinutes = process.env.QR_EXPIRY_MINUTES;
     replSet = await MongoMemoryReplSet.create({
       replSet: { count: 1 }
     });
@@ -44,6 +48,10 @@ describe('Payment Intent lifecycle', () => {
   });
 
   afterAll(async () => {
+    if (originalPaymentExpiryDuration === undefined) delete process.env.PAYMENT_EXPIRY_DURATION;
+    else process.env.PAYMENT_EXPIRY_DURATION = originalPaymentExpiryDuration;
+    if (originalQrExpiryMinutes === undefined) delete process.env.QR_EXPIRY_MINUTES;
+    else process.env.QR_EXPIRY_MINUTES = originalQrExpiryMinutes;
     await mongoose.disconnect();
     if (replSet) {
       await replSet.stop();
@@ -51,6 +59,8 @@ describe('Payment Intent lifecycle', () => {
   });
 
   beforeEach(async () => {
+    delete process.env.PAYMENT_EXPIRY_DURATION;
+    delete process.env.QR_EXPIRY_MINUTES;
     orderId = new mongoose.Types.ObjectId();
     userId = new mongoose.Types.ObjectId();
     jest.clearAllMocks();
@@ -71,6 +81,37 @@ describe('Payment Intent lifecycle', () => {
     expect(logger.info).toHaveBeenCalledWith('payment_intent.created', expect.objectContaining({
       order: orderId.toString()
     }));
+  });
+
+  it('uses PAYMENT_EXPIRY_DURATION for configurable long-lived manual payment windows', async () => {
+    process.env.PAYMENT_EXPIRY_DURATION = '24h';
+    const now = new Date('2026-07-08T10:00:00.000Z');
+
+    const intent = await paymentService.createPaymentIntent(intentData(), {
+      orderAmount: 999,
+      now
+    });
+
+    expect(intent.expiresAt.toISOString()).toBe('2026-07-09T10:00:00.000Z');
+  });
+
+  it('supports day and month duration values for payment expiry', async () => {
+    process.env.PAYMENT_EXPIRY_DURATION = '2 days';
+    const twoDays = await paymentService.createPaymentIntent(intentData(), {
+      orderAmount: 999,
+      now: new Date('2026-07-08T10:00:00.000Z')
+    });
+
+    expect(twoDays.expiresAt.toISOString()).toBe('2026-07-10T10:00:00.000Z');
+
+    orderId = new mongoose.Types.ObjectId();
+    process.env.PAYMENT_EXPIRY_DURATION = '1month';
+    const oneMonth = await paymentService.createPaymentIntent(intentData(), {
+      orderAmount: 999,
+      now: new Date('2026-07-08T10:00:00.000Z')
+    });
+
+    expect(oneMonth.expiresAt.toISOString()).toBe('2026-08-07T10:00:00.000Z');
   });
 
   it('expires the previous active intent before creating a replacement', async () => {
