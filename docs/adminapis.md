@@ -336,6 +336,48 @@ Response:
 }
 ```
 
+## POST /api/admin/users
+
+Creates a local password user from the admin panel.
+
+Payload:
+
+```json
+{
+  "name": "Created By Admin",
+  "email": "created-by-admin@example.com",
+  "password": "StrongPass123!",
+  "role": "reader",
+  "isActive": true
+}
+```
+
+Rules:
+
+- `name`, `email`, and `password` are required.
+- `password` is hashed by the backend and never returned.
+- `role` supports `visitor`, `reader`, `author`, `admin`; frontend alias `user` is stored as `reader`.
+- `isActive` defaults to `true`.
+- `status: "Active"` and `status: "Suspended"` are accepted aliases for `isActive`.
+- Duplicate email returns `409`.
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "66b4f5a2a44d2c0012a9c111",
+    "name": "Created By Admin",
+    "email": "created-by-admin@example.com",
+    "role": "reader",
+    "isActive": true,
+    "createdAt": "2026-07-24T10:00:00.000Z",
+    "updatedAt": "2026-07-24T10:00:00.000Z"
+  }
+}
+```
+
 ## GET /api/admin/users/:id
 
 Response:
@@ -384,6 +426,31 @@ Payload:
 
 Response: updated user in `data`.
 
+## DELETE /api/admin/users/:id
+
+Soft-deactivates a user. This endpoint does not physically remove the user document because orders, payments, books, royalties, and audit records may still reference it.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "User deactivated",
+  "data": {
+    "_id": "66b4f5a2a44d2c0012a9c100",
+    "name": "Ghani Reader",
+    "email": "user@example.com",
+    "role": "reader",
+    "isActive": false
+  }
+}
+```
+
+Notes:
+
+- Admin cannot deactivate their own currently logged-in account through this endpoint.
+- For frontend tables, either remove the row locally after success or refresh `GET /api/admin/users`.
+
 ## POST /api/admin/users/:id/reset-password
 
 Payload:
@@ -410,6 +477,7 @@ Response:
 Frontend notes:
 
 - Confirm role changes and password reset actions.
+- Confirm user delete/deactivate actions.
 - Minimum password length is 6.
 
 ---

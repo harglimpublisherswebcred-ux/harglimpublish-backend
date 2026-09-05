@@ -10589,6 +10589,130 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+    post:
+      tags:
+        - Admin Users
+      summary: Create user
+      description: "Create user. Controller: adminController.createUser. Authentication: Admin. API routes are rate limited and return standard error envelopes. Creates a local password user through the existing User model hashing flow. Accepts role=user as a frontend alias for reader."
+      operationId: post_api_admin_users
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserCreateRequest"
+            examples:
+              default:
+                summary: AdminUserCreateRequest example
+                value:
+                  name: Created By Admin
+                  email: "created-by-admin@example.com"
+                  password: "StrongPass123!"
+                  role: reader
+                  isActive: true
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/admin/users/{id}:
     get:
       tags:
@@ -10750,6 +10874,120 @@ paths:
                         - Active
                         - Suspended
                       description: Frontend compatibility alias for isActive.
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+    delete:
+      tags:
+        - Admin Users
+      summary: Deactivate user
+      description: "Deactivate user. Controller: adminController.deleteUser. Authentication: Admin. API routes are rate limited and return standard error envelopes. Soft delete only: sets isActive=false to preserve orders, payments, books, and audit history. Admins cannot deactivate their own account through this endpoint."
+      operationId: delete_api_admin_users_id
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Successful response.
@@ -23534,6 +23772,41 @@ components:
           description: user is normalized to reader.
         isActive:
           type: boolean
+        status:
+          type: string
+          enum:
+            - Active
+            - Suspended
+          description: Frontend compatibility alias for isActive.
+    AdminUserCreateRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        role:
+          type: string
+          enum:
+            - user
+            - visitor
+            - reader
+            - author
+            - admin
+          default: reader
+          description: Admin-only role assignment. user is normalized to reader.
+        isActive:
+          type: boolean
+          default: true
         status:
           type: string
           enum:

@@ -17,10 +17,12 @@ const {
   approveAndPublishBook,
   listUsers,
   getUser,
+  createUser,
   updateUser,
   updateUserRole,
   updateUserStatus,
   resetUserPassword,
+  deleteUser,
   getAdminAuthorDashboard,
   getAdminAuthorRoyalties,
   getAdminAuthorDetail
@@ -51,8 +53,10 @@ router.get('/analytics/inventory', adminAnalyticsController.inventory);
 router.get('/analytics/shipments', adminAnalyticsController.shipments);
 router.get('/analytics/customers', adminAnalyticsController.customers);
 router.get('/users', listUsers);
+router.post('/users', createUser);
 router.get('/users/:id', getUser);
 router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/role', updateUserRole);
 router.put('/users/:id/role', updateUserRole);
 router.patch('/users/:id/status', updateUserStatus);

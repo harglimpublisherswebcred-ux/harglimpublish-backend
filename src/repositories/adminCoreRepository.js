@@ -57,6 +57,15 @@ class AdminCoreRepository {
     return User.findById(id).select('-password');
   }
 
+  findUserByEmail(email) {
+    return User.findOne({ email }).select('-password');
+  }
+
+  createUser(data) {
+    const user = new User(data);
+    return user.save();
+  }
+
   updateUser(id, data) {
     return User.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true }).select('-password');
   }

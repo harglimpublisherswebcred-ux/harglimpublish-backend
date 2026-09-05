@@ -28,12 +28,28 @@ Cards should link to:
 ## Users
 
 - `GET /api/admin/users?page=1&limit=20&role=reader&search=term`
+- `POST /api/admin/users`
 - `GET /api/admin/users/:id`
 - `PUT /api/admin/users/:id`
+- `DELETE /api/admin/users/:id`
 - `PATCH /api/admin/users/:id/role`
 - `PUT /api/admin/users/:id/role`
 - `PATCH /api/admin/users/:id/status`
 - `POST /api/admin/users/:id/reset-password`
+
+Create payload:
+
+```json
+{
+  "name": "Created By Admin",
+  "email": "created-by-admin@example.com",
+  "password": "StrongPass123!",
+  "role": "reader",
+  "isActive": true
+}
+```
+
+`DELETE /api/admin/users/:id` is a soft delete. It sets `isActive=false` and returns the deactivated user.
 
 Combined update payload:
 

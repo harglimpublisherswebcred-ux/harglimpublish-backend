@@ -96,8 +96,10 @@ const endpointInventory = [
   
   { method: 'PUT', path: '/api/admin/content', tag: 'Admin Content', summary: 'Update global CMS content', auth: 'Admin', controller: 'contentController.updateContent', body: 'ContentUpdateRequest' },
   { method: 'GET', path: '/api/admin/users', tag: 'Admin Users', summary: 'List users', auth: 'Admin', controller: 'adminController.listUsers', query: ['page', 'limit', 'role', 'isActive', 'search'] },
+  { method: 'POST', path: '/api/admin/users', tag: 'Admin Users', summary: 'Create user', auth: 'Admin', controller: 'adminController.createUser', body: 'AdminUserCreateRequest', notes: 'Creates a local password user through the existing User model hashing flow. Accepts role=user as a frontend alias for reader.' },
   { method: 'GET', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Get user', auth: 'Admin', controller: 'adminController.getUser', params: ['id'] },
   { method: 'PUT', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Update user', auth: 'Admin', controller: 'adminController.updateUser', params: ['id'], body: 'AdminUserUpdateRequest' },
+  { method: 'DELETE', path: '/api/admin/users/{id}', tag: 'Admin Users', summary: 'Deactivate user', auth: 'Admin', controller: 'adminController.deleteUser', params: ['id'], notes: 'Soft delete only: sets isActive=false to preserve orders, payments, books, and audit history. Admins cannot deactivate their own account through this endpoint.' },
   { method: 'PATCH', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
   { method: 'PUT', path: '/api/admin/users/{id}/role', tag: 'Admin Users', summary: 'Update user role alias', auth: 'Admin', controller: 'adminController.updateUserRole', params: ['id'], body: 'UserRoleRequest' },
   { method: 'PATCH', path: '/api/admin/users/{id}/status', tag: 'Admin Users', summary: 'Update user active status', auth: 'Admin', controller: 'adminController.updateUserStatus', params: ['id'], body: 'UserStatusRequest' },

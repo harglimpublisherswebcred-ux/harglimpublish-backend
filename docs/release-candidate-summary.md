@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 168
+Endpoints documented: 170
 
 Models documented: 17
 
@@ -106,8 +106,10 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
 | PUT | `/api/admin/content` | Admin | `contentController.updateContent` |
 | GET | `/api/admin/users` | Admin | `adminController.listUsers` |
+| POST | `/api/admin/users` | Admin | `adminController.createUser` |
 | GET | `/api/admin/users/{id}` | Admin | `adminController.getUser` |
 | PUT | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |
+| DELETE | `/api/admin/users/{id}` | Admin | `adminController.deleteUser` |
 | PATCH | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PUT | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PATCH | `/api/admin/users/{id}/status` | Admin | `adminController.updateUserStatus` |

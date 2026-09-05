@@ -340,8 +340,10 @@ Response:
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
 | GET | `/api/admin/users` | Admin | List users | `adminController.listUsers` | Query: `page`, `limit`, `role`, `isActive`, `search` |
+| POST | `/api/admin/users` | Admin | Create user | `adminController.createUser` | Body: `AdminUserCreateRequest`<br>Creates a local password user. `role=user` maps to `reader`; password is hashed and never returned. |
 | GET | `/api/admin/users/{id}` | Admin | Get user | `adminController.getUser` | Params: `id` |
 | PUT | `/api/admin/users/{id}` | Admin | Update user | `adminController.updateUser` | Params: `id`<br>Body: `AdminUserUpdateRequest`<br>Supports partial updates. Accepts `role`, `isActive`, or frontend `status`. |
+| DELETE | `/api/admin/users/{id}` | Admin | Deactivate user | `adminController.deleteUser` | Params: `id`<br>Soft delete only. Sets `isActive=false`; admin cannot deactivate their own account through this endpoint. |
 | PATCH | `/api/admin/users/{id}/role` | Admin | Update user role | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |
 | PUT | `/api/admin/users/{id}/role` | Admin | Update user role alias | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |
 | PATCH | `/api/admin/users/{id}/status` | Admin | Update user active status | `adminController.updateUserStatus` | Params: `id`<br>Body: `UserStatusRequest` |
@@ -422,6 +424,27 @@ Response:
 
 
 ## Sprint 12 Payload Reference
+
+### AdminUserCreateRequest
+
+```json
+{
+  "name": "Created By Admin",
+  "email": "created-by-admin@example.com",
+  "password": "StrongPass123!",
+  "role": "reader",
+  "isActive": true
+}
+```
+
+Rules:
+
+- `name`, `email`, and `password` are required.
+- `password` must be at least 6 characters, is stored hashed, and is never returned.
+- `role` is optional. `user` is accepted and stored as `reader`.
+- `isActive` defaults to `true`.
+- `status` can be sent as a frontend alias: `Active` maps to `isActive=true`, `Suspended` maps to `isActive=false`.
+- Duplicate email returns `409`.
 
 ### AdminUserUpdateRequest
 

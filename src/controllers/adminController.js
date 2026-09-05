@@ -179,6 +179,18 @@ const getUser = async (req, res) => {
   }
 };
 
+// @desc    Create user
+// @route   POST /api/admin/users
+// @access  Private (Admin)
+const createUser = async (req, res) => {
+  try {
+    const user = await adminCoreService.createUser(req.body);
+    res.status(201).json({ success: true, data: user });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Update user
 // @route   PUT /api/admin/users/:id
 // @access  Private (Admin)
@@ -218,6 +230,17 @@ const updateUserStatus = async (req, res) => {
 const resetUserPassword = async (req, res) => {
   try {
     res.json({ success: true, data: await adminCoreService.resetUserPassword(req.params.id, req.body.password) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Deactivate user
+// @route   DELETE /api/admin/users/:id
+// @access  Private (Admin)
+const deleteUser = async (req, res) => {
+  try {
+    res.json(await adminCoreService.deleteUser(req.params.id, req.user));
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
@@ -278,10 +301,12 @@ module.exports = {
   approveAndPublishBook,
   listUsers,
   getUser,
+  createUser,
   updateUser,
   updateUserRole,
   updateUserStatus,
   resetUserPassword,
+  deleteUser,
   getAdminAuthorDashboard,
   getAdminAuthorRoyalties,
   getAdminAuthorDetail

@@ -1085,14 +1085,17 @@ Create cards for pending payments, pending author applications, pending publish 
 | API | Purpose | Payload |
 | --- | --- | --- |
 | `GET /api/admin/users` | List users | Query `page`, `limit`, `role`, `isActive`, `search` |
+| `POST /api/admin/users` | Create user | `AdminUserCreateRequest` |
 | `GET /api/admin/users/{id}` | User detail | No body |
 | `PUT /api/admin/users/{id}` | Partial update | `AdminUserUpdateRequest` |
+| `DELETE /api/admin/users/{id}` | Deactivate user | No body |
 | `PATCH /api/admin/users/{id}/role` | Update role | `UserRoleRequest` |
 | `PUT /api/admin/users/{id}/role` | Role alias | `UserRoleRequest` |
 | `PATCH /api/admin/users/{id}/status` | Update active flag | `UserStatusRequest` |
 | `POST /api/admin/users/{id}/reset-password` | Reset password | `ResetPasswordRequest` |
 
 Compatibility: `role=user` -> `reader`; `status=Active` -> `isActive=true`; `status=Suspended` -> `isActive=false`.
+Delete is a soft delete: it sets `isActive=false` to preserve order, payment, book, royalty, and audit references.
 
 ## 76. Admin Author Applications
 
@@ -1373,8 +1376,10 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | 79 | DELETE | `/api/admin/reviews/{id}` | Admin | admin | Admin Core | Delete review as admin |
 | 80 | PUT | `/api/admin/content` | Admin | admin | Admin Content | Update global CMS content |
 | 81 | GET | `/api/admin/users` | Admin | admin | Admin Users | List users |
+| 81a | POST | `/api/admin/users` | Admin | admin | Admin Users | Create user |
 | 82 | GET | `/api/admin/users/{id}` | Admin | admin | Admin Users | Get user |
 | 83 | PUT | `/api/admin/users/{id}` | Admin | admin | Admin Users | Update user |
+| 83a | DELETE | `/api/admin/users/{id}` | Admin | admin | Admin Users | Deactivate user |
 | 84 | PATCH | `/api/admin/users/{id}/role` | Admin | admin | Admin Users | Update user role |
 | 85 | PUT | `/api/admin/users/{id}/role` | Admin | admin | Admin Users | Update user role alias |
 | 86 | PATCH | `/api/admin/users/{id}/status` | Admin | admin | Admin Users | Update user active status |
@@ -1596,7 +1601,9 @@ For every write API, the payload column identifies the exact OpenAPI component. 
 | 35 | PATCH | `/api/admin/reviews/{id}/status` | ReviewModerationRequest | Use the ReviewModerationRequest schema from the payload catalog below. |
 | 36 | DELETE | `/api/admin/reviews/{id}` | No request body | Send only path params and authorization headers where required. |
 | 37 | PUT | `/api/admin/content` | ContentUpdateRequest | Use the ContentUpdateRequest schema from the payload catalog below. |
+| 37a | POST | `/api/admin/users` | AdminUserCreateRequest | Creates a local password user. Password is never returned. |
 | 38 | PUT | `/api/admin/users/{id}` | AdminUserUpdateRequest | Use the AdminUserUpdateRequest schema from the payload catalog below. |
+| 38a | DELETE | `/api/admin/users/{id}` | No request body | Soft delete only; sets `isActive=false`. |
 | 39 | PATCH | `/api/admin/users/{id}/role` | UserRoleRequest | Use the UserRoleRequest schema from the payload catalog below. |
 | 40 | PUT | `/api/admin/users/{id}/role` | UserRoleRequest | Use the UserRoleRequest schema from the payload catalog below. |
 | 41 | PATCH | `/api/admin/users/{id}/status` | UserStatusRequest | Use the UserStatusRequest schema from the payload catalog below. |
@@ -2029,6 +2036,17 @@ Submission requires author ownership, an unpublished book, and no active publish
 | publishTitle | string | No | - | No |
 | publishSubtitle | string | No | - | No |
 | packagesJson | string | No | - | No |
+
+### AdminUserCreateRequest
+
+| Field | Type | Required | Validation / meaning | Server-owned? |
+| --- | --- | --- | --- | --- |
+| name | string | Yes | User display name | No |
+| email | string | Yes | Unique email address | No |
+| password | string | Yes | Minimum 6 characters. Stored hashed. Never returned. | No |
+| role | string | No | enum=user/visitor/reader/author/admin; `user` maps to `reader` | No |
+| isActive | boolean | No | Defaults to true | No |
+| status | string | No | enum=Active/Suspended compatibility alias for `isActive` | No |
 
 ### AdminUserUpdateRequest
 

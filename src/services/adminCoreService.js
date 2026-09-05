@@ -30,6 +30,7 @@ const orderStatusMap = {
 };
 
 const normalizeFrontendRole = (role) => (role === 'user' ? 'reader' : role);
+const emailPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 const normalizeFrontendActive = (status) => {
   if (status === undefined) return undefined;
   if (typeof status === 'boolean') return status;
@@ -74,6 +75,14 @@ const normalizeBookPricingInput = (payload = {}) => {
   if (hasMrp && !hasPrice) data.price = data.mrp;
   if (!hasMrp && hasPrice) data.mrp = data.price;
 
+  return data;
+};
+
+const sanitizeUser = (user) => {
+  const data = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+  delete data.password;
+  delete data.passwordResetToken;
+  delete data.passwordResetExpires;
   return data;
 };
 
@@ -150,6 +159,36 @@ class AdminCoreService {
     return user;
   }
 
+  async createUser(payload = {}) {
+    const name = payload.name ? String(payload.name).trim() : '';
+    const email = payload.email ? String(payload.email).trim().toLowerCase() : '';
+    const password = payload.password ? String(payload.password) : '';
+    const role = normalizeFrontendRole(payload.role || 'reader');
+    const isActive = payload.isActive !== undefined || payload.status !== undefined
+      ? normalizeFrontendActive(payload.isActive !== undefined ? payload.isActive : payload.status)
+      : true;
+
+    if (!name) throw serviceError('Name is required');
+    if (!email) throw serviceError('Email is required');
+    if (!emailPattern.test(email)) throw serviceError('Please add a valid email');
+    if (!password || password.length < 6) throw serviceError('Password must be at least 6 characters');
+    if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
+    if (isActive === undefined) throw serviceError('Invalid user status');
+
+    const existing = await this.repository.findUserByEmail(email);
+    if (existing) throw serviceError('User with this email already exists', 409);
+
+    try {
+      const user = await this.repository.createUser({ name, email, password, role, isActive });
+      return sanitizeUser(user);
+    } catch (error) {
+      if (error && error.code === 11000) {
+        throw serviceError('User with this email already exists', 409);
+      }
+      throw error;
+    }
+  }
+
   async updateUserRole(id, role) {
     role = normalizeFrontendRole(role);
     if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
@@ -191,6 +230,16 @@ class AdminCoreService {
     user.password = password;
     await this.repository.saveUser(user);
     return { _id: user._id, email: user.email, role: user.role };
+  }
+
+  async deleteUser(id, actor) {
+    if (actor && String(actor._id || actor.id) === String(id)) {
+      throw serviceError('Admin cannot delete their own account');
+    }
+
+    const user = await this.repository.updateUser(id, { isActive: false });
+    if (!user) throw notFound('User not found');
+    return { success: true, message: 'User deactivated', data: user };
   }
 
   createBook(data, actor) {

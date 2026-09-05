@@ -652,6 +652,18 @@ const schemas = {
       status: { type: 'string', enum: ['Active', 'Suspended'], description: 'Frontend compatibility alias for isActive.' }
     }
   },
+  AdminUserCreateRequest: {
+    type: 'object',
+    required: ['name', 'email', 'password'],
+    properties: {
+      name: { type: 'string', minLength: 2 },
+      email: { type: 'string', format: 'email' },
+      password: { type: 'string', minLength: 6 },
+      role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], default: 'reader', description: 'Admin-only role assignment. user is normalized to reader.' },
+      isActive: { type: 'boolean', default: true },
+      status: { type: 'string', enum: ['Active', 'Suspended'], description: 'Frontend compatibility alias for isActive.' }
+    }
+  },
   UserRoleRequest: {
     type: 'object',
     required: ['role'],
@@ -854,6 +866,13 @@ const schemaExamples = {
   UserUpdateRequest: {
     name: 'Ghani Khan',
     profilePicture: 'https://example.com/profile.jpg'
+  },
+  AdminUserCreateRequest: {
+    name: 'Created By Admin',
+    email: 'created-by-admin@example.com',
+    password: 'StrongPass123!',
+    role: 'reader',
+    isActive: true
   },
   WishlistRequest: {
     bookId: '66b4f5a2a44d2c0012a9c101'

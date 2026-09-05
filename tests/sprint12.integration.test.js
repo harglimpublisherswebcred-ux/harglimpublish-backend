@@ -130,10 +130,51 @@ test('supports auth hardening and admin user management', async () => {
   const users = await request(app).get('/api/admin/users').set('Authorization', `Bearer ${adminToken}`).expect(200);
   expect(users.body.pagination.total).toBeGreaterThanOrEqual(3);
 
+  const createdUser = await request(app)
+    .post('/api/admin/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      name: 'Created By Admin',
+      email: 'created-by-admin@example.com',
+      password: 'created123',
+      role: 'user',
+      status: 'Active'
+    })
+    .expect(201);
+
+  expect(createdUser.body.success).toBe(true);
+  expect(createdUser.body.data.email).toBe('created-by-admin@example.com');
+  expect(createdUser.body.data.role).toBe('reader');
+  expect(createdUser.body.data.isActive).toBe(true);
+  expect(createdUser.body.data.password).toBeUndefined();
+
+  await request(app)
+    .post('/api/admin/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      name: 'Duplicate User',
+      email: 'created-by-admin@example.com',
+      password: 'created123'
+    })
+    .expect(409);
+
+  await request(app)
+    .post('/api/admin/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      name: 'Invalid Email User',
+      email: 'invalid-email',
+      password: 'created123'
+    })
+    .expect(400);
+
   await request(app).put(`/api/admin/users/${reader._id}/role`).set('Authorization', `Bearer ${adminToken}`).send({ role: 'author' }).expect(200);
   await request(app).patch(`/api/admin/users/${reader._id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ isActive: false }).expect(200);
   await request(app).post(`/api/admin/users/${reader._id}/reset-password`).set('Authorization', `Bearer ${adminToken}`).send({ password: 'admin123' }).expect(200);
+  await request(app).delete(`/api/admin/users/${createdUser.body.data._id}`).set('Authorization', `Bearer ${adminToken}`).expect(200);
+  await request(app).delete(`/api/admin/users/${admin._id}`).set('Authorization', `Bearer ${adminToken}`).expect(400);
   expect((await User.findById(reader._id)).isActive).toBe(false);
+  expect((await User.findById(createdUser.body.data._id)).isActive).toBe(false);
 });
 
 test('supports CMS content frontend contract', async () => {
