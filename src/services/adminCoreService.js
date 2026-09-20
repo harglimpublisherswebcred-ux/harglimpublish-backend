@@ -28,6 +28,18 @@ const orderStatusMap = {
   Delivered: 'DELIVERED',
   Cancelled: 'CANCELLED',
 };
+const allowedOrderStatuses = new Set(['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']);
+const allowedPublishStatuses = new Set([
+  'PENDING',
+  'UNDER_REVIEW',
+  'CHANGES_REQUESTED',
+  'APPROVED',
+  'REJECTED',
+  'pending',
+  'reviewed',
+  'accepted',
+  'rejected'
+]);
 
 const normalizeFrontendRole = (role) => (role === 'user' ? 'reader' : role);
 const emailPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
@@ -60,6 +72,14 @@ const buildBookSort = (value) => {
   const field = raw.replace(/^-/, '');
   if (!allowedBookSortFields.has(field)) return { createdAt: -1 };
   return { [field]: direction };
+};
+
+const buildCreatedAtSort = (value) => {
+  if (!value) return { createdAt: -1 };
+  const raw = String(value);
+  if (raw === 'oldest' || raw === 'createdAt') return { createdAt: 1 };
+  if (raw === 'newest' || raw === '-createdAt') return { createdAt: -1 };
+  return { createdAt: -1 };
 };
 
 const normalizeBookPricingInput = (payload = {}) => {
@@ -280,8 +300,35 @@ class AdminCoreService {
     return { success: true, message: 'Book removed' };
   }
 
-  listOrders() {
-    return this.repository.listOrders();
+  async listOrders(filters = {}) {
+    const { pageNum, limitNum, skip } = pageMeta(filters.page, filters.limit);
+    const query = {};
+
+    if (filters.status) {
+      const status = normalizeOrderStatus(filters.status);
+      if (allowedOrderStatuses.has(status)) query.status = status;
+    }
+
+    if (filters.user) query.user = filters.user;
+
+    if (filters.search || filters.q || filters.customer) {
+      const search = filters.search || filters.q || filters.customer;
+      const regex = new RegExp(escapeRegex(search), 'i');
+      const users = await this.repository.findUsersForAdminSearch(regex, { limit: 50 });
+      query.$or = [
+        { orderNumber: regex },
+        { 'shippingAddress.fullName': regex },
+        { 'shippingAddress.city': regex },
+        { user: { $in: users.map((user) => user._id) } }
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.repository.listOrders(query, { skip, limit: limitNum, sort: buildCreatedAtSort(filters.sort) }),
+      this.repository.countOrdersByQuery(query)
+    ]);
+
+    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 
   async updateOrderStatus(id, status) {
@@ -296,8 +343,34 @@ class AdminCoreService {
     return this.repository.saveOrder(order);
   }
 
-  listPublishRequests() {
-    return this.repository.listPublishRequests();
+  async listPublishRequests(filters = {}) {
+    const { pageNum, limitNum, skip } = pageMeta(filters.page, filters.limit);
+    const query = {};
+
+    if (filters.status && allowedPublishStatuses.has(String(filters.status))) {
+      query.status = String(filters.status);
+    }
+
+    if (filters.user) query.user = filters.user;
+
+    if (filters.search || filters.q || filters.author) {
+      const search = filters.search || filters.q || filters.author;
+      const regex = new RegExp(escapeRegex(search), 'i');
+      const users = await this.repository.findUsersForAdminSearch(regex, { limit: 50 });
+      query.$or = [
+        { title: regex },
+        { genre: regex },
+        { adminNotes: regex },
+        { user: { $in: users.map((user) => user._id) } }
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.repository.listPublishRequests(query, { skip, limit: limitNum, sort: buildCreatedAtSort(filters.sort) }),
+      this.repository.countPublishRequestsByQuery(query)
+    ]);
+
+    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 
   async updatePublishRequestStatus(id, status) {

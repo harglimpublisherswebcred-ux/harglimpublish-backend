@@ -4666,7 +4666,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `status`: optional query parameter.
+- `user`: optional query parameter.
+- `search`: optional query parameter.
+- `q`: optional query parameter.
+- `customer`: optional query parameter.
+- `sort`: optional query parameter.
 
 Request Body: No request body.
 
@@ -4768,7 +4775,14 @@ Path Parameters:
 - None.
 
 Query Parameters:
-- None.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `status`: optional query parameter.
+- `user`: optional query parameter.
+- `search`: optional query parameter.
+- `q`: optional query parameter.
+- `author`: optional query parameter.
+- `sort`: optional query parameter.
 
 Request Body: No request body.
 

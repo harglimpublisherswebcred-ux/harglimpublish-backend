@@ -14,6 +14,8 @@ const Invoice = require('../src/models/Invoice');
 const Notification = require('../src/models/Notification');
 const Review = require('../src/models/Review');
 const AuthorApplication = require('../src/models/AuthorApplication');
+const PublishPackage = require('../src/models/PublishPackage');
+const PublishRequest = require('../src/models/PublishRequest');
 const Content = require('../src/models/Content');
 
 jest.setTimeout(600000);
@@ -43,7 +45,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), Content.deleteMany({})]);
+  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), PublishPackage.deleteMany({}), PublishRequest.deleteMany({}), Content.deleteMany({})]);
   admin = await User.create({ name: 'Admin', email: 'admin12@example.com', password: 'password123', role: 'admin' });
   reader = await User.create({ name: 'Reader', email: 'reader12@example.com', password: 'password123', role: 'reader' });
   author = await User.create({ name: 'Author', email: 'author12@example.com', password: 'password123', role: 'author' });
@@ -242,6 +244,74 @@ test('normalizes frontend order statuses without changing stored enum definition
     .expect(200);
 
   expect((await Order.findById(order._id)).status).toBe('PROCESSING');
+});
+
+test('supports admin order listing with pagination and filters', async () => {
+  await Order.create({
+    orderNumber: 'HM-S12-2',
+    user: author._id,
+    items: [{ book: book._id, quantity: 2, price: 100 }],
+    shippingAddress: { fullName: 'Author Buyer', addressLine1: 'A', city: 'Hyderabad', postalCode: '2', country: 'IN' },
+    subtotal: 200,
+    tax: 0,
+    shippingPrice: 0,
+    totalPrice: 200,
+    status: 'SHIPPED'
+  });
+
+  const listed = await request(app)
+    .get('/api/admin/orders?page=1&limit=1&status=SHIPPED&search=Author')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+
+  expect(listed.body.success).toBe(true);
+  expect(listed.body.pagination.total).toBe(1);
+  expect(listed.body.pagination.limit).toBe(1);
+  expect(listed.body.data).toHaveLength(1);
+  expect(listed.body.data[0].orderNumber).toBe('HM-S12-2');
+  expect(listed.body.data[0].user.email).toBe(author.email);
+});
+
+test('supports admin publish request listing with pagination and filters', async () => {
+  const publishPackage = await PublishPackage.create({
+    name: 'Editorial',
+    description: 'Editorial package',
+    price: 5000
+  });
+
+  await PublishRequest.create({
+    user: author._id,
+    book: book._id,
+    title: 'Indexed Manuscript',
+    genre: 'Fiction',
+    wordCount: 42000,
+    packageId: publishPackage._id,
+    fileUrl: 'https://example.com/manuscript.pdf',
+    status: 'PENDING'
+  });
+
+  await PublishRequest.create({
+    user: reader._id,
+    book: book._id,
+    title: 'Older Manuscript',
+    genre: 'Memoir',
+    wordCount: 30000,
+    packageId: publishPackage._id,
+    fileUrl: 'https://example.com/older.pdf',
+    status: 'REJECTED'
+  });
+
+  const listed = await request(app)
+    .get('/api/admin/publish-requests?page=1&limit=5&status=PENDING&search=Indexed')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+
+  expect(listed.body.success).toBe(true);
+  expect(listed.body.pagination.total).toBe(1);
+  expect(listed.body.data).toHaveLength(1);
+  expect(listed.body.data[0].title).toBe('Indexed Manuscript');
+  expect(listed.body.data[0].user.email).toBe(author.email);
+  expect(listed.body.data[0].packageId.name).toBe('Editorial');
 });
 
 test('supports book royalty percentage through admin book APIs', async () => {

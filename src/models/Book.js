@@ -105,6 +105,12 @@ const bookSchema = new mongoose.Schema(
 
 // Create a text index for search
 bookSchema.index({ title: 'text', description: 'text' });
+bookSchema.index({ status: 1, createdAt: -1 });
+bookSchema.index({ category: 1, status: 1, createdAt: -1 });
+bookSchema.index({ author: 1, status: 1, createdAt: -1 });
+bookSchema.index({ isFeatured: 1, status: 1, createdAt: -1 });
+bookSchema.index({ isBestseller: 1, status: 1, createdAt: -1 });
+bookSchema.index({ isNewRelease: 1, status: 1, createdAt: -1 });
 
 const hasValue = (value) => value !== undefined && value !== null;
 

@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { randomUUID } = require('crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -55,6 +56,9 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 const app = express();
+const requestTimeoutMs = Number(process.env.SERVER_REQUEST_TIMEOUT_MS || 120000);
+const headersTimeoutMs = Number(process.env.SERVER_HEADERS_TIMEOUT_MS || 65000);
+const keepAliveTimeoutMs = Number(process.env.SERVER_KEEP_ALIVE_TIMEOUT_MS || 5000);
 
 // Railway/Render/Heroku/Nginx terminate TLS and forward the real client IP in
 // X-Forwarded-For; trust one proxy hop in production so rate limiting uses it.
@@ -65,6 +69,31 @@ if (process.env.NODE_ENV === 'production') {
 registerSubscribers();
 
 // Middleware
+app.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+  const incomingRequestId = Array.isArray(req.headers['x-request-id'])
+    ? req.headers['x-request-id'][0]
+    : req.headers['x-request-id'];
+  const requestId = incomingRequestId || randomUUID();
+  req.id = requestId;
+  res.setHeader('X-Request-Id', requestId);
+
+  res.on('finish', () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+    const level = durationMs > 3000 || res.statusCode >= 500 ? 'warn' : 'info';
+    logger[level]('http.request_completed', {
+      requestId,
+      method: req.method,
+      path: req.originalUrl,
+      statusCode: res.statusCode,
+      durationMs: Math.round(durationMs),
+      ip: req.ip,
+      userId: req.user && req.user._id ? String(req.user._id) : undefined
+    });
+  });
+
+  next();
+});
 app.use(helmet());
 app.use(cors());
 // Integrate morgan with winston
@@ -163,6 +192,9 @@ const startServer = async () => {
   server = app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
   });
+  server.requestTimeout = requestTimeoutMs;
+  server.headersTimeout = headersTimeoutMs;
+  server.keepAliveTimeout = keepAliveTimeoutMs;
   return server;
 };
 

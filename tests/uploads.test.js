@@ -159,7 +159,7 @@ describe('Upload API hardening', () => {
     });
   });
 
-  it('maps oversized file middleware failures to safe bad request responses', () => {
+  it('maps oversized file middleware failures to payload-too-large responses', () => {
     const res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
@@ -171,7 +171,7 @@ describe('Upload API hardening', () => {
     handleUploadError(error, {}, res, next);
 
     expect(next).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.status).toHaveBeenCalledWith(413);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
       message: 'Uploaded file is too large'

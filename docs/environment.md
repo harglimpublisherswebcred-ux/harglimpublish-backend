@@ -9,7 +9,15 @@ This document is generated from actual environment references in `server.js`, `s
 | `NODE_ENV` | Optional | non-production behavior when unset | `server.js`, `src/utils/logger.js` | Controls server startup, stack traces, and logger transports. | Set to `production` in production. | `production` | No |
 | `PORT` | Optional | `5000` | `server.js` | HTTP server port. | Set explicitly behind PM2/Nginx/container runtime. | `5000` | No |
 | `REQUEST_BODY_LIMIT` | Optional | `1mb` | `server.js` | Maximum JSON/urlencoded request body size. | Keep small unless a specific API needs larger JSON bodies. | `1mb` | No |
+| `SERVER_REQUEST_TIMEOUT_MS` | Optional | `120000` | `server.js` | HTTP request timeout in milliseconds. | Keep high enough for slow clients but lower than platform hard limits. | `120000` | No |
+| `SERVER_HEADERS_TIMEOUT_MS` | Optional | `65000` | `server.js` | HTTP header timeout in milliseconds. | Keep lower than request timeout. | `65000` | No |
+| `SERVER_KEEP_ALIVE_TIMEOUT_MS` | Optional | `5000` | `server.js` | HTTP keep-alive timeout in milliseconds. | Keep aligned with reverse proxy settings. | `5000` | No |
 | `MONGODB_URI` | Required | None | `src/config/database.js` | MongoDB connection string. | Use a production MongoDB replica set/Atlas URI with credentials from a secret manager. | `mongodb://localhost:27017/hm_backend` | Yes |
+| `MONGODB_MAX_POOL_SIZE` | Optional | `20` | `src/config/database.js` | Maximum MongoDB connection pool size. | Tune based on Render instance size and Atlas tier. | `20` | No |
+| `MONGODB_MIN_POOL_SIZE` | Optional | `0` | `src/config/database.js` | Minimum MongoDB connection pool size. | Keep low for small instances unless warm pools are required. | `0` | No |
+| `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | Optional | `10000` | `src/config/database.js` | MongoDB server selection timeout. | Use a bounded timeout so startup/requests fail clearly. | `10000` | No |
+| `MONGODB_CONNECT_TIMEOUT_MS` | Optional | `10000` | `src/config/database.js` | MongoDB connection timeout. | Keep bounded for faster failure detection. | `10000` | No |
+| `MONGODB_SOCKET_TIMEOUT_MS` | Optional | `45000` | `src/config/database.js` | MongoDB socket timeout. | Set below platform request limits where possible. | `45000` | No |
 | `JWT_SECRET` | Required for production | `secret123` fallback exists | `src/utils/tokenUtils.js`, `src/middleware/authMiddleware.js`, tests | Signs and verifies JWTs. | Must be a long random secret; never use fallback in production. | `CHANGE_ME_TO_A_LONG_RANDOM_PRODUCTION_SECRET` | Yes |
 | `JWT_EXPIRE` | Optional | `30d` | `src/utils/tokenUtils.js` | JWT expiry duration. | Use short expiry aligned to frontend session policy. | `7d` | No |
 | `GOOGLE_CLIENT_ID` | Required for Google Login usage | None | `src/services/googleIdentityProvider.js` | Verifies Google ID token audience for `POST /api/auth/google`. | Configure the production Google OAuth web client ID; do not use placeholders. | `CHANGE_ME_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` | No |
@@ -26,6 +34,8 @@ This document is generated from actual environment references in `server.js`, `s
 | `CLOUDINARY_API_KEY` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary API key. | Store securely. | `CHANGE_ME` | Yes |
 | `CLOUDINARY_API_SECRET` | Required for Cloudinary uploads | None | `src/config/cloudinary.js` | Cloudinary API secret. | Store securely. | `CHANGE_ME` | Yes |
 | `UPLOAD_MAX_BYTES` | Optional | `26214400` | `src/config/cloudinary.js` | Maximum upload file size in bytes. | Keep at or below infrastructure/provider limits. | `26214400` | No |
+| `CLOUDINARY_TIMEOUT_MS` | Optional | `60000` | `src/config/cloudinary.js` | Cloudinary upload timeout in milliseconds. | Keep lower than server/platform request timeout. | `60000` | No |
+| `LOG_TO_FILE` | Optional | `true` | `src/utils/logger.js` | Enables local file log transports in addition to console logs. | Set `false` on ephemeral/container hosts and rely on platform log drains. | `false` | No |
 | `MONGOMS_DOWNLOAD_DIR` | Test-only | mongodb-memory-server default | tests | Cache directory for mongodb-memory-server binaries. | Keep out of production runtime env. | `node_modules/.cache/mongodb-binaries` | No |
 
 ## Current `.env` Audit
@@ -108,6 +118,14 @@ Required for Google Login usage:
 - `NODE_ENV`
 - `PORT`
 - `REQUEST_BODY_LIMIT`
+- `SERVER_REQUEST_TIMEOUT_MS`
+- `SERVER_HEADERS_TIMEOUT_MS`
+- `SERVER_KEEP_ALIVE_TIMEOUT_MS`
+- `MONGODB_MAX_POOL_SIZE`
+- `MONGODB_MIN_POOL_SIZE`
+- `MONGODB_SERVER_SELECTION_TIMEOUT_MS`
+- `MONGODB_CONNECT_TIMEOUT_MS`
+- `MONGODB_SOCKET_TIMEOUT_MS`
 - `JWT_EXPIRE`
 - `GOOGLE_CLIENT_ID`
 - `MERCHANT_CODE`
@@ -117,6 +135,8 @@ Required for Google Login usage:
 - `RESEND_API_KEY`
 - `FROM_EMAIL`
 - `UPLOAD_MAX_BYTES`
+- `CLOUDINARY_TIMEOUT_MS`
+- `LOG_TO_FILE`
 - `MONGOMS_DOWNLOAD_DIR`
 
 ## Development Example
@@ -125,7 +145,15 @@ Required for Google Login usage:
 NODE_ENV=development
 PORT=5000
 REQUEST_BODY_LIMIT=1mb
+SERVER_REQUEST_TIMEOUT_MS=120000
+SERVER_HEADERS_TIMEOUT_MS=65000
+SERVER_KEEP_ALIVE_TIMEOUT_MS=5000
 MONGODB_URI=mongodb://localhost:27017/hm_backend
+MONGODB_MAX_POOL_SIZE=20
+MONGODB_MIN_POOL_SIZE=0
+MONGODB_SERVER_SELECTION_TIMEOUT_MS=10000
+MONGODB_CONNECT_TIMEOUT_MS=10000
+MONGODB_SOCKET_TIMEOUT_MS=45000
 JWT_SECRET=dev_only_change_me
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=dev-google-client-id.apps.googleusercontent.com
@@ -136,6 +164,7 @@ PAYMENT_CURRENCY=INR
 PAYMENT_EXPIRY_DURATION=24h
 QR_EXPIRY_MINUTES=15
 FROM_EMAIL=onboarding@resend.dev
+LOG_TO_FILE=true
 ```
 
 ## Staging Example
@@ -144,7 +173,15 @@ FROM_EMAIL=onboarding@resend.dev
 NODE_ENV=production
 PORT=5000
 REQUEST_BODY_LIMIT=1mb
+SERVER_REQUEST_TIMEOUT_MS=120000
+SERVER_HEADERS_TIMEOUT_MS=65000
+SERVER_KEEP_ALIVE_TIMEOUT_MS=5000
 MONGODB_URI=mongodb+srv://USER:PASSWORD@staging-cluster.example/hm_backend
+MONGODB_MAX_POOL_SIZE=20
+MONGODB_MIN_POOL_SIZE=0
+MONGODB_SERVER_SELECTION_TIMEOUT_MS=10000
+MONGODB_CONNECT_TIMEOUT_MS=10000
+MONGODB_SOCKET_TIMEOUT_MS=45000
 JWT_SECRET=CHANGE_ME_STAGING_SECRET
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=CHANGE_ME_STAGING_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -156,6 +193,8 @@ PAYMENT_EXPIRY_DURATION=24h
 QR_EXPIRY_MINUTES=15
 RESEND_API_KEY=CHANGE_ME_STAGING_RESEND_KEY
 FROM_EMAIL=noreply-staging@example.com
+CLOUDINARY_TIMEOUT_MS=60000
+LOG_TO_FILE=false
 ```
 
 ## Production Example
@@ -164,7 +203,15 @@ FROM_EMAIL=noreply-staging@example.com
 NODE_ENV=production
 PORT=5000
 REQUEST_BODY_LIMIT=1mb
+SERVER_REQUEST_TIMEOUT_MS=120000
+SERVER_HEADERS_TIMEOUT_MS=65000
+SERVER_KEEP_ALIVE_TIMEOUT_MS=5000
 MONGODB_URI=mongodb+srv://USER:PASSWORD@production-cluster.example/hm_backend
+MONGODB_MAX_POOL_SIZE=20
+MONGODB_MIN_POOL_SIZE=0
+MONGODB_SERVER_SELECTION_TIMEOUT_MS=10000
+MONGODB_CONNECT_TIMEOUT_MS=10000
+MONGODB_SOCKET_TIMEOUT_MS=45000
 JWT_SECRET=CHANGE_ME_LONG_RANDOM_PRODUCTION_SECRET
 JWT_EXPIRE=7d
 GOOGLE_CLIENT_ID=CHANGE_ME_PRODUCTION_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -181,6 +228,8 @@ CLOUDINARY_CLOUD_NAME=CHANGE_ME
 CLOUDINARY_API_KEY=CHANGE_ME
 CLOUDINARY_API_SECRET=CHANGE_ME
 UPLOAD_MAX_BYTES=26214400
+CLOUDINARY_TIMEOUT_MS=60000
+LOG_TO_FILE=false
 ```
 
 ## Security Notes

@@ -58,5 +58,7 @@ const publishRequestSchema = new mongoose.Schema(
 
 publishRequestSchema.index({ user: 1, createdAt: -1 });
 publishRequestSchema.index({ book: 1, status: 1 });
+publishRequestSchema.index({ status: 1, createdAt: -1 });
+publishRequestSchema.index({ packageId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('PublishRequest', publishRequestSchema);

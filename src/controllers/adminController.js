@@ -77,10 +77,10 @@ const deleteBook = async (req, res) => {
 // @access  Private (Admin)
 const getOrders = async (req, res) => {
   try {
-    const orders = await adminCoreService.listOrders();
-    res.json({ success: true, data: orders });
+    const result = await adminCoreService.listOrders(req.query);
+    res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -101,10 +101,10 @@ const updateOrderStatus = async (req, res) => {
 // @access  Private (Admin)
 const getPublishRequests = async (req, res) => {
   try {
-    const requests = await adminCoreService.listPublishRequests();
-    res.json({ success: true, data: requests });
+    const result = await adminCoreService.listPublishRequests(req.query);
+    res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 

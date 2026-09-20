@@ -1505,3 +1505,28 @@ When to use:
 
 
 
+#delete cmds
+Run from project root:
+cd C:\Users\user\hm_backend
+
+1. List users
+
+node -e "require('dotenv').config(); const mongoose=require('mongoose'); const User=require('./src/models/User'); (async()=>{ await mongoose.connect(process.env.MONGODB_URI); const users=await User.find().select('_id name email role isActive createdAt').sort({createdAt:-1}).lean(); console.table(users.map(u=>({id:String(u._id),name:u.name,email:u.email,role:u.role,isActive:u.isActive,createdAt:u.createdAt}))); await mongoose.disconnect(); })().catch(async e=>{ console.error(e.message); try{await mongoose.disconnect()}catch(_){} process.exit(1); });"
+
+2. Check where a user is referenced before deleting
+
+Replace USER_ID_HERE.
+
+node -e "require('dotenv').config(); const mongoose=require('mongoose'); const User=require('./src/models/User'); const Book=require('./src/models/Book'); const Order=require('./src/models/Order'); const Payment=require('./src/models/Payment'); const AuthorApplication=require('./src/models/AuthorApplication'); (async()=>{ const id='USER_ID_HERE'; await mongoose.connect(process.env.MONGODB_URI); const [user,books,orders,payments,applications]=await Promise.all([User.findById(id).select('_id name email role isActive').lean(),Book.countDocuments({author:id}),Order.countDocuments({user:id}),Payment.countDocuments({user:id}),AuthorApplication.countDocuments({user:id})]); console.log({user, references:{books,orders,payments,authorApplications:applications}}); await mongoose.disconnect(); })().catch(async e=>{ console.error(e.message); try{await mongoose.disconnect()}catch(_){} process.exit(1); });"
+
+3. Hard delete user
+
+Replace USER_ID_HERE.
+
+node -e "require('dotenv').config(); const mongoose=require('mongoose'); const User=require('./src/models/User'); (async()=>{ const id='6a9c603810aa0c777db17320'; await mongoose.connect(process.env.MONGODB_URI); const result=await User.deleteOne({_id:id}); console.log({success:result.deletedCount===1, deletedCount:result.deletedCount}); await mongoose.disconnect(); })().catch(async e=>{ console.error(e.message); try{await mongoose.disconnect()}catch(_){} process.exit(1); });"
+
+
+
+
+3. Delete everything except that email
+node -e "require('dotenv').config(); const mongoose=require('mongoose'); const User=require('./src/models/User'); (async()=>{ await mongoose.connect(process.env.MONGODB_URI); const result=await User.deleteMany({email:{$ne:'harglimpublication@gmail.com'}}); console.log({success:true, deletedCount:result.deletedCount, protectedEmail:'harglimpublication@gmail.com'}); const remaining=await User.find().select('_id name email role isActive createdAt').lean(); console.table(remaining.map(u=>({id:String(u._id),name:u.name,email:u.email,role:u.role,isActive:u.isActive,createdAt:u.createdAt}))); await mongoose.disconnect(); })().catch(async e=>{ console.error(e.message); try{await mongoose.disconnect()}catch(_){} process.exit(1); });"

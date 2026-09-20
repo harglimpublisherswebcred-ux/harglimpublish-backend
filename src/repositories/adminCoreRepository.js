@@ -49,6 +49,10 @@ class AdminCoreRepository {
     return User.find(query).select('-password').sort('-createdAt').skip(skip).limit(limit);
   }
 
+  findUsersForAdminSearch(regex, { limit = 50 } = {}) {
+    return User.find({ $or: [{ name: regex }, { email: regex }] }).select('_id').limit(limit).lean();
+  }
+
   countUsersByQuery(query = {}) {
     return User.countDocuments(query);
   }
@@ -98,8 +102,17 @@ class AdminCoreRepository {
     return Book.findByIdAndDelete(id);
   }
 
-  listOrders() {
-    return Order.find().populate('user', 'name email').sort('-createdAt');
+  listOrders(query = {}, { skip = 0, limit = 20, sort = { createdAt: -1 } } = {}) {
+    return Order.find(query)
+      .populate('user', 'name email')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  countOrdersByQuery(query = {}) {
+    return Order.countDocuments(query);
   }
 
   findOrderById(id) {
@@ -110,12 +123,19 @@ class AdminCoreRepository {
     return order.save();
   }
 
-  listPublishRequests() {
-    return PublishRequest.find()
+  listPublishRequests(query = {}, { skip = 0, limit = 20, sort = { createdAt: -1 } } = {}) {
+    return PublishRequest.find(query)
       .populate('user', 'name email')
       .populate('book', 'title status coverImage mrp')
       .populate('packageId', 'name')
-      .sort('-createdAt');
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+
+  countPublishRequestsByQuery(query = {}) {
+    return PublishRequest.countDocuments(query);
   }
 
   findPublishRequestById(id) {
