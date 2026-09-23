@@ -24,6 +24,28 @@ const pageMeta = (page, limit) => {
   return { pageNum, limitNum, skip: (pageNum - 1) * limitNum };
 };
 
+const optionalString = (value) => {
+  if (value === undefined || value === null) return undefined;
+  const trimmed = String(value).trim();
+  return trimmed || undefined;
+};
+
+const maskAccountNumber = (value = '') => {
+  const str = String(value || '').replace(/\s+/g, '');
+  if (!str) return '';
+  const tail = str.slice(-4);
+  return `${'*'.repeat(Math.max(str.length - 4, 0))}${tail}`;
+};
+
+const publicPayoutDetails = (details = {}) => ({
+  accountHolderName: details.accountHolderName || '',
+  bankName: details.bankName || '',
+  accountNumberMasked: maskAccountNumber(details.accountNumber),
+  ifscCode: details.ifscCode || '',
+  upiId: details.upiId || '',
+  updatedAt: details.updatedAt
+});
+
 class UserService {
   constructor(repository = userRepository) {
     this.repository = repository;
@@ -72,6 +94,67 @@ class UserService {
       role: user.role,
       profilePicture: user.profilePicture
     };
+  }
+
+  async updateAuthorProfile(authorId, actor, updates = {}) {
+    authorId = authorizeUser(authorId, actor);
+    const user = await this.repository.findById(authorId);
+    if (!user) throw userNotFound();
+    if (user.role !== 'author' && actor.role !== 'admin') {
+      const error = new Error('Target user must be an approved author');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const name = optionalString(updates.name);
+    const bio = optionalString(updates.bio);
+    const profilePicture = optionalString(updates.profilePicture || updates.profileImage);
+
+    if (name) user.name = name;
+    if (bio !== undefined) user.bio = bio;
+    if (profilePicture) user.profilePicture = profilePicture;
+
+    await this.repository.save(user);
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      bio: user.bio || '',
+      profilePicture: user.profilePicture || '',
+      profileImage: user.profilePicture || ''
+    };
+  }
+
+  async updateAuthorPaymentDetails(authorId, actor, updates = {}) {
+    authorId = authorizeUser(authorId, actor);
+    const user = await this.repository.findByIdWithPayoutDetails(authorId);
+    if (!user) throw userNotFound();
+    if (user.role !== 'author' && actor.role !== 'admin') {
+      const error = new Error('Target user must be an approved author');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const source = updates.paymentDetails || updates.payoutDetails || updates;
+    const payoutDetails = {
+      accountHolderName: optionalString(source.accountHolderName),
+      bankName: optionalString(source.bankName),
+      accountNumber: optionalString(source.accountNumber),
+      ifscCode: optionalString(source.ifscCode),
+      upiId: optionalString(source.upiId),
+      updatedAt: new Date()
+    };
+
+    if (!payoutDetails.upiId && !(payoutDetails.accountHolderName && payoutDetails.bankName && payoutDetails.accountNumber && payoutDetails.ifscCode)) {
+      const error = new Error('Provide either UPI ID or complete bank account details');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    user.payoutDetails = payoutDetails;
+    await this.repository.save(user);
+    return publicPayoutDetails(user.payoutDetails || {});
   }
 
   async getOrders(userId, actor, filters = {}) {

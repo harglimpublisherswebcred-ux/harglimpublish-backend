@@ -10,6 +10,10 @@ class UserRepository {
     return User.findById(id);
   }
 
+  findByIdWithPayoutDetails(id) {
+    return User.findById(id).select('+payoutDetails');
+  }
+
   countOrders(userId) {
     return Order.countDocuments({ user: userId });
   }

@@ -609,6 +609,8 @@ Important public catalog endpoints:
 | `GET /api/search?q=query` | Search | Global search results. |
 | `GET /api/authors` | Public authors | Author listing. |
 | `GET /api/authors/{id}` | Author profile | Public author page. |
+| `PUT /api/authors/{id}` | Update author profile | Author/admin profile edit. Email is locked. |
+| `PUT /api/authors/{id}/payment-details` | Update author payout details | Author/admin payout setup. Response masks account number. |
 | `GET /api/authors/{id}/books` | Author books | Public author catalog. |
 
 ## 19. Book Object
@@ -1348,6 +1350,8 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | 51 | DELETE | `/api/users/{id}/wishlist/{bookId}` | Bearer | authenticated | Users | Remove book from wishlist |
 | 52 | GET | `/api/authors` | Public | public | Authors | List authors |
 | 53 | GET | `/api/authors/{id}` | Public | public | Authors | Get author |
+| 53a | PUT | `/api/authors/{id}` | Author/Admin | author/admin | Authors | Update author profile |
+| 53b | PUT | `/api/authors/{id}/payment-details` | Author/Admin | author/admin | Authors | Update author payout details |
 | 54 | GET | `/api/authors/{id}/books` | Public | public | Authors | Get author books |
 | 55 | GET | `/api/authors/{id}/stats` | Bearer | authenticated | Authors | Get author stats |
 | 56 | GET | `/api/authors/{id}/analytics` | Bearer | authenticated | Authors | Get author analytics alias |
@@ -1497,6 +1501,7 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | 28 | `/api/users/{id}/library` | Bearer | - | Get user library |
 | 29 | `/api/authors` | Public | page, limit | List authors |
 | 30 | `/api/authors/{id}` | Public | - | Get author |
+| 30a | `/api/authors/{id}/payment-details` | Author/Admin | - | Update author payout details |
 | 31 | `/api/authors/{id}/books` | Public | page, limit, sort | Get author books |
 | 32 | `/api/authors/{id}/stats` | Bearer | - | Get author stats |
 | 33 | `/api/authors/{id}/analytics` | Bearer | - | Get author analytics alias |

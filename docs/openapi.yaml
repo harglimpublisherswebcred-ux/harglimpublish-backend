@@ -7111,6 +7111,247 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+    put:
+      tags:
+        - Authors
+      summary: Update author profile
+      description: "Update author profile. Controller: authorProfileController.updateAuthorProfile. Authentication: Author/Admin. API routes are rate limited and return standard error envelopes. Author can update own name, bio, and profile image. Email is intentionally locked."
+      operationId: put_api_authors_id
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorProfileUpdateRequest"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/authors/{id}/payment-details:
+    put:
+      tags:
+        - Authors
+      summary: Update author payout details
+      description: "Update author payout details. Controller: authorProfileController.updateAuthorPaymentDetails. Authentication: Author/Admin. API routes are rate limited and return standard error envelopes. Stores UPI or bank payout details securely and returns only masked account information."
+      operationId: put_api_authors_id_payment_details
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorPaymentDetailsRequest"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/authors/{id}/books:
     get:
       tags:
@@ -23307,6 +23548,33 @@ components:
               type: string
             country:
               type: string
+            email:
+              type: string
+              format: email
+              description: Optional delivery/contact email.
+            phone:
+              type: string
+              description: Customer mobile/contact number. Preferred field for new frontend checkout.
+            mobile:
+              type: string
+              description: Compatibility alias accepted and normalized to phone.
+            mobileNumber:
+              type: string
+              description: Compatibility alias accepted and normalized to phone.
+        customerEmail:
+          type: string
+          format: email
+          description: Optional top-level contact email copied to the order.
+        email:
+          type: string
+          format: email
+          description: Compatibility alias for customerEmail.
+        customerPhone:
+          type: string
+          description: Optional top-level contact/mobile number copied to the order.
+        phone:
+          type: string
+          description: Compatibility alias for customerPhone.
         paymentMethod:
           type: string
           default: UPI
@@ -23353,6 +23621,42 @@ components:
         profilePicture:
           type: string
           format: uri
+    AuthorProfileUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+          maxLength: 2000
+        profilePicture:
+          type: string
+          format: uri
+        profileImage:
+          type: string
+          format: uri
+          description: Compatibility alias for profilePicture.
+    AuthorPaymentDetailsRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        paymentDetails:
+          type: object
+          properties:
+            accountHolderName:
+              type: string
+            bankName:
+              type: string
+            accountNumber:
+              type: string
+            ifscCode:
+              type: string
+            upiId:
+              type: string
+        payoutDetails:
+          type: object
+          description: Compatibility alias for paymentDetails.
     WishlistRequest:
       type: object
       required:
@@ -23998,6 +24302,9 @@ components:
         serviceName:
           type: string
           default: Manual Courier
+        courierName:
+          type: string
+          description: Compatibility alias for serviceName.
         trackingNumber:
           type: string
         trackingUrl:

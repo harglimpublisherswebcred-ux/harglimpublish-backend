@@ -31,6 +31,7 @@ let invoice;
 let notification;
 let readerToken;
 let adminToken;
+let authorToken;
 
 const tokenFor = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
@@ -56,6 +57,7 @@ beforeEach(async () => {
   notification = await Notification.create({ idempotencyKey: 's12-notification', user: reader._id, eventType: 'InvoiceGenerated', channel: 'IN_APP', subject: 'Invoice', body: 'Invoice ready', status: 'SENT' });
   readerToken = tokenFor(reader);
   adminToken = tokenFor(admin);
+  authorToken = tokenFor(author);
 });
 
 test('supports author application frontend contract and admin approval promotes role', async () => {
@@ -217,6 +219,52 @@ test('supports /api/users/me profile contract', async () => {
   expect(me.body.data.password).toBeUndefined();
 });
 
+test('supports author profile and payout detail frontend contracts', async () => {
+  const profile = await request(app)
+    .put(`/api/authors/${author._id}`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({
+      name: 'Updated Author',
+      bio: 'Author biography for profile page',
+      profileImage: 'https://example.com/author.jpg',
+      email: 'changed@example.com'
+    })
+    .expect(200);
+
+  expect(profile.body.success).toBe(true);
+  expect(profile.body.data.name).toBe('Updated Author');
+  expect(profile.body.data.bio).toBe('Author biography for profile page');
+  expect(profile.body.data.profileImage).toBe('https://example.com/author.jpg');
+  expect(profile.body.data.email).toBe(author.email);
+
+  const payout = await request(app)
+    .put(`/api/authors/${author._id}/payment-details`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({
+      paymentDetails: {
+        accountHolderName: 'Updated Author',
+        bankName: 'HDFC Bank',
+        accountNumber: '50100492817263',
+        ifscCode: 'hdfc0001234',
+        upiId: 'author@upi'
+      }
+    })
+    .expect(200);
+
+  expect(payout.body.success).toBe(true);
+  expect(payout.body.data.accountNumber).toBeUndefined();
+  expect(payout.body.data.accountNumberMasked).toBe('**********7263');
+  expect(payout.body.data.ifscCode).toBe('HDFC0001234');
+
+  const denied = await request(app)
+    .put(`/api/authors/${author._id}`)
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ name: 'Bad Actor' })
+    .expect(403);
+
+  expect(denied.body.message).toBe('User role reader is not authorized to access this route');
+});
+
 test('supports combined admin user update and frontend value normalization', async () => {
   const suspended = await request(app)
     .put(`/api/admin/users/${reader._id}`)
@@ -251,7 +299,7 @@ test('supports admin order listing with pagination and filters', async () => {
     orderNumber: 'HM-S12-2',
     user: author._id,
     items: [{ book: book._id, quantity: 2, price: 100 }],
-    shippingAddress: { fullName: 'Author Buyer', addressLine1: 'A', city: 'Hyderabad', postalCode: '2', country: 'IN' },
+    shippingAddress: { fullName: 'Author Buyer', addressLine1: 'A', city: 'Hyderabad', postalCode: '2', country: 'IN', phone: '9000000001' },
     subtotal: 200,
     tax: 0,
     shippingPrice: 0,
@@ -270,6 +318,7 @@ test('supports admin order listing with pagination and filters', async () => {
   expect(listed.body.data).toHaveLength(1);
   expect(listed.body.data[0].orderNumber).toBe('HM-S12-2');
   expect(listed.body.data[0].user.email).toBe(author.email);
+  expect(listed.body.data[0].shippingAddress.phone).toBe('9000000001');
 });
 
 test('supports admin publish request listing with pagination and filters', async () => {

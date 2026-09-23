@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const payoutDetailsSchema = new mongoose.Schema(
+  {
+    accountHolderName: { type: String, trim: true },
+    bankName: { type: String, trim: true },
+    accountNumber: { type: String, trim: true },
+    ifscCode: { type: String, trim: true, uppercase: true },
+    upiId: { type: String, trim: true },
+    updatedAt: { type: Date }
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -38,6 +50,16 @@ const userSchema = new mongoose.Schema(
     profilePicture: {
       type: String,
       default: '',
+    },
+    bio: {
+      type: String,
+      default: '',
+      trim: true,
+      maxlength: 2000,
+    },
+    payoutDetails: {
+      type: payoutDetailsSchema,
+      select: false,
     },
     isActive: {
       type: Boolean,

@@ -96,12 +96,18 @@ describe('ShipmentService', () => {
 
   it('assigns manual courier and updates shipment status through valid transitions', async () => {
     const shipment = await shipmentService.createShipmentForInvoice(invoice._id);
-    const assigned = await shipmentService.assignCourier(shipment._id, { provider: 'manual', trackingNumber: 'MAN-SVC' });
-    const transit = await shipmentService.updateStatus(shipment._id, { status: 'IN_TRANSIT', description: 'Dispatched' });
+    const assigned = await shipmentService.assignCourier(shipment._id, {
+      provider: 'manual',
+      courierName: 'India Post',
+      trackingNumber: 'CP123456789IN'
+    });
+    const transit = await shipmentService.updateStatus(shipment._id, { status: 'DISPATCHED', description: 'Dispatched' });
     const delivered = await shipmentService.updateStatus(shipment._id, { status: 'DELIVERED', description: 'Delivered' });
     const syncedOrder = await Order.findById(order._id).lean();
 
-    expect(assigned.trackingNumber).toBe('MAN-SVC');
+    expect(assigned.courier.serviceName).toBe('India Post');
+    expect(assigned.trackingNumber).toBe('CP123456789IN');
+    expect(assigned.trackingUrl).toContain('indiapost.gov.in');
     expect(transit.status).toBe('IN_TRANSIT');
     expect(delivered.deliveryDate).toBeTruthy();
     expect(syncedOrder.status).toBe('DELIVERED');

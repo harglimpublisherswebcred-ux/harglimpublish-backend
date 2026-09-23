@@ -63,6 +63,8 @@ const endpointInventory = [
 
   { method: 'GET', path: '/api/authors', tag: 'Authors', summary: 'List authors', auth: 'Public', controller: 'authorController.getAuthors', query: ['page', 'limit'] },
   { method: 'GET', path: '/api/authors/{id}', tag: 'Authors', summary: 'Get author', auth: 'Public', controller: 'authorController.getAuthorById', params: ['id'] },
+  { method: 'PUT', path: '/api/authors/{id}', tag: 'Authors', summary: 'Update author profile', auth: 'Author/Admin', controller: 'authorProfileController.updateAuthorProfile', params: ['id'], body: 'AuthorProfileUpdateRequest', notes: 'Author can update own name, bio, and profile image. Email is intentionally locked.' },
+  { method: 'PUT', path: '/api/authors/{id}/payment-details', tag: 'Authors', summary: 'Update author payout details', auth: 'Author/Admin', controller: 'authorProfileController.updateAuthorPaymentDetails', params: ['id'], body: 'AuthorPaymentDetailsRequest', notes: 'Stores UPI or bank payout details securely and returns only masked account information.' },
   { method: 'GET', path: '/api/authors/{id}/books', tag: 'Authors', summary: 'Get author books', auth: 'Public', controller: 'authorController.getAuthorBooks', params: ['id'], query: ['page', 'limit', 'sort'] },
   { method: 'GET', path: '/api/authors/{id}/stats', tag: 'Authors', summary: 'Get author stats', auth: 'Bearer', controller: 'authorController.getAuthorStats', params: ['id'] },
   { method: 'GET', path: '/api/authors/{id}/analytics', tag: 'Authors', summary: 'Get author analytics alias', auth: 'Bearer', controller: 'authorController.getAuthorStats', params: ['id'] },

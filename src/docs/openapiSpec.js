@@ -354,9 +354,17 @@ const schemas = {
           addressLine2: { type: 'string' },
           city: { type: 'string' },
           postalCode: { type: 'string' },
-          country: { type: 'string' }
+          country: { type: 'string' },
+          email: { type: 'string', format: 'email', description: 'Optional delivery/contact email.' },
+          phone: { type: 'string', description: 'Customer mobile/contact number. Preferred field for new frontend checkout.' },
+          mobile: { type: 'string', description: 'Compatibility alias accepted and normalized to phone.' },
+          mobileNumber: { type: 'string', description: 'Compatibility alias accepted and normalized to phone.' }
         }
       },
+      customerEmail: { type: 'string', format: 'email', description: 'Optional top-level contact email copied to the order.' },
+      email: { type: 'string', format: 'email', description: 'Compatibility alias for customerEmail.' },
+      customerPhone: { type: 'string', description: 'Optional top-level contact/mobile number copied to the order.' },
+      phone: { type: 'string', description: 'Compatibility alias for customerPhone.' },
       paymentMethod: { type: 'string', default: 'UPI', examples: ['UPI'] }
     }
   },
@@ -390,6 +398,36 @@ const schemas = {
       name: { type: 'string' },
       bio: { type: 'string', description: 'Accepted by controller but currently not persisted in User schema.' },
       profilePicture: { type: 'string', format: 'uri' }
+    }
+  },
+  AuthorProfileUpdateRequest: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      name: { type: 'string' },
+      bio: { type: 'string', maxLength: 2000 },
+      profilePicture: { type: 'string', format: 'uri' },
+      profileImage: { type: 'string', format: 'uri', description: 'Compatibility alias for profilePicture.' }
+    }
+  },
+  AuthorPaymentDetailsRequest: {
+    type: 'object',
+    additionalProperties: true,
+    properties: {
+      paymentDetails: {
+        type: 'object',
+        properties: {
+          accountHolderName: { type: 'string' },
+          bankName: { type: 'string' },
+          accountNumber: { type: 'string' },
+          ifscCode: { type: 'string' },
+          upiId: { type: 'string' }
+        }
+      },
+      payoutDetails: {
+        type: 'object',
+        description: 'Compatibility alias for paymentDetails.'
+      }
     }
   },
   WishlistRequest: {
@@ -704,6 +742,7 @@ const schemas = {
     properties: {
       provider: { type: 'string', default: 'manual' },
       serviceName: { type: 'string', default: 'Manual Courier' },
+      courierName: { type: 'string', description: 'Compatibility alias for serviceName.' },
       trackingNumber: { type: 'string' },
       trackingUrl: { type: 'string' },
       estimatedDelivery: { type: 'string', format: 'date-time' }

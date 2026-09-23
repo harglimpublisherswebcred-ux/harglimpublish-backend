@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 170
+Endpoints documented: 172
 
 Models documented: 17
 
@@ -78,6 +78,8 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | DELETE | `/api/users/{id}/wishlist/{bookId}` | Bearer | `userController.removeFromWishlist` |
 | GET | `/api/authors` | Public | `authorController.getAuthors` |
 | GET | `/api/authors/{id}` | Public | `authorController.getAuthorById` |
+| PUT | `/api/authors/{id}` | Author/Admin | `authorProfileController.updateAuthorProfile` |
+| PUT | `/api/authors/{id}/payment-details` | Author/Admin | `authorProfileController.updateAuthorPaymentDetails` |
 | GET | `/api/authors/{id}/books` | Public | `authorController.getAuthorBooks` |
 | GET | `/api/authors/{id}/stats` | Bearer | `authorController.getAuthorStats` |
 | GET | `/api/authors/{id}/analytics` | Bearer | `authorController.getAuthorStats` |

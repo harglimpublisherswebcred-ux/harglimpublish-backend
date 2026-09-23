@@ -12,12 +12,14 @@ const mongoose = require('mongoose');
 const { MongoMemoryReplSet } = require('mongodb-memory-server');
 const { createOrder, verifyPayment, cancelOrder } = require('../src/controllers/orderController');
 const orderPaymentBridgeService = require('../src/services/orderPaymentBridgeService');
+const orderService = require('../src/services/orderService');
 const Order = require('../src/models/Order');
 const Book = require('../src/models/Book');
 const Payment = require('../src/models/Payment');
 const PaymentLedger = require('../src/models/PaymentLedger');
 const InventoryReservation = require('../src/models/InventoryReservation');
 const InventoryLedger = require('../src/models/InventoryLedger');
+const Shipment = require('../src/models/Shipment');
 
 jest.setTimeout(600000);
 process.env.MONGOMS_DOWNLOAD_DIR = 'node_modules/.cache/mongodb-binaries';
@@ -32,7 +34,9 @@ describe('Order payment bridge integration', () => {
     addressLine1: '123 Main Street',
     city: 'Bengaluru',
     postalCode: '560001',
-    country: 'India'
+    country: 'India',
+    email: 'delivery@example.com',
+    phone: '9876543210'
   };
 
   const createMockResponse = () => {
@@ -56,6 +60,7 @@ describe('Order payment bridge integration', () => {
     await PaymentLedger.syncIndexes();
     await InventoryReservation.syncIndexes();
     await InventoryLedger.syncIndexes();
+    await Shipment.syncIndexes();
   });
 
   afterAll(async () => {
@@ -80,6 +85,7 @@ describe('Order payment bridge integration', () => {
     await PaymentLedger.collection.deleteMany({});
     await InventoryReservation.deleteMany({});
     await InventoryLedger.collection.deleteMany({});
+    await Shipment.deleteMany({});
     book = await Book.create({
       title: 'Production Book',
       slug: 'production-book',
@@ -97,6 +103,8 @@ describe('Order payment bridge integration', () => {
       body: {
         items: [{ bookId: book._id, quantity: 2 }],
         shippingAddress,
+        customerEmail: 'buyer@example.com',
+        customerPhone: '9876543210',
         paymentMethod: 'UPI'
       }
     };
@@ -124,6 +132,10 @@ describe('Order payment bridge integration', () => {
     expect(String(body.data.order.payment)).toBe(String(payment._id));
     expect(body.data.order.items[0].price).toBe(200);
     expect(body.data.order.subtotal).toBe(400);
+    expect(body.data.order.customerEmail).toBe('buyer@example.com');
+    expect(body.data.order.customerPhone).toBe('9876543210');
+    expect(body.data.order.shippingAddress.email).toBe('delivery@example.com');
+    expect(body.data.order.shippingAddress.phone).toBe('9876543210');
     expect(body.data.order.tax).toBe(0);
     expect(body.data.order.shippingPrice).toBe(0);
     expect(body.data.order.totalPrice).toBe(400);
@@ -223,6 +235,53 @@ describe('Order payment bridge integration', () => {
     expect(belowThreshold.order.tax).toBe(0);
     expect(belowThreshold.order.shippingPrice).toBe(0);
     expect(belowThreshold.order.totalPrice).toBe(250);
+  });
+
+  it('returns contact and courier details in public order tracking', async () => {
+    const order = await Order.create({
+      orderNumber: 'HM-TRACK-1',
+      user: user._id,
+      customerEmail: 'gift@example.com',
+      customerPhone: '9000000000',
+      items: [{ book: book._id, quantity: 1, price: 200 }],
+      shippingAddress: {
+        fullName: 'Gift Receiver',
+        addressLine1: 'Track Street',
+        city: 'Bengaluru',
+        postalCode: '560001',
+        country: 'India',
+        phone: '9000000000',
+        email: 'gift@example.com'
+      },
+      subtotal: 200,
+      tax: 0,
+      shippingPrice: 0,
+      totalPrice: 200,
+      isPaid: true
+    });
+
+    await Shipment.create({
+      shipmentNumber: 'SHP-TRACK-1',
+      order: order._id,
+      payment: new mongoose.Types.ObjectId(),
+      invoice: new mongoose.Types.ObjectId(),
+      customer: user._id,
+      shippingAddress: order.shippingAddress,
+      courier: { provider: 'manual', serviceName: 'India Post' },
+      trackingNumber: 'CP123456789IN',
+      trackingUrl: 'https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx',
+      status: 'IN_TRANSIT',
+      trackingHistory: [{ status: 'IN_TRANSIT', description: 'Dispatched', timestamp: new Date() }]
+    });
+
+    const tracking = await orderService.trackOrder(order.orderNumber);
+
+    expect(tracking.customerEmail).toBe('gift@example.com');
+    expect(tracking.customerPhone).toBe('9000000000');
+    expect(tracking.courierName).toBe('India Post');
+    expect(tracking.trackingNumber).toBe('CP123456789IN');
+    expect(tracking.trackingUrl).toContain('indiapost.gov.in');
+    expect(tracking.shipmentStatus).toBe('IN_TRANSIT');
   });
 
   it('synchronizes paid compatibility fields after internal payment verification', async () => {

@@ -37,6 +37,37 @@ class OrderAuthorizationError extends OrderPaymentBridgeError {
 }
 
 const normalizeId = (value) => (value && value.toString ? value.toString() : String(value));
+const normalizeOptionalString = (value) => {
+  if (value === undefined || value === null) return undefined;
+  const trimmed = String(value).trim();
+  return trimmed || undefined;
+};
+
+const normalizeShippingAddress = (shippingAddress = {}) => {
+  const phone = normalizeOptionalString(
+    shippingAddress.phone || shippingAddress.mobile || shippingAddress.mobileNumber
+  );
+  const email = normalizeOptionalString(
+    shippingAddress.email || shippingAddress.customerEmail
+  );
+
+  return {
+    ...shippingAddress,
+    ...(phone && { phone }),
+    ...(email && { email: email.toLowerCase() }),
+    ...(normalizeOptionalString(shippingAddress.mobile) && { mobile: normalizeOptionalString(shippingAddress.mobile) }),
+    ...(normalizeOptionalString(shippingAddress.mobileNumber) && { mobileNumber: normalizeOptionalString(shippingAddress.mobileNumber) })
+  };
+};
+
+const normalizeOrderContact = ({ customerEmail, email, customerPhone, phone, shippingAddress = {} } = {}) => {
+  const resolvedEmail = normalizeOptionalString(customerEmail || email || shippingAddress.customerEmail || shippingAddress.email);
+  const resolvedPhone = normalizeOptionalString(customerPhone || phone || shippingAddress.phone || shippingAddress.mobile || shippingAddress.mobileNumber);
+  return {
+    customerEmail: resolvedEmail ? resolvedEmail.toLowerCase() : undefined,
+    customerPhone: resolvedPhone
+  };
+};
 
 class OrderPaymentBridgeService {
   constructor({
@@ -51,7 +82,7 @@ class OrderPaymentBridgeService {
     this.inventoryService = inventoryEngine;
   }
 
-  async createOrderWithPaymentIntent({ user, items, shippingAddress, paymentMethod }, options = {}) {
+  async createOrderWithPaymentIntent({ user, items, shippingAddress, paymentMethod, customerEmail, email, customerPhone, phone }, options = {}) {
     if (!items || items.length === 0) {
       throw new OrderValidationError('No order items');
     }
@@ -64,11 +95,13 @@ class OrderPaymentBridgeService {
 
       const orderTotals = await this.buildOrderItems(items, session);
       const orderNumber = this.generateOrderNumber();
+      const contact = normalizeOrderContact({ customerEmail, email, customerPhone, phone, shippingAddress });
       const order = new this.Order({
         orderNumber,
         user: user._id,
+        ...contact,
         items: orderTotals.orderItems,
-        shippingAddress,
+        shippingAddress: normalizeShippingAddress(shippingAddress),
         subtotal: orderTotals.subtotal,
         tax: orderTotals.tax,
         shippingPrice: orderTotals.shippingPrice,

@@ -16,6 +16,10 @@ const {
   initiatePurchase,
   submitPurchaseUTR
 } = require('../controllers/authorAccessController');
+const {
+  updateAuthorProfile,
+  updateAuthorPaymentDetails
+} = require('../controllers/authorProfileController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const { requireAuthorDashboardAccess } = require('../middleware/authorDashboardMiddleware');
@@ -54,6 +58,8 @@ router.post('/me/uploads/image', protect, authorize('author', 'admin'), requireC
 
 // Public author routes
 router.get('/', getAuthors);
+router.put('/:id', protect, authorize('author', 'admin'), updateAuthorProfile);
+router.put('/:id/payment-details', protect, authorize('author', 'admin'), updateAuthorPaymentDetails);
 router.get('/:id', getAuthorById);
 router.get('/:id/books', getAuthorBooks);
 

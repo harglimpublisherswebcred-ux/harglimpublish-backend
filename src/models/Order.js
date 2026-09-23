@@ -12,6 +12,15 @@ const orderSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    customerEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    customerPhone: {
+      type: String,
+      trim: true,
+    },
     items: [
       {
         book: {
@@ -39,6 +48,10 @@ const orderSchema = new mongoose.Schema(
       city: { type: String, required: true },
       postalCode: { type: String, required: true },
       country: { type: String, required: true },
+      phone: { type: String, trim: true },
+      mobile: { type: String, trim: true },
+      mobileNumber: { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true },
     },
     subtotal: {
       type: Number,

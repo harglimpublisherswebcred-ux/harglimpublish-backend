@@ -115,7 +115,10 @@ const shipmentSchema = new mongoose.Schema(
       addressLine2: { type: String },
       city: { type: String, required: true },
       postalCode: { type: String, required: true },
-      country: { type: String, required: true }
+      country: { type: String, required: true },
+      phone: { type: String, trim: true },
+      mobile: { type: String, trim: true },
+      mobileNumber: { type: String, trim: true }
     },
     courier: {
       provider: {

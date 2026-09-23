@@ -7,13 +7,17 @@ const orderService = require('../services/orderService');
 // @access  Private
 const createOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod } = req.body;
+    const { items, shippingAddress, paymentMethod, customerEmail, email, customerPhone, phone } = req.body;
 
     const { order: createdOrder, payment } = await orderPaymentBridgeService.createOrderWithPaymentIntent({
       user: req.user,
       items,
       shippingAddress,
-      paymentMethod
+      paymentMethod,
+      customerEmail,
+      email,
+      customerPhone,
+      phone
     });
 
     logger.info(`Order created successfully: ${createdOrder.orderNumber}`);

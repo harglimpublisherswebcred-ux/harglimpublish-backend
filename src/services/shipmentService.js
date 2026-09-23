@@ -35,6 +35,10 @@ const ALLOWED_TRANSITIONS = {
   RETURNED: []
 };
 
+const SHIPMENT_STATUS_ALIASES = {
+  DISPATCHED: 'IN_TRANSIT'
+};
+
 class ShipmentServiceError extends Error {
   constructor(message, code, details = {}) {
     super(message);
@@ -187,7 +191,8 @@ class ShipmentService {
 
   async updateStatus(shipmentId, statusData = {}, options = {}) {
     return this.execute('updateStatus', async () => {
-      const nextStatus = String(statusData.status || '').trim().toUpperCase();
+      const requestedStatus = String(statusData.status || '').trim().toUpperCase();
+      const nextStatus = SHIPMENT_STATUS_ALIASES[requestedStatus] || requestedStatus;
       const shipment = await this.repository.getById(shipmentId, { session: options.session, lean: true });
       this.validateTransition(shipment.status, nextStatus);
 

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const orderRepository = require('../repositories/orderRepository');
 const orderPaymentBridgeService = require('./orderPaymentBridgeService');
 const eventBus = require('../events/eventBus');
+const shipmentRepository = require('../repositories/shipmentRepository');
 
 const serviceError = (message, statusCode) => {
   const error = new Error(message);
@@ -10,19 +11,34 @@ const serviceError = (message, statusCode) => {
 };
 
 class OrderService {
-  constructor(repository = orderRepository) {
+  constructor(repository = orderRepository, shipments = shipmentRepository) {
     this.repository = repository;
+    this.shipmentRepository = shipments;
   }
 
   async trackOrder(orderNumber) {
     const order = await this.repository.findByOrderNumber(orderNumber);
     if (!order) throw serviceError('Order not found', 404);
+    const shipment = await this.shipmentRepository.findByOrder(order._id, { lean: true });
+    const courierName = shipment && shipment.courier
+      ? (shipment.courier.serviceName || shipment.courier.provider)
+      : undefined;
     return {
       orderNumber: order.orderNumber,
       status: order.status,
+      paymentStatus: order.isPaid ? 'PAID' : 'PENDING',
+      customerEmail: order.customerEmail,
+      customerPhone: order.customerPhone || (order.shippingAddress && order.shippingAddress.phone),
+      courierName,
+      trackingNumber: shipment && shipment.trackingNumber,
+      trackingUrl: shipment && shipment.trackingUrl,
+      estimatedDelivery: shipment && shipment.estimatedDelivery,
+      shipmentStatus: shipment && shipment.status,
       shippingAddress: order.shippingAddress,
       items: order.items,
-      trackingUpdates: order.trackingUpdates,
+      trackingUpdates: shipment && shipment.trackingHistory && shipment.trackingHistory.length > 0
+        ? shipment.trackingHistory
+        : order.trackingUpdates,
       totalPrice: order.totalPrice
     };
   }
