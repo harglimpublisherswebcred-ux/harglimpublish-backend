@@ -1288,23 +1288,26 @@ Authoritative route counts from this repository:
 | --- | ---: |
 | Route method declarations in `src/routes/**` | 172 |
 | Unique method+path APIs in `apiInventory` | 165 |
-| Generated OpenAPI paths | 149 |
-| Generated OpenAPI operations | 165 |
-| Read APIs | 89 |
-| Write APIs | 76 |
+| Generated OpenAPI paths | 155 |
+| Generated OpenAPI operations | 171 |
+| Read APIs | 92 |
+| Write APIs | 86 |
 
-Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`, `Uploads`, `Users`, `Authors`, `Author Access`, `Author Dashboard`, `Author Publishing`, `Publishing`, `Admin Core`, `Admin Content`, `Admin Users`, `Admin Categories`, `Admin Author Access`, `Admin Operations`, `Admin Invoices`, `Admin Notifications`, `Admin Shipments`, `Admin Analytics`, `Royalty Settlements`.
+Domains: `System`, `Content`, `Contact`, `Authentication`, `Books`, `Categories`, `Orders`, `Uploads`, `Users`, `Authors`, `Author Applications`, `Author Access`, `Author Dashboard`, `Author Publishing`, `Publishing`, `Admin Core`, `Admin Content`, `Admin Users`, `Admin Categories`, `Admin Author Access`, `Admin Operations`, `Admin Invoices`, `Admin Notifications`, `Admin Shipments`, `Admin Analytics`, `Royalty Settlements`.
 
 | # | Method | Path | Auth | Role | Domain | Purpose |
 | -: | --- | --- | --- | --- | --- | --- |
 | 1 | GET | `/health` | Public | public | System | Health check |
 | 2 | GET | `/api/content` | Public | public | Content | Get global CMS content |
+| 2a | POST | `/api/contact` | Public | public | Contact | Submit website contact request |
+| 2b | POST | `/api/contact-requests` | Public | public | Contact | Submit website contact request alias |
 | 3 | POST | `/api/auth/register` | Public | public | Authentication | Register user |
 | 4 | POST | `/api/auth/login` | Public | public | Authentication | Login user |
 | 5 | POST | `/api/auth/refresh` | Public/Bearer | authenticated | Authentication | Refresh access token using refresh token or bearer fallback |
 | 6 | POST | `/api/auth/logout` | Public/Bearer | authenticated | Authentication | Logout and revoke refresh session |
 | 7 | POST | `/api/auth/forgot-password` | Public | public | Authentication | Request password reset token |
 | 8 | GET | `/api/auth/me` | Bearer | authenticated | Authentication | Get current user |
+| 8a | PUT | `/api/auth/me` | Bearer | authenticated | Authentication | Update current user profile alias |
 | 9 | PUT | `/api/auth/reset-password/{token}` | Public | public | Authentication | Reset password with token |
 | 10 | POST | `/api/auth/reset-password/{token}` | Public | public | Authentication | Reset password with token alias |
 | 11 | PUT | `/api/auth/change-password` | Bearer | authenticated | Authentication | Change current user password |
@@ -1328,9 +1331,12 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | 29 | POST | `/api/uploads/image` | Bearer | authenticated | Uploads | Upload image |
 | 30 | POST | `/api/uploads/document` | Bearer | authenticated | Uploads | Upload document |
 | 31 | GET | `/api/users/me` | Bearer | authenticated | Users | Get current user profile |
+| 31a | PUT | `/api/users/me` | Bearer | authenticated | Users | Update current user profile alias |
+| 31b | PATCH | `/api/users/me` | Bearer | authenticated | Users | Update current user profile alias |
 | 32 | GET | `/api/users/{id}/stats` | Bearer | authenticated | Users | Get user stats |
 | 33 | PUT | `/api/users/{id}` | Bearer | authenticated | Users | Update user profile |
 | 34 | GET | `/api/users/me/author-application` | Bearer | authenticated | Users | Get current user author application |
+| 34a | GET | `/api/author-applications/me` | Bearer | authenticated | Author Applications | Get current user author application alias |
 | 35 | GET | `/api/users/{id}/orders/{orderId}/payments` | Bearer | authenticated | Users | Get payment attempts for a user order |
 | 36 | GET | `/api/users/{id}/payments` | Bearer | authenticated | Users | Get user payment attempts |
 | 37 | GET | `/api/users/{id}/payments/{paymentId}` | Bearer | authenticated | Users | Get user payment detail including active QR metadata |
@@ -1473,7 +1479,10 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | -: | --- | --- | --- | --- |
 | 1 | `/health` | Public | - | Health check |
 | 2 | `/api/content` | Public | - | Get global CMS content |
+| 2a | `/api/contact` | Public | - | Submit website contact request |
+| 2b | `/api/contact-requests` | Public | - | Submit website contact request alias |
 | 3 | `/api/auth/me` | Bearer | - | Get current user |
+| 3a | `/api/auth/me` | Bearer | - | Update current user profile alias |
 | 4 | `/api/books` | Public | page, limit, category, minPrice, maxPrice, sort, featured, bestseller, newRelease | List books |
 | 5 | `/api/books/{slug}` | Public | - | Get book by slug |
 | 6 | `/api/books/{slug}/related` | Public | - | Get related books |
@@ -1485,8 +1494,10 @@ Domains: `System`, `Content`, `Authentication`, `Books`, `Categories`, `Orders`,
 | 12 | `/api/orders/{id}/tracking` | Bearer | - | Get order tracking |
 | 13 | `/api/orders/track/{orderNumber}` | Public | - | Track order by order number |
 | 14 | `/api/users/me` | Bearer | - | Get current user profile |
+| 14a | `/api/users/me` | Bearer | - | Update current user profile alias |
 | 15 | `/api/users/{id}/stats` | Bearer | - | Get user stats |
 | 16 | `/api/users/me/author-application` | Bearer | - | Get current user author application |
+| 16a | `/api/author-applications/me` | Bearer | - | Get current user author application alias |
 | 17 | `/api/users/{id}/orders/{orderId}/payments` | Bearer | page, limit | Get payment attempts for a user order |
 | 18 | `/api/users/{id}/payments` | Bearer | page, limit, status, order | Get user payment attempts |
 | 19 | `/api/users/{id}/payments/{paymentId}` | Bearer | - | Get user payment detail including active QR metadata |

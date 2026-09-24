@@ -1,6 +1,8 @@
 const endpointInventory = [
   { method: 'GET', path: '/health', tag: 'System', summary: 'Health check', auth: 'Public', controller: 'server.js', notes: 'Returns server liveness only.' },
   { method: 'GET', path: '/api/content', tag: 'Content', summary: 'Get global CMS content', auth: 'Public', controller: 'contentController.getContent' },
+  { method: 'POST', path: '/api/contact', tag: 'Contact', summary: 'Submit website contact request', auth: 'Public', controller: 'contactController.submitContactRequest', body: 'ContactRequest' },
+  { method: 'POST', path: '/api/contact-requests', tag: 'Contact', summary: 'Submit website contact request alias', auth: 'Public', controller: 'contactController.submitContactRequest', body: 'ContactRequest' },
 
   { method: 'POST', path: '/api/auth/register', tag: 'Authentication', summary: 'Register user', auth: 'Public', controller: 'authController.registerUser', body: 'RegisterRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter.' },
   { method: 'POST', path: '/api/auth/login', tag: 'Authentication', summary: 'Login user', auth: 'Public', controller: 'authController.loginUser', body: 'LoginRequest', notes: 'Auth endpoints use a stricter 10 requests per 15 minutes limiter and return a JWT token on success.' },
@@ -10,6 +12,7 @@ const endpointInventory = [
   { method: 'POST', path: '/api/auth/logout', tag: 'Authentication', summary: 'Logout and revoke refresh session', auth: 'Public/Bearer', controller: 'authController.logoutUser', body: 'LogoutRequest' },
   { method: 'POST', path: '/api/auth/forgot-password', tag: 'Authentication', summary: 'Request password reset token', auth: 'Public', controller: 'authController.forgotPassword', body: 'ForgotPasswordRequest' },
   { method: 'GET', path: '/api/auth/me', tag: 'Authentication', summary: 'Get current user', auth: 'Bearer', controller: 'authController.getMe' },
+  { method: 'PUT', path: '/api/auth/me', tag: 'Authentication', summary: 'Update current user profile alias', auth: 'Bearer', controller: 'userController.updateCurrentUserProfile', body: 'UserUpdateRequest', notes: 'Compatibility alias for PUT /api/users/me and PUT /api/users/{id}.' },
   { method: 'PUT', path: '/api/auth/reset-password/{token}', tag: 'Authentication', summary: 'Reset password with token', auth: 'Public', controller: 'authController.resetPassword', params: ['token'], body: 'ResetPasswordRequest' },
   { method: 'POST', path: '/api/auth/reset-password/{token}', tag: 'Authentication', summary: 'Reset password with token alias', auth: 'Public', controller: 'authController.resetPassword', params: ['token'], body: 'ResetPasswordRequest' },
   { method: 'PUT', path: '/api/auth/change-password', tag: 'Authentication', summary: 'Change current user password', auth: 'Bearer', controller: 'authController.changePassword', body: 'ChangePasswordRequest' },
@@ -39,10 +42,13 @@ const endpointInventory = [
   { method: 'POST', path: '/api/uploads/document', tag: 'Uploads', summary: 'Upload document', auth: 'Bearer', controller: 'uploadController.uploadDocument', body: 'MultipartDocumentRequest', notes: 'Multipart field: document. Allowed: pdf, doc, docx. Default max size: 25MB. Requires CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.' },
 
   { method: 'GET', path: '/api/users/me', tag: 'Users', summary: 'Get current user profile', auth: 'Bearer', controller: 'userController.getCurrentUser' },
+  { method: 'PUT', path: '/api/users/me', tag: 'Users', summary: 'Update current user profile alias', auth: 'Bearer', controller: 'userController.updateCurrentUserProfile', body: 'UserUpdateRequest' },
+  { method: 'PATCH', path: '/api/users/me', tag: 'Users', summary: 'Update current user profile alias', auth: 'Bearer', controller: 'userController.updateCurrentUserProfile', body: 'UserUpdateRequest' },
   { method: 'GET', path: '/api/users/{id}/stats', tag: 'Users', summary: 'Get user stats', auth: 'Bearer', controller: 'userController.getUserStats', params: ['id'] },
   { method: 'PUT', path: '/api/users/{id}', tag: 'Users', summary: 'Update user profile', auth: 'Bearer', controller: 'userController.updateUserProfile', params: ['id'], body: 'UserUpdateRequest' },
   
   { method: 'GET', path: '/api/users/me/author-application', tag: 'Users', summary: 'Get current user author application', auth: 'Bearer', controller: 'authorApplicationController.getMyAuthorApplication' },
+  { method: 'GET', path: '/api/author-applications/me', tag: 'Author Applications', summary: 'Get current user author application alias', auth: 'Bearer', controller: 'authorApplicationController.getMyAuthorApplication', notes: 'Compatibility alias for GET /api/users/me/author-application.' },
   { method: 'GET', path: '/api/users/{id}/orders/{orderId}/payments', tag: 'Users', summary: 'Get payment attempts for a user order', auth: 'Bearer', controller: 'userController.getUserOrderPayments', params: ['id', 'orderId'], query: ['page', 'limit'] },
   { method: 'GET', path: '/api/users/{id}/payments', tag: 'Users', summary: 'Get user payment attempts', auth: 'Bearer', controller: 'userController.getUserPayments', params: ['id'], query: ['page', 'limit', 'status', 'order'] },
   { method: 'GET', path: '/api/users/{id}/payments/{paymentId}', tag: 'Users', summary: 'Get user payment detail including active QR metadata', auth: 'Bearer', controller: 'userController.getUserPayment', params: ['id', 'paymentId'] },

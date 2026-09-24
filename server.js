@@ -155,6 +155,8 @@ app.use('/api/auth', authLimiter, require('./src/routes/authRoutes'));
 app.use('/api/books', require('./src/routes/bookRoutes'));
 app.use('/api/categories', require('./src/routes/categoryRoutes'));
 app.use('/api/content', require('./src/routes/contentRoutes'));
+app.use('/api/contact', require('./src/routes/contactRoutes'));
+app.use('/api/contact-requests', require('./src/routes/contactRoutes'));
 app.use('/api/author-applications', require('./src/routes/authorApplicationRoutes'));
 app.use('/api/reviews', require('./src/routes/reviewRoutes'));
 app.use('/api/search', require('./src/routes/searchRoutes'));

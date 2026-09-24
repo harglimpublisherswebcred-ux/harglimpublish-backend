@@ -27,6 +27,9 @@
       "name": "Content"
     },
     {
+      "name": "Contact"
+    },
+    {
       "name": "Authentication"
     },
     {
@@ -43,6 +46,9 @@
     },
     {
       "name": "Users"
+    },
+    {
+      "name": "Author Applications"
     },
     {
       "name": "Authors"
@@ -255,6 +261,328 @@
         "operationId": "get_api_content",
         "security": [],
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "tags": [
+          "Contact"
+        ],
+        "summary": "Submit website contact request",
+        "description": "Submit website contact request. Controller: contactController.submitContactRequest. Authentication: Public. API routes are rate limited and return standard error envelopes.",
+        "operationId": "post_api_contact",
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-requests": {
+      "post": {
+        "tags": [
+          "Contact"
+        ],
+        "summary": "Submit website contact request alias",
+        "description": "Submit website contact request alias. Controller: contactController.submitContactRequest. Authentication: Public. API routes are rate limited and return standard error envelopes.",
+        "operationId": "post_api_contact_requests",
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -1533,6 +1861,190 @@
           }
         ],
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                      "data": {
+                        "_id": "66b4f5a2a44d2c0012a9c100",
+                        "name": "Ghani Reader",
+                        "email": "user@example.com",
+                        "role": "reader"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                      "data": {
+                        "_id": "66b4f5a2a44d2c0012a9c100",
+                        "name": "Ghani Reader",
+                        "email": "user@example.com",
+                        "role": "reader"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Update current user profile alias",
+        "description": "Update current user profile alias. Controller: userController.updateCurrentUserProfile. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Compatibility alias for PUT /api/users/me and PUT /api/users/{id}.",
+        "operationId": "put_api_auth_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "UserUpdateRequest example",
+                  "value": {
+                    "name": "Ghani Khan",
+                    "profilePicture": "https://example.com/profile.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -6222,6 +6734,350 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update current user profile alias",
+        "description": "Update current user profile alias. Controller: userController.updateCurrentUserProfile. Authentication: Bearer. API routes are rate limited and return standard error envelopes.",
+        "operationId": "put_api_users_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "UserUpdateRequest example",
+                  "value": {
+                    "name": "Ghani Khan",
+                    "profilePicture": "https://example.com/profile.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update current user profile alias",
+        "description": "Update current user profile alias. Controller: userController.updateCurrentUserProfile. Authentication: Bearer. API routes are rate limited and return standard error envelopes.",
+        "operationId": "patch_api_users_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              },
+              "examples": {
+                "default": {
+                  "summary": "UserUpdateRequest example",
+                  "value": {
+                    "name": "Ghani Khan",
+                    "profilePicture": "https://example.com/profile.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
       }
     },
     "/api/users/{id}/stats": {
@@ -6579,6 +7435,161 @@
         "summary": "Get current user author application",
         "description": "Get current user author application. Controller: authorApplicationController.getMyAuthorApplication. Authentication: Bearer. API routes are rate limited and return standard error envelopes.",
         "operationId": "get_api_users_me_author_application",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/author-applications/me": {
+      "get": {
+        "tags": [
+          "Author Applications"
+        ],
+        "summary": "Get current user author application alias",
+        "description": "Get current user author application alias. Controller: authorApplicationController.getMyAuthorApplication. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Compatibility alias for GET /api/users/me/author-application.",
+        "operationId": "get_api_author_applications_me",
         "security": [
           {
             "bearerAuth": []
@@ -33498,6 +34509,48 @@
           "profilePicture": {
             "type": "string",
             "format": "uri"
+          }
+        }
+      },
+      "ContactRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "message"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "mobile": {
+            "type": "string",
+            "description": "Compatibility alias for phone."
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "source": {
+            "type": "string",
+            "default": "website"
+          },
+          "page": {
+            "type": "string",
+            "description": "Optional frontend page/context metadata."
           }
         }
       },

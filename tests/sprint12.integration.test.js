@@ -17,6 +17,7 @@ const AuthorApplication = require('../src/models/AuthorApplication');
 const PublishPackage = require('../src/models/PublishPackage');
 const PublishRequest = require('../src/models/PublishRequest');
 const Content = require('../src/models/Content');
+const ContactRequest = require('../src/models/ContactRequest');
 
 jest.setTimeout(600000);
 process.env.MONGOMS_DOWNLOAD_DIR = 'node_modules/.cache/mongodb-binaries';
@@ -46,7 +47,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), PublishPackage.deleteMany({}), PublishRequest.deleteMany({}), Content.deleteMany({})]);
+  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), PublishPackage.deleteMany({}), PublishRequest.deleteMany({}), Content.deleteMany({}), ContactRequest.deleteMany({})]);
   admin = await User.create({ name: 'Admin', email: 'admin12@example.com', password: 'password123', role: 'admin' });
   reader = await User.create({ name: 'Reader', email: 'reader12@example.com', password: 'password123', role: 'reader' });
   author = await User.create({ name: 'Author', email: 'author12@example.com', password: 'password123', role: 'author' });
@@ -72,6 +73,22 @@ test('supports author application frontend contract and admin approval promotes 
 
   await request(app).put(`/api/admin/author-applications/${created.body.application._id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'approved' }).expect(200);
   expect((await User.findById(reader._id)).role).toBe('author');
+});
+
+test('supports author application /me compatibility alias', async () => {
+  await AuthorApplication.create({
+    user: reader._id,
+    penName: 'Reader Alias',
+    status: 'pending'
+  });
+
+  const response = await request(app)
+    .get('/api/author-applications/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .expect(200);
+
+  expect(response.body.success).toBe(true);
+  expect(response.body.application.status).toBe('pending');
 });
 
 test('rejecting an author application rolls an author user back to reader', async () => {
@@ -212,11 +229,71 @@ test('supports CMS content frontend contract', async () => {
   expect(stored.body.data.homeTitle).toBe('Frontend Home');
 });
 
+test('supports public contact form endpoints', async () => {
+  const payload = {
+    name: 'Website Visitor',
+    email: 'visitor@example.com',
+    phone: '9876543210',
+    subject: 'Publishing question',
+    message: 'I want to publish my book.',
+    page: '/contact'
+  };
+
+  const contact = await request(app)
+    .post('/api/contact')
+    .send(payload)
+    .expect(201);
+
+  expect(contact.body.success).toBe(true);
+  expect(contact.body.data.email).toBe('visitor@example.com');
+  expect(contact.body.data.status).toBe('NEW');
+
+  const alias = await request(app)
+    .post('/api/contact-requests')
+    .send({ ...payload, email: 'alias@example.com' })
+    .expect(201);
+
+  expect(alias.body.data.email).toBe('alias@example.com');
+  expect(await ContactRequest.countDocuments()).toBe(2);
+
+  await request(app)
+    .post('/api/contact')
+    .send({ email: 'bad@example.com', message: 'Missing name' })
+    .expect(400);
+});
+
 test('supports /api/users/me profile contract', async () => {
   const me = await request(app).get('/api/users/me').set('Authorization', `Bearer ${readerToken}`).expect(200);
   expect(me.body.success).toBe(true);
   expect(me.body.data.email).toBe(reader.email);
   expect(me.body.data.password).toBeUndefined();
+});
+
+test('supports current-user profile update compatibility aliases', async () => {
+  const usersMe = await request(app)
+    .put('/api/users/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ name: 'Reader Via Users Me', profilePicture: 'https://example.com/me.jpg' })
+    .expect(200);
+
+  expect(usersMe.body.data.name).toBe('Reader Via Users Me');
+  expect(usersMe.body.data.profilePicture).toBe('https://example.com/me.jpg');
+
+  const patched = await request(app)
+    .patch('/api/users/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ name: 'Reader Via Patch' })
+    .expect(200);
+
+  expect(patched.body.data.name).toBe('Reader Via Patch');
+
+  const authMe = await request(app)
+    .put('/api/auth/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ name: 'Reader Via Auth Me' })
+    .expect(200);
+
+  expect(authMe.body.data.name).toBe('Reader Via Auth Me');
 });
 
 test('supports author profile and payout detail frontend contracts', async () => {

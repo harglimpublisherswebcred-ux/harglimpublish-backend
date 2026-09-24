@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 172
+Endpoints documented: 178
 
 Models documented: 17
 
@@ -26,6 +26,8 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | --- | --- | --- | --- |
 | GET | `/health` | Public | `server.js` |
 | GET | `/api/content` | Public | `contentController.getContent` |
+| POST | `/api/contact` | Public | `contactController.submitContactRequest` |
+| POST | `/api/contact-requests` | Public | `contactController.submitContactRequest` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
 | POST | `/api/auth/login` | Public | `authController.loginUser` |
 | POST | `/api/auth/google` | Public | `authController.googleLogin` |
@@ -33,6 +35,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/auth/logout` | Public/Bearer | `authController.logoutUser` |
 | POST | `/api/auth/forgot-password` | Public | `authController.forgotPassword` |
 | GET | `/api/auth/me` | Bearer | `authController.getMe` |
+| PUT | `/api/auth/me` | Bearer | `userController.updateCurrentUserProfile` |
 | PUT | `/api/auth/reset-password/{token}` | Public | `authController.resetPassword` |
 | POST | `/api/auth/reset-password/{token}` | Public | `authController.resetPassword` |
 | PUT | `/api/auth/change-password` | Bearer | `authController.changePassword` |
@@ -56,9 +59,12 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/uploads/image` | Bearer | `uploadController.uploadImage` |
 | POST | `/api/uploads/document` | Bearer | `uploadController.uploadDocument` |
 | GET | `/api/users/me` | Bearer | `userController.getCurrentUser` |
+| PUT | `/api/users/me` | Bearer | `userController.updateCurrentUserProfile` |
+| PATCH | `/api/users/me` | Bearer | `userController.updateCurrentUserProfile` |
 | GET | `/api/users/{id}/stats` | Bearer | `userController.getUserStats` |
 | PUT | `/api/users/{id}` | Bearer | `userController.updateUserProfile` |
 | GET | `/api/users/me/author-application` | Bearer | `authorApplicationController.getMyAuthorApplication` |
+| GET | `/api/author-applications/me` | Bearer | `authorApplicationController.getMyAuthorApplication` |
 | GET | `/api/users/{id}/orders/{orderId}/payments` | Bearer | `userController.getUserOrderPayments` |
 | GET | `/api/users/{id}/payments` | Bearer | `userController.getUserPayments` |
 | GET | `/api/users/{id}/payments/{paymentId}` | Bearer | `userController.getUserPayment` |

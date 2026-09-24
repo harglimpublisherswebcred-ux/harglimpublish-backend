@@ -5,6 +5,7 @@ const {
   getCurrentUser,
   getUserStats,
   updateUserProfile,
+  updateCurrentUserProfile,
   getUserOrders,
   getUserWishlist,
   getUserLibrary,
@@ -31,6 +32,8 @@ router.use(protect);
 
 router.get('/me/context', getUserContext);
 router.get('/me', getCurrentUser);
+router.put('/me', updateCurrentUserProfile);
+router.patch('/me', updateCurrentUserProfile);
 
 router.get('/me/author-application', getMyAuthorApplication);
 

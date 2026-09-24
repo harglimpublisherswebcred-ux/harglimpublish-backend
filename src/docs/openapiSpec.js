@@ -400,6 +400,20 @@ const schemas = {
       profilePicture: { type: 'string', format: 'uri' }
     }
   },
+  ContactRequest: {
+    type: 'object',
+    required: ['name', 'email', 'message'],
+    properties: {
+      name: { type: 'string', maxLength: 120 },
+      email: { type: 'string', format: 'email' },
+      phone: { type: 'string', maxLength: 30 },
+      mobile: { type: 'string', description: 'Compatibility alias for phone.' },
+      subject: { type: 'string', maxLength: 200 },
+      message: { type: 'string', maxLength: 5000 },
+      source: { type: 'string', default: 'website' },
+      page: { type: 'string', description: 'Optional frontend page/context metadata.' }
+    }
+  },
   AuthorProfileUpdateRequest: {
     type: 'object',
     additionalProperties: false,

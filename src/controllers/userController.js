@@ -48,6 +48,19 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Update current user profile alias
+// @route   PUT/PATCH /api/users/me
+// @route   PUT /api/auth/me
+// @access  Private
+const updateCurrentUserProfile = async (req, res) => {
+  try {
+    const data = await userService.updateProfile('me', req.user, req.body);
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get user orders
 // @route   GET /api/users/:id/orders
 // @access  Private
@@ -270,6 +283,7 @@ module.exports = {
   getCurrentUser,
   getUserStats,
   updateUserProfile,
+  updateCurrentUserProfile,
   getUserOrders,
   getUserWishlist,
   getUserLibrary,
