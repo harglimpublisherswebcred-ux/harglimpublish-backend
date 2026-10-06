@@ -395,6 +395,15 @@ test('supports admin order listing with pagination and filters', async () => {
   expect(listed.body.data).toHaveLength(1);
   expect(listed.body.data[0].orderNumber).toBe('HM-S12-2');
   expect(listed.body.data[0].user.email).toBe(author.email);
+  expect(listed.body.data[0].items[0].book).toMatchObject({
+    _id: String(book._id),
+    title: 'Sprint 12 Book',
+    slug: 'sprint-12-book',
+    mrp: 100,
+    price: 100,
+    status: 'published',
+    format: 'paperback'
+  });
   expect(listed.body.data[0].shippingAddress.phone).toBe('9000000001');
 });
 

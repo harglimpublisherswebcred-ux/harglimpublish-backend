@@ -105,6 +105,7 @@ class AdminCoreRepository {
   listOrders(query = {}, { skip = 0, limit = 20, sort = { createdAt: -1 } } = {}) {
     return Order.find(query)
       .populate('user', 'name email')
+      .populate('items.book', 'title slug coverImage mrp price isbn status format')
       .sort(sort)
       .skip(skip)
       .limit(limit)
