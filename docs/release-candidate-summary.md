@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 178
+Endpoints documented: 184
 
 Models documented: 17
 
@@ -125,6 +125,12 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/orders` | Admin | `adminController.getOrders` |
 | PUT | `/api/admin/orders/{id}/status` | Admin | `adminController.updateOrderStatus` |
 | GET | `/api/admin/publish-requests` | Admin | `adminController.getPublishRequests` |
+| GET | `/api/admin/publish-packages` | Admin | `publishController.listAdminPublishPackages` |
+| POST | `/api/admin/publish-packages` | Admin | `publishController.createPublishPackage` |
+| GET | `/api/admin/publish-packages/{id}` | Admin | `publishController.getAdminPublishPackage` |
+| PUT | `/api/admin/publish-packages/{id}` | Admin | `publishController.updatePublishPackage` |
+| PATCH | `/api/admin/publish-packages/{id}` | Admin | `publishController.updatePublishPackage` |
+| DELETE | `/api/admin/publish-packages/{id}` | Admin | `publishController.archivePublishPackage` |
 | PUT | `/api/admin/publish-requests/{id}/status` | Admin | `adminController.updatePublishRequestStatus` |
 | POST | `/api/admin/publish-requests/{id}/request-changes` | Admin | `adminController.requestChangesOnPublishRequest` |
 | POST | `/api/admin/publish-requests/{id}/reject` | Admin | `adminController.rejectPublishRequest` |

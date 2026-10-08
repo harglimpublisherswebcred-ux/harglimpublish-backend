@@ -36,6 +36,13 @@ const categoryController = require('../controllers/categoryController');
 const { updateContent } = require('../controllers/contentController');
 const { listReviews, moderateReview, deleteReview } = require('../controllers/reviewController');
 const { listAuthorApplications, updateAuthorApplicationStatus } = require('../controllers/authorApplicationController');
+const {
+  listAdminPublishPackages,
+  getAdminPublishPackage,
+  createPublishPackage,
+  updatePublishPackage,
+  archivePublishPackage
+} = require('../controllers/publishController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
@@ -62,6 +69,12 @@ router.put('/users/:id/role', updateUserRole);
 router.patch('/users/:id/status', updateUserStatus);
 router.post('/users/:id/reset-password', resetUserPassword);
 router.put('/content', updateContent);
+router.get('/publish-packages', listAdminPublishPackages);
+router.post('/publish-packages', createPublishPackage);
+router.get('/publish-packages/:id', getAdminPublishPackage);
+router.put('/publish-packages/:id', updatePublishPackage);
+router.patch('/publish-packages/:id', updatePublishPackage);
+router.delete('/publish-packages/:id', archivePublishPackage);
 router.get('/author-applications', listAuthorApplications);
 router.put('/author-applications/:id/status', updateAuthorApplicationStatus);
 router.get('/reviews', listReviews);

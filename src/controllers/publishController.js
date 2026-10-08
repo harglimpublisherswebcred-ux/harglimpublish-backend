@@ -33,7 +33,53 @@ const getPublishPackages = async (req, res) => {
   }
 };
 
+const listAdminPublishPackages = async (req, res) => {
+  try {
+    const result = await publishingService.listPackages(req.query);
+    res.json({ success: true, data: result.items, pagination: result.pagination });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const getAdminPublishPackage = async (req, res) => {
+  try {
+    res.json({ success: true, data: await publishingService.getPackage(req.params.id) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const createPublishPackage = async (req, res) => {
+  try {
+    res.status(201).json({ success: true, data: await publishingService.createPackage(req.body) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const updatePublishPackage = async (req, res) => {
+  try {
+    res.json({ success: true, data: await publishingService.updatePackage(req.params.id, req.body) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const archivePublishPackage = async (req, res) => {
+  try {
+    res.json({ success: true, data: await publishingService.archivePackage(req.params.id) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createPublishRequest,
-  getPublishPackages
+  getPublishPackages,
+  listAdminPublishPackages,
+  getAdminPublishPackage,
+  createPublishPackage,
+  updatePublishPackage,
+  archivePublishPackage
 };

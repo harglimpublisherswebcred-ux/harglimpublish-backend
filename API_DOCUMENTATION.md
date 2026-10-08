@@ -276,6 +276,12 @@ const content = await res.json();
 |---|---|---|---|---|---|
 | POST | `/api/publish-requests` | Author/Admin | Create publish request | `publishController.createPublishRequest` | Body: `PublishRequestCreate` |
 | GET | `/api/publish-packages` | Public | List publish packages | `publishController.getPublishPackages` | - |
+| GET | `/api/admin/publish-packages` | Admin | List all publish packages | `publishController.listAdminPublishPackages` | `page`, `limit`, `search`, `q`, `isActive`, `sort` |
+| POST | `/api/admin/publish-packages` | Admin | Create publish package | `publishController.createPublishPackage` | JSON body |
+| GET | `/api/admin/publish-packages/{id}` | Admin | Get publish package | `publishController.getAdminPublishPackage` | `id` |
+| PUT | `/api/admin/publish-packages/{id}` | Admin | Update publish package | `publishController.updatePublishPackage` | `id`, JSON body |
+| PATCH | `/api/admin/publish-packages/{id}` | Admin | Partial update publish package | `publishController.updatePublishPackage` | `id`, JSON body |
+| DELETE | `/api/admin/publish-packages/{id}` | Admin | Soft archive publish package | `publishController.archivePublishPackage` | `id` |
 
 ## Admin Core
 

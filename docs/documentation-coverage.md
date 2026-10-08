@@ -1,6 +1,6 @@
 # Documentation Coverage Report
 
-Endpoint inventory: 178
+Endpoint inventory: 184
 
 Models documented: 17
 

@@ -2913,6 +2913,36 @@ Admin SOP: review eligible royalty -> preview settlement -> create draft -> appr
 | Security guide included | Complete |
 | OpenAPI/Postman locations documented | Complete |
 
+## 136. Publishing Package Administration
+
+These endpoints manage real `PublishPackage` records used by manuscript submissions. They are separate from the display-only CMS `packagesJson` string returned by `/api/content`.
+
+| Method | Endpoint | Auth | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/publish-packages` | Public | List active packages available for manuscript submission. |
+| GET | `/api/admin/publish-packages` | Admin | List active and archived packages with pagination, search, status filtering, and sorting. |
+| POST | `/api/admin/publish-packages` | Admin | Create a package. |
+| GET | `/api/admin/publish-packages/{id}` | Admin | Get one package by MongoDB ObjectId. |
+| PUT | `/api/admin/publish-packages/{id}` | Admin | Update one or more package fields. |
+| PATCH | `/api/admin/publish-packages/{id}` | Admin | Partial-update alias with the same contract as PUT. |
+| DELETE | `/api/admin/publish-packages/{id}` | Admin | Soft archive by setting `isActive=false`; historical references are preserved. |
+
+List query parameters: `page`, `limit` (maximum 100), `search` or `q`, `isActive=true|false`, and `sort=price_asc|price_desc`.
+
+Create payload:
+
+```json
+{
+  "name": "Professional Publishing",
+  "description": "Editing, cover design and publishing support.",
+  "price": 15000,
+  "features": ["Editorial review", "Cover design", "ISBN support"],
+  "isActive": true
+}
+```
+
+`name`, `description`, and `price` are required when creating. Updates accept any documented subset. Prices must be non-negative; `features` must be an array. Duplicate package names return `409`, invalid input or IDs return `400`, and missing records return `404`.
+
 ## Supporting Machine-Readable Artifacts
 
 - Swagger UI: `/api/docs`

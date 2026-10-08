@@ -740,7 +740,43 @@ const schemas = {
     type: 'object',
     required: ['password'],
     properties: { password: { type: 'string', minLength: 6 } }
-  },  PublishRequestCreate: {
+  },
+  PublishPackage: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      name: { type: 'string' },
+      description: { type: 'string' },
+      price: { type: 'number', minimum: 0 },
+      features: { type: 'array', items: { type: 'string' } },
+      isActive: { type: 'boolean' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  PublishPackageCreateRequest: {
+    type: 'object',
+    required: ['name', 'description', 'price'],
+    properties: {
+      name: { type: 'string' },
+      description: { type: 'string' },
+      price: { type: 'number', minimum: 0 },
+      features: { type: 'array', items: { type: 'string' } },
+      isActive: { type: 'boolean', default: true }
+    }
+  },
+  PublishPackageUpdateRequest: {
+    type: 'object',
+    description: 'Partial update. At least one documented field is required.',
+    properties: {
+      name: { type: 'string' },
+      description: { type: 'string' },
+      price: { type: 'number', minimum: 0 },
+      features: { type: 'array', items: { type: 'string' } },
+      isActive: { type: 'boolean' }
+    }
+  },
+  PublishRequestCreate: {
     type: 'object',
     required: ['title', 'genre', 'wordCount', 'packageId', 'fileUrl'],
     properties: {
@@ -1157,7 +1193,20 @@ const schemaExamples = {
     type: 'object',
     required: ['password'],
     properties: { password: { type: 'string', minLength: 6 } }
-  },  PublishRequestCreate: {
+  },
+  PublishPackageCreateRequest: {
+    name: 'Professional Publishing',
+    description: 'Editing, cover design and publishing support.',
+    price: 15000,
+    features: ['Editorial review', 'Cover design', 'ISBN support'],
+    isActive: true
+  },
+  PublishPackageUpdateRequest: {
+    price: 17500,
+    features: ['Editorial review', 'Cover design', 'ISBN support', 'Marketing consultation'],
+    isActive: true
+  },
+  PublishRequestCreate: {
     title: 'My Manuscript',
     genre: 'Business',
     wordCount: 65000,
