@@ -3,6 +3,8 @@ const router = express.Router();
 const {
   getUserContext,
   getCurrentUser,
+  getMyAddresses,
+  replaceMyAddresses,
   getUserStats,
   updateUserProfile,
   updateCurrentUserProfile,
@@ -27,13 +29,18 @@ const {
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 const { getMyAuthorApplication } = require('../controllers/authorApplicationController');
+const { listUsers } = require('../controllers/adminController');
+const { authorize } = require('../middleware/roleMiddleware');
 
 router.use(protect);
 
+router.get('/', authorize('admin'), listUsers);
 router.get('/me/context', getUserContext);
 router.get('/me', getCurrentUser);
 router.put('/me', updateCurrentUserProfile);
 router.patch('/me', updateCurrentUserProfile);
+router.get('/me/addresses', getMyAddresses);
+router.put('/me/addresses', replaceMyAddresses);
 
 router.get('/me/author-application', getMyAuthorApplication);
 

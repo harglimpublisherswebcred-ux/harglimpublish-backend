@@ -116,6 +116,18 @@ const schemas = {
       publishTitle: { type: 'string' },
       publishSubtitle: { type: 'string' },
       packagesJson: { type: 'string' },
+      authorGuidelinesText: { type: 'string' },
+      royaltySummary: { type: 'string' },
+      aboutTitle: { type: 'string', description: 'Compatibility alias for about.title.' },
+      aboutSubtitle: { type: 'string', description: 'Compatibility alias for about.subtitle.' },
+      aboutStory: { type: 'string', description: 'Compatibility alias for about.body.' },
+      aboutMission: { type: 'string', description: 'Compatibility alias for about.mission.' },
+      aboutVision: { type: 'string', description: 'Compatibility alias for about.vision.' },
+      contactEmail: { type: 'string', description: 'Compatibility alias for contact.email.' },
+      contactPhone: { type: 'string', description: 'Compatibility alias for contact.phone.' },
+      contactAddress: { type: 'string', description: 'Compatibility alias for contact.address.' },
+      contactHours: { type: 'string', description: 'Compatibility alias for contact.hours.' },
+      faqsJson: { type: 'string', description: 'Compatibility JSON-string alias for faq.' },
       updatedAt: { type: 'string', format: 'date-time' }
     }
   },
@@ -398,6 +410,36 @@ const schemas = {
       name: { type: 'string' },
       bio: { type: 'string', description: 'Accepted by controller but currently not persisted in User schema.' },
       profilePicture: { type: 'string', format: 'uri' }
+    }
+  },
+  SavedAddress: {
+    type: 'object',
+    required: ['fullName', 'addressLine1', 'city', 'postalCode', 'country'],
+    properties: {
+      _id: { type: 'string' },
+      label: { type: 'string', default: 'Address' },
+      fullName: { type: 'string' },
+      addressLine1: { type: 'string' },
+      addressLine2: { type: 'string' },
+      city: { type: 'string' },
+      postalCode: { type: 'string' },
+      country: { type: 'string' },
+      phone: { type: 'string' },
+      mobile: { type: 'string', description: 'Compatibility alias normalized to phone.' },
+      mobileNumber: { type: 'string', description: 'Compatibility alias normalized to phone.' },
+      email: { type: 'string', format: 'email' },
+      isDefault: { type: 'boolean' }
+    }
+  },
+  SavedAddressesRequest: {
+    type: 'object',
+    required: ['addresses'],
+    properties: {
+      addresses: {
+        type: 'array',
+        maxItems: 10,
+        items: { $ref: '#/components/schemas/SavedAddress' }
+      }
     }
   },
   ContactRequest: {
@@ -693,7 +735,19 @@ const schemas = {
       homeSubtitle: { type: 'string' },
       publishTitle: { type: 'string' },
       publishSubtitle: { type: 'string' },
-      packagesJson: { type: 'string' }
+      packagesJson: { type: 'string' },
+      authorGuidelinesText: { type: 'string' },
+      royaltySummary: { type: 'string' },
+      aboutTitle: { type: 'string', description: 'Compatibility alias for about.title.' },
+      aboutSubtitle: { type: 'string', description: 'Compatibility alias for about.subtitle.' },
+      aboutStory: { type: 'string', description: 'Compatibility alias for about.body.' },
+      aboutMission: { type: 'string', description: 'Compatibility alias for about.mission.' },
+      aboutVision: { type: 'string', description: 'Compatibility alias for about.vision.' },
+      contactEmail: { type: 'string', description: 'Compatibility alias for contact.email.' },
+      contactPhone: { type: 'string', description: 'Compatibility alias for contact.phone.' },
+      contactAddress: { type: 'string', description: 'Compatibility alias for contact.address.' },
+      contactHours: { type: 'string', description: 'Compatibility alias for contact.hours.' },
+      faqsJson: { type: 'string', description: 'JSON-string compatibility alias for faq.' }
     }
   },
   AdminUserUpdateRequest: {
@@ -956,6 +1010,19 @@ const schemaExamples = {
     name: 'Ghani Khan',
     profilePicture: 'https://example.com/profile.jpg'
   },
+  SavedAddressesRequest: {
+    addresses: [{
+      label: 'Home',
+      fullName: 'Ghani Khan',
+      addressLine1: '12 MG Road',
+      addressLine2: 'Near Central Mall',
+      city: 'Bengaluru',
+      postalCode: '560001',
+      country: 'India',
+      phone: '9000000000',
+      isDefault: true
+    }]
+  },
   AdminUserCreateRequest: {
     name: 'Created By Admin',
     email: 'created-by-admin@example.com',
@@ -1158,7 +1225,19 @@ const schemaExamples = {
       homeSubtitle: { type: 'string' },
       publishTitle: { type: 'string' },
       publishSubtitle: { type: 'string' },
-      packagesJson: { type: 'string' }
+      packagesJson: { type: 'string' },
+      authorGuidelinesText: { type: 'string' },
+      royaltySummary: { type: 'string' },
+      aboutTitle: { type: 'string', description: 'Compatibility alias for about.title.' },
+      aboutSubtitle: { type: 'string', description: 'Compatibility alias for about.subtitle.' },
+      aboutStory: { type: 'string', description: 'Compatibility alias for about.body.' },
+      aboutMission: { type: 'string', description: 'Compatibility alias for about.mission.' },
+      aboutVision: { type: 'string', description: 'Compatibility alias for about.vision.' },
+      contactEmail: { type: 'string', description: 'Compatibility alias for contact.email.' },
+      contactPhone: { type: 'string', description: 'Compatibility alias for contact.phone.' },
+      contactAddress: { type: 'string', description: 'Compatibility alias for contact.address.' },
+      contactHours: { type: 'string', description: 'Compatibility alias for contact.hours.' },
+      faqsJson: { type: 'string', description: 'JSON-string compatibility alias for faq.' }
     }
   },
   AdminUserUpdateRequest: {

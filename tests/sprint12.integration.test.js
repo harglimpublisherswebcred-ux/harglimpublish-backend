@@ -227,6 +227,37 @@ test('supports CMS content frontend contract', async () => {
 
   const stored = await request(app).get('/api/content').expect(200);
   expect(stored.body.data.homeTitle).toBe('Frontend Home');
+
+  const compatibility = await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      contactPhone: '9876543210',
+      contactHours: 'Monday-Friday, 9 AM-6 PM',
+      aboutMission: 'Publish meaningful books.',
+      aboutVision: 'Make publishing accessible.',
+      faqsJson: JSON.stringify([{ question: 'How?', answer: 'Apply online.' }]),
+      authorGuidelinesText: 'Submit an original manuscript.',
+      royaltySummary: 'Royalties use purchase-time snapshots.'
+    })
+    .expect(200);
+
+  expect(compatibility.body.data.contact).toMatchObject({
+    email: 'support@example.com',
+    phone: '9876543210',
+    hours: 'Monday-Friday, 9 AM-6 PM'
+  });
+  expect(compatibility.body.data.about.mission).toBe('Publish meaningful books.');
+  expect(compatibility.body.data.about.vision).toBe('Make publishing accessible.');
+  expect(compatibility.body.data.faq[0].question).toBe('How?');
+  expect(compatibility.body.data.contactPhone).toBe('9876543210');
+  expect(compatibility.body.data.authorGuidelinesText).toBe('Submit an original manuscript.');
+
+  await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ faqsJson: 'not-json' })
+    .expect(400);
 });
 
 test('supports public contact form endpoints', async () => {
@@ -267,6 +298,42 @@ test('supports /api/users/me profile contract', async () => {
   expect(me.body.success).toBe(true);
   expect(me.body.data.email).toBe(reader.email);
   expect(me.body.data.password).toBeUndefined();
+});
+
+test('supports cross-device saved delivery addresses', async () => {
+  const saved = await request(app)
+    .put('/api/users/me/addresses')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({
+      addresses: [
+        {
+          label: 'Home',
+          fullName: 'Reader User',
+          addressLine1: '12 MG Road',
+          addressLine2: 'Near Central Mall',
+          city: 'Bengaluru',
+          postalCode: '560001',
+          country: 'India',
+          mobile: '9000000000'
+        }
+      ]
+    })
+    .expect(200);
+
+  expect(saved.body.data).toHaveLength(1);
+  expect(saved.body.data[0]).toMatchObject({ label: 'Home', phone: '9000000000', isDefault: true });
+
+  const listed = await request(app)
+    .get('/api/users/me/addresses')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .expect(200);
+  expect(listed.body.data[0].city).toBe('Bengaluru');
+
+  await request(app)
+    .put('/api/users/me/addresses')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ addresses: [{ fullName: 'Incomplete' }] })
+    .expect(400);
 });
 
 test('supports current-user profile update compatibility aliases', async () => {
@@ -333,6 +400,15 @@ test('supports author profile and payout detail frontend contracts', async () =>
   expect(payout.body.data.accountNumberMasked).toBe('**********7263');
   expect(payout.body.data.ifscCode).toBe('HDFC0001234');
 
+  const payoutRead = await request(app)
+    .get('/api/authors/me/payment-details')
+    .set('Authorization', `Bearer ${authorToken}`)
+    .expect(200);
+
+  expect(payoutRead.body.data.accountNumber).toBeUndefined();
+  expect(payoutRead.body.data.accountNumberMasked).toBe('**********7263');
+  expect(payoutRead.body.data.upiId).toBe('author@upi');
+
   const denied = await request(app)
     .put(`/api/authors/${author._id}`)
     .set('Authorization', `Bearer ${readerToken}`)
@@ -340,6 +416,42 @@ test('supports author profile and payout detail frontend contracts', async () =>
     .expect(403);
 
   expect(denied.body.message).toBe('User role reader is not authorized to access this route');
+});
+
+test('public author APIs expose only public profile fields', async () => {
+  author.royaltiesBalance = 9999;
+  author.wishlist = [book._id];
+  author.library = [book._id];
+  await author.save();
+
+  const detail = await request(app).get(`/api/authors/${author._id}`).expect(200);
+  expect(detail.body.data).toMatchObject({
+    _id: String(author._id),
+    name: author.name
+  });
+  expect(detail.body.data.email).toBeUndefined();
+  expect(detail.body.data.isActive).toBeUndefined();
+  expect(detail.body.data.wishlist).toBeUndefined();
+  expect(detail.body.data.library).toBeUndefined();
+  expect(detail.body.data.royaltiesBalance).toBeUndefined();
+});
+
+test('frontend compatibility aliases remain restricted to admins', async () => {
+  await request(app).get('/api/users').set('Authorization', `Bearer ${readerToken}`).expect(403);
+  await request(app).get('/api/reviews').set('Authorization', `Bearer ${readerToken}`).expect(403);
+
+  const users = await request(app).get('/api/users').set('Authorization', `Bearer ${adminToken}`).expect(200);
+  expect(users.body.success).toBe(true);
+
+  const reviews = await request(app).get('/api/reviews').set('Authorization', `Bearer ${adminToken}`).expect(200);
+  expect(reviews.body.success).toBe(true);
+
+  const patched = await request(app)
+    .patch(`/api/admin/users/${reader._id}`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ status: 'Suspended' })
+    .expect(200);
+  expect(patched.body.data.isActive).toBe(false);
 });
 
 test('supports combined admin user update and frontend value normalization', async () => {

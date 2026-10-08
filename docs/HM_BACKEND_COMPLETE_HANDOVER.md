@@ -2943,6 +2943,17 @@ Create payload:
 
 `name`, `description`, and `price` are required when creating. Updates accept any documented subset. Prices must be non-negative; `features` must be an array. Duplicate package names return `409`, invalid input or IDs return `400`, and missing records return `404`.
 
+## 137. Frontend Compatibility And Privacy Hardening
+
+- `GET /api/authors/{id}` is public and returns only `_id`, `name`, `bio`, and `profilePicture`.
+- `GET /api/authors/me/payment-details` requires Author/Admin authentication and returns masked payout details. It never returns the full bank account number.
+- `GET /api/users` is an admin-only compatibility alias for `GET /api/admin/users`.
+- `GET /api/reviews` is an admin-only compatibility alias for `GET /api/admin/reviews`.
+- `PATCH /api/admin/users/{id}` is a partial-update compatibility alias for the existing PUT endpoint.
+- `GET /api/users/me/addresses` returns the signed-in user's saved delivery addresses.
+- `PUT /api/users/me/addresses` replaces up to ten saved addresses using the checkout shipping-address fields.
+- CMS flat aliases for About, Contact, and FAQ are normalized into the grouped content document and returned in both forms.
+
 ## Supporting Machine-Readable Artifacts
 
 - Swagger UI: `/api/docs`

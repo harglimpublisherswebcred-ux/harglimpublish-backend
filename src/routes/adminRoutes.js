@@ -63,6 +63,7 @@ router.get('/users', listUsers);
 router.post('/users', createUser);
 router.get('/users/:id', getUser);
 router.put('/users/:id', updateUser);
+router.patch('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/role', updateUserRole);
 router.put('/users/:id/role', updateUserRole);

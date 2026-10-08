@@ -36,6 +36,22 @@ const getUserStats = async (req, res) => {
   }
 };
 
+const getMyAddresses = async (req, res) => {
+  try {
+    res.json({ success: true, data: await userService.getSavedAddresses(req.user) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const replaceMyAddresses = async (req, res) => {
+  try {
+    res.json({ success: true, data: await userService.replaceSavedAddresses(req.user, req.body) });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Update user profile
 // @route   PUT /api/users/:id
 // @access  Private
@@ -281,6 +297,8 @@ const archiveUserNotification = async (req, res) => {
 module.exports = {
   getUserContext,
   getCurrentUser,
+  getMyAddresses,
+  replaceMyAddresses,
   getUserStats,
   updateUserProfile,
   updateCurrentUserProfile,

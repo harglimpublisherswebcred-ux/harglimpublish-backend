@@ -2548,6 +2548,153 @@ paths:
               type: string
               default: Cancelled by admin
   /api/books/{slug}/reviews:
+    get:
+      tags:
+        - Books
+      summary: List approved book reviews
+      description: "List approved book reviews. Controller: bookController.getBookReviews. Authentication: Public. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_books_slug_reviews
+      security:
+        []
+      parameters:
+        -
+          name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      -
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+                      -
+                        _id: 66b4f5a2a44d2c0012a9c101
+                        title: Enterprise Publishing Systems
+                        slug: enterprise-publishing-systems
+                        price: 499
+                        status: published
+                    pagination:
+                      total: 1
+                      page: 1
+                      pages: 1
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
     post:
       tags:
         - Books
@@ -4988,6 +5135,246 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+  /api/users/me/addresses:
+    get:
+      tags:
+        - Users
+      summary: List current user saved delivery addresses
+      description: "List current user saved delivery addresses. Controller: userController.getMyAddresses. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_users_me_addresses
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+    put:
+      tags:
+        - Users
+      summary: Replace current user saved delivery addresses
+      description: "Replace current user saved delivery addresses. Controller: userController.replaceMyAddresses. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Uses the checkout shipping-address fields. Maximum 10 addresses; exactly one default is selected when the list is non-empty."
+      operationId: put_api_users_me_addresses
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedAddressesRequest"
+            examples:
+              default:
+                summary: SavedAddressesRequest example
+                value:
+                  addresses:
+                    -
+                      label: Home
+                      fullName: Ghani Khan
+                      addressLine1: 12 MG Road
+                      addressLine2: Near Central Mall
+                      city: Bengaluru
+                      postalCode: 560001
+                      country: India
+                      phone: 9000000000
+                      isDefault: true
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/users/{id}/stats:
     get:
       tags:
@@ -5353,6 +5740,275 @@ paths:
             []
       parameters:
         []
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/author-applications:
+    post:
+      tags:
+        - Author Applications
+      summary: Submit author application
+      description: "Submit author application. Controller: authorApplicationController.submitAuthorApplication. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
+      operationId: post_api_author_applications
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorApplicationRequest"
+            examples:
+              default:
+                summary: AuthorApplicationRequest example
+                value:
+                  type: object
+                  properties:
+                    penName:
+                      type: string
+                    bio:
+                      type: string
+                    portfolioUrl:
+                      type: string
+                      format: uri
+                    experience:
+                      type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/users/{id}/orders:
+    get:
+      tags:
+        - Users
+      summary: List user orders
+      description: "List user orders. Controller: userController.getUserOrders. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_users_id_orders
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        -
+          name: status
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description: Successful response.
@@ -7970,6 +8626,116 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/AuthorPaymentDetailsRequest"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/authors/me/payment-details:
+    get:
+      tags:
+        - Authors
+      summary: Get masked payout details for current author
+      description: "Get masked payout details for current author. Controller: authorProfileController.getMyAuthorPaymentDetails. Authentication: Author/Admin. API routes are rate limited and return standard error envelopes. Never returns the full bank account number."
+      operationId: get_api_authors_me_payment_details
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
       responses:
         200:
           description: Successful response.
@@ -10988,6 +11754,150 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+  /api/reviews:
+    get:
+      tags:
+        - Admin Core
+      summary: List reviews for moderation compatibility alias
+      description: "List reviews for moderation compatibility alias. Controller: reviewController.listReviews. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_reviews
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        -
+          name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: book
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: user
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/admin/reviews/{id}/status:
     patch:
       tags:
@@ -11304,6 +12214,40 @@ paths:
                       type: string
                     packagesJson:
                       type: string
+                    authorGuidelinesText:
+                      type: string
+                    royaltySummary:
+                      type: string
+                    aboutTitle:
+                      type: string
+                      description: Compatibility alias for about.title.
+                    aboutSubtitle:
+                      type: string
+                      description: Compatibility alias for about.subtitle.
+                    aboutStory:
+                      type: string
+                      description: Compatibility alias for about.body.
+                    aboutMission:
+                      type: string
+                      description: Compatibility alias for about.mission.
+                    aboutVision:
+                      type: string
+                      description: Compatibility alias for about.vision.
+                    contactEmail:
+                      type: string
+                      description: Compatibility alias for contact.email.
+                    contactPhone:
+                      type: string
+                      description: Compatibility alias for contact.phone.
+                    contactAddress:
+                      type: string
+                      description: Compatibility alias for contact.address.
+                    contactHours:
+                      type: string
+                      description: Compatibility alias for contact.hours.
+                    faqsJson:
+                      type: string
+                      description: JSON-string compatibility alias for faq.
       responses:
         200:
           description: Successful response.
@@ -11669,6 +12613,150 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+  /api/users:
+    get:
+      tags:
+        - Admin Users
+      summary: List users compatibility alias
+      description: "List users compatibility alias. Controller: adminController.listUsers. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_users
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        -
+          name: role
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: isActive
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/admin/users/{id}:
     get:
       tags:
@@ -11790,6 +12878,149 @@ paths:
       summary: Update user
       description: "Update user. Controller: adminController.updateUser. Authentication: Admin. API routes are rate limited and return standard error envelopes."
       operationId: put_api_admin_users_id
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminUserUpdateRequest"
+            examples:
+              default:
+                summary: AdminUserUpdateRequest example
+                value:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                      enum:
+                        - user
+                        - visitor
+                        - reader
+                        - author
+                        - admin
+                      description: user is normalized to reader.
+                    isActive:
+                      type: boolean
+                    status:
+                      type: string
+                      enum:
+                        - Active
+                        - Suspended
+                      description: Frontend compatibility alias for isActive.
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+    patch:
+      tags:
+        - Admin Users
+      summary: Partially update user compatibility alias
+      description: "Partially update user compatibility alias. Controller: adminController.updateUser. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: patch_api_admin_users_id
       security:
         -
           bearerAuth:
@@ -12644,6 +13875,255 @@ paths:
           required: false
           schema:
             type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/admin/author-applications:
+    get:
+      tags:
+        - Admin Core
+      summary: List author applications
+      description: "List author applications. Controller: authorApplicationController.listAuthorApplications. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_author_applications
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/admin/author-applications/{id}/status:
+    put:
+      tags:
+        - Admin Core
+      summary: Approve or reject author application
+      description: "Approve or reject author application. Controller: authorApplicationController.updateAuthorApplicationStatus. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: put_api_admin_author_applications_id_status
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorApplicationStatusRequest"
+            examples:
+              default:
+                summary: AuthorApplicationStatusRequest example
+                value:
+                  type: object
+                  required:
+                    - status
+                  properties:
+                    status:
+                      type: string
+                      enum:
+                        - approved
+                        - rejected
       responses:
         200:
           description: Successful response.
@@ -24617,6 +26097,40 @@ components:
           type: string
         packagesJson:
           type: string
+        authorGuidelinesText:
+          type: string
+        royaltySummary:
+          type: string
+        aboutTitle:
+          type: string
+          description: Compatibility alias for about.title.
+        aboutSubtitle:
+          type: string
+          description: Compatibility alias for about.subtitle.
+        aboutStory:
+          type: string
+          description: Compatibility alias for about.body.
+        aboutMission:
+          type: string
+          description: Compatibility alias for about.mission.
+        aboutVision:
+          type: string
+          description: Compatibility alias for about.vision.
+        contactEmail:
+          type: string
+          description: Compatibility alias for contact.email.
+        contactPhone:
+          type: string
+          description: Compatibility alias for contact.phone.
+        contactAddress:
+          type: string
+          description: Compatibility alias for contact.address.
+        contactHours:
+          type: string
+          description: Compatibility alias for contact.hours.
+        faqsJson:
+          type: string
+          description: Compatibility JSON-string alias for faq.
         updatedAt:
           type: string
           format: date-time
@@ -25104,6 +26618,55 @@ components:
         profilePicture:
           type: string
           format: uri
+    SavedAddress:
+      type: object
+      required:
+        - fullName
+        - addressLine1
+        - city
+        - postalCode
+        - country
+      properties:
+        _id:
+          type: string
+        label:
+          type: string
+          default: Address
+        fullName:
+          type: string
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        mobile:
+          type: string
+          description: Compatibility alias normalized to phone.
+        mobileNumber:
+          type: string
+          description: Compatibility alias normalized to phone.
+        email:
+          type: string
+          format: email
+        isDefault:
+          type: boolean
+    SavedAddressesRequest:
+      type: object
+      required:
+        - addresses
+      properties:
+        addresses:
+          type: array
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/SavedAddress"
     ContactRequest:
       type: object
       required:
@@ -25680,6 +27243,40 @@ components:
           type: string
         packagesJson:
           type: string
+        authorGuidelinesText:
+          type: string
+        royaltySummary:
+          type: string
+        aboutTitle:
+          type: string
+          description: Compatibility alias for about.title.
+        aboutSubtitle:
+          type: string
+          description: Compatibility alias for about.subtitle.
+        aboutStory:
+          type: string
+          description: Compatibility alias for about.body.
+        aboutMission:
+          type: string
+          description: Compatibility alias for about.mission.
+        aboutVision:
+          type: string
+          description: Compatibility alias for about.vision.
+        contactEmail:
+          type: string
+          description: Compatibility alias for contact.email.
+        contactPhone:
+          type: string
+          description: Compatibility alias for contact.phone.
+        contactAddress:
+          type: string
+          description: Compatibility alias for contact.address.
+        contactHours:
+          type: string
+          description: Compatibility alias for contact.hours.
+        faqsJson:
+          type: string
+          description: JSON-string compatibility alias for faq.
     AdminUserUpdateRequest:
       type: object
       properties:

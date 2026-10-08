@@ -31,7 +31,17 @@ const updateAuthorPaymentDetails = async (req, res) => {
   }
 };
 
+const getMyAuthorPaymentDetails = async (req, res) => {
+  try {
+    const data = await userService.getAuthorPaymentDetails(req.user);
+    res.json({ success: true, data });
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
 module.exports = {
   updateAuthorProfile,
-  updateAuthorPaymentDetails
+  updateAuthorPaymentDetails,
+  getMyAuthorPaymentDetails
 };

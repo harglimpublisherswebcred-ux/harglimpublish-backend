@@ -19,7 +19,7 @@ class AuthorRepository {
   }
 
   findAuthorById(id) {
-    return User.findOne({ _id: id, role: 'author' }).select('-password');
+    return User.findOne({ _id: id, role: 'author' }).select('name profilePicture bio');
   }
 
   findPublishedBooksByAuthor(authorId, { sort, skip, limit }) {

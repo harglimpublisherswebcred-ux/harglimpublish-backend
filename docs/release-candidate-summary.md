@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 184
+Endpoints documented: 195
 
 Models documented: 17
 
@@ -43,6 +43,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/books` | Public | `bookController.getBooks` |
 | GET | `/api/books/{slug}` | Public | `bookController.getBookBySlug` |
 | GET | `/api/books/{slug}/related` | Public | `bookController.getRelatedBooks` |
+| GET | `/api/books/{slug}/reviews` | Public | `bookController.getBookReviews` |
 | POST | `/api/books/{slug}/reviews` | Bearer | `reviewController.createReview` |
 | PUT | `/api/books/{slug}/reviews/{reviewId}` | Bearer | `reviewController.updateReview` |
 | DELETE | `/api/books/{slug}/reviews/{reviewId}` | Bearer | `reviewController.deleteReview` |
@@ -59,12 +60,16 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/uploads/image` | Bearer | `uploadController.uploadImage` |
 | POST | `/api/uploads/document` | Bearer | `uploadController.uploadDocument` |
 | GET | `/api/users/me` | Bearer | `userController.getCurrentUser` |
+| GET | `/api/users/me/addresses` | Bearer | `userController.getMyAddresses` |
+| PUT | `/api/users/me/addresses` | Bearer | `userController.replaceMyAddresses` |
 | PUT | `/api/users/me` | Bearer | `userController.updateCurrentUserProfile` |
 | PATCH | `/api/users/me` | Bearer | `userController.updateCurrentUserProfile` |
 | GET | `/api/users/{id}/stats` | Bearer | `userController.getUserStats` |
 | PUT | `/api/users/{id}` | Bearer | `userController.updateUserProfile` |
 | GET | `/api/users/me/author-application` | Bearer | `authorApplicationController.getMyAuthorApplication` |
 | GET | `/api/author-applications/me` | Bearer | `authorApplicationController.getMyAuthorApplication` |
+| POST | `/api/author-applications` | Bearer | `authorApplicationController.submitAuthorApplication` |
+| GET | `/api/users/{id}/orders` | Bearer | `userController.getUserOrders` |
 | GET | `/api/users/{id}/orders/{orderId}/payments` | Bearer | `userController.getUserOrderPayments` |
 | GET | `/api/users/{id}/payments` | Bearer | `userController.getUserPayments` |
 | GET | `/api/users/{id}/payments/{paymentId}` | Bearer | `userController.getUserPayment` |
@@ -86,6 +91,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/authors/{id}` | Public | `authorController.getAuthorById` |
 | PUT | `/api/authors/{id}` | Author/Admin | `authorProfileController.updateAuthorProfile` |
 | PUT | `/api/authors/{id}/payment-details` | Author/Admin | `authorProfileController.updateAuthorPaymentDetails` |
+| GET | `/api/authors/me/payment-details` | Author/Admin | `authorProfileController.getMyAuthorPaymentDetails` |
 | GET | `/api/authors/{id}/books` | Public | `authorController.getAuthorBooks` |
 | GET | `/api/authors/{id}/stats` | Bearer | `authorController.getAuthorStats` |
 | GET | `/api/authors/{id}/analytics` | Bearer | `authorController.getAuthorStats` |
@@ -110,19 +116,24 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/publish-packages` | Public | `publishController.getPublishPackages` |
 | GET | `/api/admin/analytics` | Admin | `adminController.getAdminAnalytics` |
 | GET | `/api/admin/reviews` | Admin | `reviewController.listReviews` |
+| GET | `/api/reviews` | Admin | `reviewController.listReviews` |
 | PATCH | `/api/admin/reviews/{id}/status` | Admin | `reviewController.moderateReview` |
 | DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
 | PUT | `/api/admin/content` | Admin | `contentController.updateContent` |
 | GET | `/api/admin/users` | Admin | `adminController.listUsers` |
+| GET | `/api/users` | Admin | `adminController.listUsers` |
 | POST | `/api/admin/users` | Admin | `adminController.createUser` |
 | GET | `/api/admin/users/{id}` | Admin | `adminController.getUser` |
 | PUT | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |
+| PATCH | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |
 | DELETE | `/api/admin/users/{id}` | Admin | `adminController.deleteUser` |
 | PATCH | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PUT | `/api/admin/users/{id}/role` | Admin | `adminController.updateUserRole` |
 | PATCH | `/api/admin/users/{id}/status` | Admin | `adminController.updateUserStatus` |
 | POST | `/api/admin/users/{id}/reset-password` | Admin | `adminController.resetUserPassword` |
 | GET | `/api/admin/orders` | Admin | `adminController.getOrders` |
+| GET | `/api/admin/author-applications` | Admin | `authorApplicationController.listAuthorApplications` |
+| PUT | `/api/admin/author-applications/{id}/status` | Admin | `authorApplicationController.updateAuthorApplicationStatus` |
 | PUT | `/api/admin/orders/{id}/status` | Admin | `adminController.updateOrderStatus` |
 | GET | `/api/admin/publish-requests` | Admin | `adminController.getPublishRequests` |
 | GET | `/api/admin/publish-packages` | Admin | `publishController.listAdminPublishPackages` |

@@ -1,4 +1,5 @@
 const userRepository = require('../repositories/userRepository');
+const mongoose = require('mongoose');
 
 const resolveUserId = (requestedId, actor) => (requestedId === 'me' ? actor.id || actor._id : requestedId);
 
@@ -46,6 +47,54 @@ const publicPayoutDetails = (details = {}) => ({
   updatedAt: details.updatedAt
 });
 
+const normalizeSavedAddresses = (payload) => {
+  const addresses = Array.isArray(payload) ? payload : payload?.addresses;
+  if (!Array.isArray(addresses)) {
+    const error = new Error('addresses must be an array');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (addresses.length > 10) {
+    const error = new Error('A maximum of 10 saved addresses is allowed');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  let defaultAssigned = false;
+  return addresses.map((address, index) => {
+    const required = ['fullName', 'addressLine1', 'city', 'postalCode', 'country'];
+    if (!address || required.some((field) => !String(address[field] || '').trim())) {
+      const error = new Error(`Address ${index + 1} must include fullName, addressLine1, city, postalCode and country`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (address._id && !mongoose.isValidObjectId(address._id)) {
+      const error = new Error(`Address ${index + 1} has an invalid id`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const wantsDefault = address.isDefault === true && !defaultAssigned;
+    if (wantsDefault) defaultAssigned = true;
+    return {
+      ...(address._id && { _id: address._id }),
+      label: String(address.label || 'Address').trim(),
+      fullName: String(address.fullName).trim(),
+      addressLine1: String(address.addressLine1).trim(),
+      addressLine2: String(address.addressLine2 || '').trim(),
+      city: String(address.city).trim(),
+      postalCode: String(address.postalCode).trim(),
+      country: String(address.country).trim(),
+      phone: String(address.phone || address.mobile || address.mobileNumber || '').trim(),
+      email: String(address.email || '').trim().toLowerCase(),
+      isDefault: wantsDefault,
+    };
+  }).map((address, index) => ({
+    ...address,
+    isDefault: defaultAssigned ? address.isDefault : index === 0,
+  }));
+};
+
 class UserService {
   constructor(repository = userRepository) {
     this.repository = repository;
@@ -78,6 +127,20 @@ class UserService {
       wishlistCount: user.wishlist.length,
       libraryCount: user.library.length
     };
+  }
+
+  async getSavedAddresses(actor) {
+    const user = await this.repository.findById(actor.id || actor._id);
+    if (!user) throw userNotFound();
+    return user.addresses || [];
+  }
+
+  async replaceSavedAddresses(actor, payload) {
+    const user = await this.repository.findById(actor.id || actor._id);
+    if (!user) throw userNotFound();
+    user.addresses = normalizeSavedAddresses(payload);
+    await this.repository.save(user);
+    return user.addresses;
   }
 
   async updateProfile(userId, actor, updates = {}) {
@@ -154,6 +217,18 @@ class UserService {
 
     user.payoutDetails = payoutDetails;
     await this.repository.save(user);
+    return publicPayoutDetails(user.payoutDetails || {});
+  }
+
+  async getAuthorPaymentDetails(actor) {
+    if (!actor || !['author', 'admin'].includes(actor.role)) {
+      const error = new Error('Author access required');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const user = await this.repository.findByIdWithPayoutDetails(actor.id || actor._id);
+    if (!user) throw userNotFound();
     return publicPayoutDetails(user.payoutDetails || {});
   }
 

@@ -18,7 +18,8 @@ const {
 } = require('../controllers/authorAccessController');
 const {
   updateAuthorProfile,
-  updateAuthorPaymentDetails
+  updateAuthorPaymentDetails,
+  getMyAuthorPaymentDetails
 } = require('../controllers/authorProfileController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
@@ -40,6 +41,7 @@ const royaltySettlementController = require('../controllers/royaltySettlementCon
 router.get('/me/dashboard-access', protect, authorize('author', 'admin'), getDashboardAccessStatus);
 router.post('/me/dashboard-access/purchase', protect, authorize('author', 'admin'), initiatePurchase);
 router.put('/me/dashboard-access/purchases/:purchaseId/verify-payment', protect, authorize('author', 'admin'), submitPurchaseUTR);
+router.get('/me/payment-details', protect, authorize('author', 'admin'), getMyAuthorPaymentDetails);
 
 // Paid dashboard route must stay before /me/books/:bookId so "performance" is not treated as a book id.
 router.get('/me/books/performance', protect, requireAuthorDashboardAccess, getMyBookPerformance);

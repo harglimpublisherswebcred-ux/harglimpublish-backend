@@ -238,8 +238,12 @@ const content = await res.json();
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
 | GET | `/api/users/me` | Bearer | Get current user profile | `userController.getCurrentUser` | Use for logged-in user hydration. Response does not include password. |
+| GET | `/api/users/me/addresses` | Bearer | List saved delivery addresses | `userController.getMyAddresses` | Returns the authenticated user's addresses. |
+| PUT | `/api/users/me/addresses` | Bearer | Replace saved delivery addresses | `userController.replaceMyAddresses` | Body: `{ "addresses": [...] }`; maximum 10. Uses checkout shipping-address fields. |
+| GET | `/api/users` | Admin | List users compatibility alias | `adminController.listUsers` | Admin-only alias for `/api/admin/users`. |
 | GET | `/api/users/{id}/stats` | Bearer | Get user stats | `userController.getUserStats` | Params: `id` |
 | PUT | `/api/users/{id}` | Bearer | Update user profile | `userController.updateUserProfile` | Params: `id`<br>Body: `UserUpdateRequest` |
+| GET | `/api/users/{id}/orders` | Bearer | List user orders | `userController.getUserOrders` | Params: `id`<br>Query: `page`, `limit`, `status` |
 | GET | `/api/users/me/author-application` | Bearer | Get current user author application | `authorApplicationController.getMyAuthorApplication` | - |
 | GET | `/api/users/{id}/orders/{orderId}/payments` | Bearer | Get payment attempts for a user order | `userController.getUserOrderPayments` | Params: `id`, `orderId`<br>Query: `page`, `limit` |
 | GET | `/api/users/{id}/payments` | Bearer | Get user payment attempts | `userController.getUserPayments` | Params: `id`<br>Query: `page`, `limit`, `status`, `order` |
@@ -265,6 +269,9 @@ const content = await res.json();
 |---|---|---|---|---|---|
 | GET | `/api/authors` | Public | List authors | `authorController.getAuthors` | Query: `page`, `limit` |
 | GET | `/api/authors/{id}` | Public | Get author | `authorController.getAuthorById` | Params: `id` |
+| PUT | `/api/authors/{id}` | Author/Admin | Update author profile | `authorProfileController.updateAuthorProfile` | Public email cannot be changed through this endpoint. |
+| PUT | `/api/authors/{id}/payment-details` | Author/Admin | Update payout details | `authorProfileController.updateAuthorPaymentDetails` | Returns masked payout information. |
+| GET | `/api/authors/me/payment-details` | Author/Admin | Get current author's payout details | `authorProfileController.getMyAuthorPaymentDetails` | Full account number is never returned. |
 | GET | `/api/authors/{id}/books` | Public | Get author books | `authorController.getAuthorBooks` | Params: `id`<br>Query: `page`, `limit`, `sort` |
 | GET | `/api/authors/{id}/stats` | Bearer | Get author stats | `authorController.getAuthorStats` | Params: `id` |
 | GET | `/api/authors/{id}/analytics` | Bearer | Get author analytics alias | `authorController.getAuthorStats` | Params: `id` |
@@ -289,6 +296,7 @@ const content = await res.json();
 |---|---|---|---|---|---|
 | GET | `/api/admin/analytics` | Admin | Admin analytics summary | `adminController.getAdminAnalytics` | - |
 | GET | `/api/admin/reviews` | Admin | List reviews for moderation | `reviewController.listReviews` | Query: `page`, `limit`, `status`, `book`, `user` |
+| GET | `/api/reviews` | Admin | List reviews compatibility alias | `reviewController.listReviews` | Admin-only alias for `/api/admin/reviews`. |
 | PATCH | `/api/admin/reviews/{id}/status` | Admin | Moderate review | `reviewController.moderateReview` | Params: `id`<br>Body: `ReviewModerationRequest` |
 | DELETE | `/api/admin/reviews/{id}` | Admin | Delete review as admin | `reviewController.deleteReview` | Params: `id` |
 | GET | `/api/admin/orders` | Admin | List orders | `adminController.getOrders` | - |
@@ -349,6 +357,7 @@ Response:
 | POST | `/api/admin/users` | Admin | Create user | `adminController.createUser` | Body: `AdminUserCreateRequest`<br>Creates a local password user. `role=user` maps to `reader`; password is hashed and never returned. |
 | GET | `/api/admin/users/{id}` | Admin | Get user | `adminController.getUser` | Params: `id` |
 | PUT | `/api/admin/users/{id}` | Admin | Update user | `adminController.updateUser` | Params: `id`<br>Body: `AdminUserUpdateRequest`<br>Supports partial updates. Accepts `role`, `isActive`, or frontend `status`. |
+| PATCH | `/api/admin/users/{id}` | Admin | Partially update user | `adminController.updateUser` | Compatibility alias with the same contract as PUT. |
 | DELETE | `/api/admin/users/{id}` | Admin | Deactivate user | `adminController.deleteUser` | Params: `id`<br>Soft delete only. Sets `isActive=false`; admin cannot deactivate their own account through this endpoint. |
 | PATCH | `/api/admin/users/{id}/role` | Admin | Update user role | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |
 | PUT | `/api/admin/users/{id}/role` | Admin | Update user role alias | `adminController.updateUserRole` | Params: `id`<br>Body: `UserRoleRequest` |

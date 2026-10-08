@@ -13,6 +13,22 @@ const payoutDetailsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const savedAddressSchema = new mongoose.Schema(
+  {
+    label: { type: String, trim: true, default: 'Address' },
+    fullName: { type: String, required: true, trim: true },
+    addressLine1: { type: String, required: true, trim: true },
+    addressLine2: { type: String, trim: true, default: '' },
+    city: { type: String, required: true, trim: true },
+    postalCode: { type: String, required: true, trim: true },
+    country: { type: String, required: true, trim: true },
+    phone: { type: String, trim: true, default: '' },
+    email: { type: String, trim: true, lowercase: true, default: '' },
+    isDefault: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -60,6 +76,14 @@ const userSchema = new mongoose.Schema(
     payoutDetails: {
       type: payoutDetailsSchema,
       select: false,
+    },
+    addresses: {
+      type: [savedAddressSchema],
+      default: [],
+      validate: {
+        validator: (addresses) => addresses.length <= 10,
+        message: 'A maximum of 10 saved addresses is allowed',
+      },
     },
     isActive: {
       type: Boolean,

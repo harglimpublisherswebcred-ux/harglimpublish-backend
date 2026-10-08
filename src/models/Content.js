@@ -19,11 +19,18 @@ const contentSchema = new mongoose.Schema(
       index: true,
     },
     hero: { type: localizedTextSchema, default: () => ({}) },
-    about: { type: localizedTextSchema, default: () => ({}) },
+    about: {
+      title: { type: String, default: '' },
+      subtitle: { type: String, default: '' },
+      body: { type: String, default: '' },
+      mission: { type: String, default: '' },
+      vision: { type: String, default: '' },
+    },
     contact: {
       email: { type: String, default: '' },
       phone: { type: String, default: '' },
       address: { type: String, default: '' },
+      hours: { type: String, default: '' },
     },
     faq: [
       {
@@ -66,6 +73,8 @@ const contentSchema = new mongoose.Schema(
     publishTitle: { type: String, default: '' },
     publishSubtitle: { type: String, default: '' },
     packagesJson: { type: String, default: '' },
+    authorGuidelinesText: { type: String, default: '' },
+    royaltySummary: { type: String, default: '' },
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
