@@ -45,6 +45,9 @@ const bookSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
+    printingCost: { type: Number, default: 0, min: 0 },
+    platformCharges: { type: Number, default: 0, min: 0 },
+    deliveryCharges: { type: Number, default: 0, min: 0 },
     coverImage: {
       type: String,
       default: '',
@@ -102,6 +105,14 @@ const bookSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+bookSchema.virtual('royaltyPerCopy').get(function getRoyaltyPerCopy() {
+  const hasChargeConfiguration = [this.printingCost, this.platformCharges, this.deliveryCharges]
+    .some((value) => Number(value) > 0);
+  if (!hasChargeConfiguration) return undefined;
+  return Math.max(0, Number(this.mrp || 0) - Number(this.printingCost || 0)
+    - Number(this.platformCharges || 0) - Number(this.deliveryCharges || 0));
+});
 
 // Create a text index for search
 bookSchema.index({ title: 'text', description: 'text' });

@@ -88,7 +88,10 @@ class PublishingService {
   }
 
   preparePackagePayload(payload, requireAll) {
-    const allowed = ['name', 'description', 'price', 'features', 'isActive'];
+    const allowed = [
+      'name', 'description', 'price', 'features', 'isActive',
+      'tagline', 'highlighted', 'badge', 'sortOrder'
+    ];
     const hasRecognizedField = allowed.some((field) => payload[field] !== undefined);
     if (!hasRecognizedField) throw serviceError('At least one publish package field is required');
 
@@ -116,6 +119,14 @@ class PublishingService {
         throw serviceError('features must be an array of strings');
       }
       data.features = payload.features.map((feature) => feature.trim()).filter(Boolean);
+    }
+    if (payload.tagline !== undefined) data.tagline = String(payload.tagline || '').trim();
+    if (payload.badge !== undefined) data.badge = String(payload.badge || '').trim();
+    if (payload.highlighted !== undefined) data.highlighted = parseBoolean(payload.highlighted, 'highlighted');
+    if (payload.sortOrder !== undefined) {
+      if (String(payload.sortOrder).trim() === '') throw serviceError('sortOrder must be a finite number');
+      data.sortOrder = Number(payload.sortOrder);
+      if (!Number.isFinite(data.sortOrder)) throw serviceError('sortOrder must be a finite number');
     }
     if (payload.isActive !== undefined) data.isActive = parseBoolean(payload.isActive, 'isActive');
     return data;

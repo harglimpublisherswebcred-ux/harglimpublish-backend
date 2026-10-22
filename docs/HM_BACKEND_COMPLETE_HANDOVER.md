@@ -2961,3 +2961,76 @@ Create payload:
 - OpenAPI YAML: `docs/openapi.yaml`
 - Postman Collection: `docs/postman_collection.json`
 - Developer Portal: `GET /`
+## 138. Frontend Alignment Addendum (October 2026)
+
+### Public Stats
+
+`GET /api/stats/public` is public and returns published books and active authors only:
+
+```json
+{ "success": true, "data": { "booksCount": 25, "authorsCount": 8 } }
+```
+
+### Manual Royalty Statements
+
+Manual royalty statements are publisher-supplied informational records. They never change accrued royalty, settlement eligibility, balances, claims, or payouts.
+
+| Method | Route | Access | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/admin/manual-royalties` | Admin | Create a server-calculated statement |
+| GET | `/api/admin/manual-royalties` | Admin | List statements; supports `authorId`, `page`, `limit`, `from`, `to` |
+| GET | `/api/admin/manual-royalties/{id}` | Admin | Read one statement |
+| POST | `/api/admin/manual-royalties/{id}/void` | Admin | Void a recorded statement without deleting history |
+| GET | `/api/authors/me/manual-royalties` | Author dashboard | List the caller's non-void statements |
+
+Create payload:
+
+```json
+{
+  "authorId": "AUTHOR_OBJECT_ID",
+  "periodStart": "2026-09-01T00:00:00.000Z",
+  "periodEnd": "2026-09-30T23:59:59.999Z",
+  "note": "September publisher statement",
+  "items": [
+    {
+      "bookId": "OPTIONAL_BOOK_OBJECT_ID",
+      "bookTitle": "Book title",
+      "royaltyPerBook": 75,
+      "unitsSold": 10
+    }
+  ]
+}
+```
+
+The server ignores client totals and calculates item `totalRoyalty`, statement `totalUnits`, and statement `totalRoyalty`. When `bookId` is present, the book must belong to the selected author and its stored title replaces the submitted title.
+
+Void payload:
+
+```json
+{ "reason": "Correcting the publisher statement" }
+```
+
+### Royalty Cost Snapshots
+
+Admin book create/update accepts `printingCost`, `platformCharges`, and `deliveryCharges` as non-negative numbers. If any charge is greater than zero, checkout snapshots:
+
+```text
+royaltyPerCopy = max(0, mrp - printingCost - platformCharges - deliveryCharges)
+lineRoyalty = royaltyPerCopy * quantity
+```
+
+Books without charge configuration retain the historical percentage snapshot calculation. Existing order history is never recalculated from current book values.
+
+### CMS And Privacy
+
+The complete flat Site Content contract is persisted, every `*Json` field must contain a JSON list and is capped at 100 KB, and public `GET /api/content` sends `Cache-Control: no-cache`. `adminProfileImage` is excluded from the public response; administrators read it through `GET /api/admin/content`.
+
+Public book APIs exclude `royaltyPercentage`, `reservedStock`, `printingCost`, `platformCharges`, and `deliveryCharges`. Admin book APIs and author-owned operational APIs retain private commercial fields.
+
+### Shipment Tracking Corrections
+
+`POST /api/admin/shipments/{id}/assign-courier` assigns a courier before dispatch. For `PICKED_UP`, `IN_TRANSIT`, or `OUT_FOR_DELIVERY`, the same endpoint corrects courier tracking without resetting status and appends `TRACKING_UPDATED`. Delivered, completed, cancelled, and returned shipments remain immutable through this action.
+
+### Publishing Package Cards
+
+Publish package create/update accepts and public package reads return `tagline`, `highlighted`, `badge`, and `sortOrder`. Public packages are ordered by `sortOrder`, then price and creation time.

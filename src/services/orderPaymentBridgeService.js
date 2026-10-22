@@ -5,6 +5,7 @@ const Book = require('../models/Book');
 const paymentService = require('./paymentService');
 const inventoryService = require('./inventoryService');
 const eventBus = require('../events/eventBus');
+const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
 const { DOMAIN_EVENTS } = require('../events/eventCatalog');
 
 const DEFAULT_PAYMENT_METHOD = 'UPI';
@@ -451,12 +452,20 @@ class OrderPaymentBridgeService {
       const itemTotal = unitPrice * item.quantity;
       subtotal += itemTotal;
 
+      const royaltyPerCopy = royaltyPerCopyFromBook(book);
       orderItems.push({
         book: book._id,
         quantity: item.quantity,
         price: unitPrice,
         author: book.author || null,
-        royaltyPercentage: typeof book.royaltyPercentage === 'number' ? book.royaltyPercentage : 0
+        ...(royaltyPerCopy !== null
+          ? {
+            royaltyPerCopySnapshot: royaltyPerCopy,
+            printingCostSnapshot: Number(book.printingCost || 0),
+            platformChargesSnapshot: Number(book.platformCharges || 0),
+            deliveryChargesSnapshot: Number(book.deliveryCharges || 0)
+          }
+          : { royaltyPercentage: typeof book.royaltyPercentage === 'number' ? book.royaltyPercentage : 0 })
       });
 
     }

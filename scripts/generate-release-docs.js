@@ -12,6 +12,7 @@ const models = [
   'AnalyticsEvent', 'Book', 'Category', 'Counter', 'InventoryLedger',
   'InventoryReservation', 'Invoice', 'Notification', 'Order', 'Payment',
   'PaymentLedger', 'PublishPackage', 'PublishRequest', 'Review', 'Shipment',
+  'ManualRoyaltyStatement',
   'ShipmentLedger', 'User'
 ];
 
@@ -19,6 +20,7 @@ const collections = [
   'analyticsevents', 'books', 'categories', 'counters', 'inventoryledgers',
   'inventoryreservations', 'invoices', 'notifications', 'orders', 'payments',
   'paymentledgers', 'publishpackages', 'publishrequests', 'reviews',
+  'manualroyaltystatements',
   'shipments', 'shipmentledgers', 'users'
 ];
 

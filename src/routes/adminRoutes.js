@@ -33,7 +33,7 @@ const adminNotificationController = require('../controllers/adminNotificationCon
 const adminShipmentController = require('../controllers/adminShipmentController');
 const adminAnalyticsController = require('../controllers/adminAnalyticsController');
 const categoryController = require('../controllers/categoryController');
-const { updateContent } = require('../controllers/contentController');
+const { getAdminContent, updateContent } = require('../controllers/contentController');
 const { listReviews, moderateReview, deleteReview } = require('../controllers/reviewController');
 const { listAuthorApplications, updateAuthorApplicationStatus } = require('../controllers/authorApplicationController');
 const {
@@ -70,6 +70,7 @@ router.put('/users/:id/role', updateUserRole);
 router.patch('/users/:id/status', updateUserStatus);
 router.post('/users/:id/reset-password', resetUserPassword);
 router.put('/content', updateContent);
+router.get('/content', getAdminContent);
 router.get('/publish-packages', listAdminPublishPackages);
 router.post('/publish-packages', createPublishPackage);
 router.get('/publish-packages/:id', getAdminPublishPackage);
@@ -145,6 +146,12 @@ router.get('/authors/:authorId/dashboard', getAdminAuthorDashboard);
 router.get('/authors/:authorId/royalties', getAdminAuthorRoyalties);
 
 const royaltySettlementController = require('../controllers/royaltySettlementController');
+const manualRoyaltyController = require('../controllers/manualRoyaltyController');
+
+router.post('/manual-royalties', manualRoyaltyController.createStatement);
+router.get('/manual-royalties', manualRoyaltyController.listAdminStatements);
+router.get('/manual-royalties/:id', manualRoyaltyController.getAdminStatement);
+router.post('/manual-royalties/:id/void', manualRoyaltyController.voidStatement);
 
 router.get('/royalty-settlements/reconcile', royaltySettlementController.reconcileSettlements);
 router.post('/royalty-settlements/preview', royaltySettlementController.previewSettlement);

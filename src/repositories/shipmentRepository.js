@@ -131,6 +131,32 @@ class ShipmentRepository {
     }, options);
   }
 
+  updateCourierTracking(id, trackingData = {}, options = {}) {
+    const now = trackingData.updatedAt || new Date();
+    return this.updateById(id, {
+      $set: {
+        'courier.provider': trackingData.provider,
+        'courier.serviceName': trackingData.serviceName,
+        trackingNumber: trackingData.trackingNumber,
+        trackingUrl: trackingData.trackingUrl,
+        estimatedDelivery: trackingData.estimatedDelivery,
+        'audit.updatedBy': trackingData.updatedBy
+      },
+      $push: {
+        trackingHistory: {
+          status: 'TRACKING_UPDATED',
+          description: trackingData.description || 'Courier tracking details corrected',
+          occurredAt: now,
+          metadata: {
+            provider: trackingData.provider,
+            previousTrackingNumber: trackingData.previousTrackingNumber,
+            trackingNumber: trackingData.trackingNumber
+          }
+        }
+      }
+    }, options);
+  }
+
   updateStatus(id, statusData = {}, options = {}) {
     const now = statusData.occurredAt || new Date();
     const set = {

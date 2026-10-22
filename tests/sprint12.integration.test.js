@@ -18,6 +18,7 @@ const PublishPackage = require('../src/models/PublishPackage');
 const PublishRequest = require('../src/models/PublishRequest');
 const Content = require('../src/models/Content');
 const ContactRequest = require('../src/models/ContactRequest');
+const ManualRoyaltyStatement = require('../src/models/ManualRoyaltyStatement');
 
 jest.setTimeout(600000);
 process.env.MONGOMS_DOWNLOAD_DIR = 'node_modules/.cache/mongodb-binaries';
@@ -47,7 +48,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), PublishPackage.deleteMany({}), PublishRequest.deleteMany({}), Content.deleteMany({}), ContactRequest.deleteMany({})]);
+  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Category.deleteMany({}), Order.deleteMany({}), Invoice.deleteMany({}), Notification.deleteMany({}), Review.deleteMany({}), AuthorApplication.deleteMany({}), PublishPackage.deleteMany({}), PublishRequest.deleteMany({}), Content.deleteMany({}), ContactRequest.deleteMany({}), ManualRoyaltyStatement.deleteMany({})]);
   admin = await User.create({ name: 'Admin', email: 'admin12@example.com', password: 'password123', role: 'admin' });
   reader = await User.create({ name: 'Reader', email: 'reader12@example.com', password: 'password123', role: 'reader' });
   author = await User.create({ name: 'Author', email: 'author12@example.com', password: 'password123', role: 'author' });
@@ -434,6 +435,117 @@ test('public author APIs expose only public profile fields', async () => {
   expect(detail.body.data.wishlist).toBeUndefined();
   expect(detail.body.data.library).toBeUndefined();
   expect(detail.body.data.royaltiesBalance).toBeUndefined();
+});
+
+test('public catalog hides commercial fields and malformed author ids return 404', async () => {
+  book.royaltyPercentage = 20;
+  book.reservedStock = 2;
+  book.printingCost = 10;
+  book.platformCharges = 5;
+  book.deliveryCharges = 3;
+  await book.save();
+
+  const list = await request(app).get('/api/books').expect(200);
+  const publicBook = list.body.data[0];
+  expect(publicBook.royaltyPercentage).toBeUndefined();
+  expect(publicBook.reservedStock).toBeUndefined();
+  expect(publicBook.printingCost).toBeUndefined();
+  expect(publicBook.platformCharges).toBeUndefined();
+  expect(publicBook.deliveryCharges).toBeUndefined();
+
+  await request(app).get('/api/authors/not-an-object-id').expect(404);
+});
+
+test('returns public published-book and active-author totals', async () => {
+  await User.create({ name: 'Inactive Author', email: 'inactive-author@example.com', password: 'password123', role: 'author', isActive: false });
+  await Book.create({
+    title: 'Draft Stats Book', slug: 'draft-stats-book', description: 'Draft', author: author._id,
+    category: book.category, mrp: 100, status: 'draft'
+  });
+
+  const response = await request(app).get('/api/stats/public').expect(200);
+  expect(response.body).toEqual({ success: true, data: { booksCount: 1, authorsCount: 1 } });
+});
+
+test('persists the extended site-content contract and keeps admin image private', async () => {
+  const pageSections = [{ title: 'Quality', body: 'Editorial care' }];
+  const saved = await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      announcementActive: true,
+      announcementText: 'New releases available',
+      homeHeroCtaText: 'Browse books',
+      homeFeaturedTitle: 'Featured titles',
+      contactSupportEmail: 'support@harglim.test',
+      contactAddressLine1: 'Hyderabad',
+      careersEmail: 'careers@harglim.test',
+      socialFacebook: 'https://facebook.com/harglim',
+      homeWhyChooseJson: JSON.stringify(pageSections),
+      privacySectionsJson: JSON.stringify(pageSections),
+      adminProfileImage: 'https://example.com/admin.jpg'
+    })
+    .expect(200);
+  expect(saved.body.data.homeHeroCtaText).toBe('Browse books');
+  expect(saved.body.data.adminProfileImage).toBe('https://example.com/admin.jpg');
+
+  const publicContent = await request(app).get('/api/content').expect(200);
+  expect(publicContent.headers['cache-control']).toBe('no-cache');
+  expect(publicContent.body.data.homeWhyChooseJson).toBe(JSON.stringify(pageSections));
+  expect(publicContent.body.data.adminProfileImage).toBeUndefined();
+
+  const adminContent = await request(app)
+    .get('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .expect(200);
+  expect(adminContent.body.data.adminProfileImage).toBe('https://example.com/admin.jpg');
+
+  const invalid = await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ privacySectionsJson: '{"not":"a-list"}' })
+    .expect(400);
+  expect(invalid.body.message).toContain('privacySectionsJson');
+});
+
+test('manual royalty statements are informational, server-calculated and voidable', async () => {
+  const created = await request(app)
+    .post('/api/admin/manual-royalties')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      authorId: author._id,
+      note: 'Publisher statement',
+      items: [{ bookId: book._id, bookTitle: 'Ignored client title', royaltyPerBook: 25.5, unitsSold: 4, totalRoyalty: 1 }],
+      totalRoyalty: 1
+    })
+    .expect(201);
+
+  expect(created.body.data.items[0].bookTitle).toBe(book.title);
+  expect(created.body.data.items[0].totalRoyalty).toBe(102);
+  expect(created.body.data.totalUnits).toBe(4);
+  expect(created.body.data.totalRoyalty).toBe(102);
+
+  const previousAccessFlag = process.env.AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED;
+  process.env.AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED = 'false';
+  const mine = await request(app)
+    .get('/api/authors/me/manual-royalties')
+    .set('Authorization', `Bearer ${authorToken}`)
+    .expect(200);
+  expect(mine.body.data).toHaveLength(1);
+
+  await request(app)
+    .post(`/api/admin/manual-royalties/${created.body.data._id}/void`)
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ reason: 'Correcting publisher statement' })
+    .expect(200);
+
+  const afterVoid = await request(app)
+    .get('/api/authors/me/manual-royalties')
+    .set('Authorization', `Bearer ${authorToken}`)
+    .expect(200);
+  expect(afterVoid.body.data).toHaveLength(0);
+  if (previousAccessFlag === undefined) delete process.env.AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED;
+  else process.env.AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED = previousAccessFlag;
 });
 
 test('frontend compatibility aliases remain restricted to admins', async () => {

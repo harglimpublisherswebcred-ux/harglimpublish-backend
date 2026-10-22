@@ -1,8 +1,10 @@
 const Content = require('../models/Content');
 
 class ContentRepository {
-  findGlobal() {
-    return Content.findOne({ key: 'global' }).lean();
+  findGlobal({ includeAdmin = false } = {}) {
+    const query = Content.findOne({ key: 'global' });
+    if (includeAdmin) query.select('+adminProfileImage');
+    return query.lean();
   }
 
   upsertGlobal(data) {

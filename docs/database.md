@@ -1,6 +1,6 @@
 # Database Documentation
 
-Collections documented: 17
+Collections documented: 18
 
 - `analyticsevents`
 - `books`
@@ -16,6 +16,7 @@ Collections documented: 17
 - `publishpackages`
 - `publishrequests`
 - `reviews`
+- `manualroyaltystatements`
 - `shipments`
 - `shipmentledgers`
 - `users`

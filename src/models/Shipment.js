@@ -15,11 +15,13 @@ const SHIPMENT_STATUSES = [
   'RETURNED'
 ];
 
+const SHIPMENT_TRACKING_EVENTS = [...SHIPMENT_STATUSES, 'TRACKING_UPDATED'];
+
 const shipmentTrackingEventSchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: SHIPMENT_STATUSES,
+      enum: SHIPMENT_TRACKING_EVENTS,
       required: true
     },
     location: {

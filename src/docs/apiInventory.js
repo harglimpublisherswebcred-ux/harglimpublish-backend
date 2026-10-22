@@ -1,6 +1,7 @@
 const endpointInventory = [
   { method: 'GET', path: '/health', tag: 'System', summary: 'Health check', auth: 'Public', controller: 'server.js', notes: 'Returns server liveness only.' },
   { method: 'GET', path: '/api/content', tag: 'Content', summary: 'Get global CMS content', auth: 'Public', controller: 'contentController.getContent' },
+  { method: 'GET', path: '/api/stats/public', tag: 'System', summary: 'Get public published-book and active-author totals', auth: 'Public', controller: 'publicStatsController.getPublicStats' },
   { method: 'POST', path: '/api/contact', tag: 'Contact', summary: 'Submit website contact request', auth: 'Public', controller: 'contactController.submitContactRequest', body: 'ContactRequest' },
   { method: 'POST', path: '/api/contact-requests', tag: 'Contact', summary: 'Submit website contact request alias', auth: 'Public', controller: 'contactController.submitContactRequest', body: 'ContactRequest' },
 
@@ -110,6 +111,7 @@ const endpointInventory = [
   { method: 'DELETE', path: '/api/admin/reviews/{id}', tag: 'Admin Core', summary: 'Delete review as admin', auth: 'Admin', controller: 'reviewController.deleteReview', params: ['id'] },
   
   { method: 'PUT', path: '/api/admin/content', tag: 'Admin Content', summary: 'Update global CMS content', auth: 'Admin', controller: 'contentController.updateContent', body: 'ContentUpdateRequest' },
+  { method: 'GET', path: '/api/admin/content', tag: 'Admin Content', summary: 'Get CMS content including admin-only fields', auth: 'Admin', controller: 'contentController.getAdminContent' },
   { method: 'GET', path: '/api/admin/users', tag: 'Admin Users', summary: 'List users', auth: 'Admin', controller: 'adminController.listUsers', query: ['page', 'limit', 'role', 'isActive', 'search'] },
   { method: 'GET', path: '/api/users', tag: 'Admin Users', summary: 'List users compatibility alias', auth: 'Admin', controller: 'adminController.listUsers', query: ['page', 'limit', 'role', 'isActive', 'search'] },
   { method: 'POST', path: '/api/admin/users', tag: 'Admin Users', summary: 'Create user', auth: 'Admin', controller: 'adminController.createUser', body: 'AdminUserCreateRequest', notes: 'Creates a local password user through the existing User model hashing flow. Accepts role=user as a frontend alias for reader.' },
@@ -191,7 +193,7 @@ const endpointInventory = [
   { method: 'GET', path: '/api/admin/shipments', tag: 'Admin Shipments', summary: 'List shipments', auth: 'Admin', controller: 'adminShipmentController.listShipments', query: ['status', 'customer', 'order', 'payment', 'invoice', 'page', 'limit', 'from', 'to'] },
   { method: 'GET', path: '/api/admin/shipments/{id}/tracking', tag: 'Admin Shipments', summary: 'Get shipment tracking', auth: 'Admin', controller: 'adminShipmentController.getTracking', params: ['id'] },
   { method: 'GET', path: '/api/admin/shipments/{id}', tag: 'Admin Shipments', summary: 'Get shipment', auth: 'Admin', controller: 'adminShipmentController.getShipment', params: ['id'] },
-  { method: 'POST', path: '/api/admin/shipments/{id}/assign-courier', tag: 'Admin Shipments', summary: 'Assign courier', auth: 'Admin', controller: 'adminShipmentController.assignCourier', params: ['id'], body: 'CourierAssignRequest' },
+  { method: 'POST', path: '/api/admin/shipments/{id}/assign-courier', tag: 'Admin Shipments', summary: 'Assign or correct courier tracking', auth: 'Admin', controller: 'adminShipmentController.assignCourier', params: ['id'], body: 'CourierAssignRequest', notes: 'For PICKED_UP, IN_TRANSIT, or OUT_FOR_DELIVERY shipments, updates tracking without changing shipment status and appends TRACKING_UPDATED.' },
   { method: 'POST', path: '/api/admin/shipments/{id}/update-status', tag: 'Admin Shipments', summary: 'Update shipment status', auth: 'Admin', controller: 'adminShipmentController.updateStatus', params: ['id'], body: 'StatusUpdateRequest' },
   { method: 'POST', path: '/api/admin/shipments/{id}/cancel', tag: 'Admin Shipments', summary: 'Cancel shipment', auth: 'Admin', controller: 'adminShipmentController.cancelShipment', params: ['id'], body: 'ShipmentCancelRequest' },
 
@@ -211,6 +213,11 @@ const endpointInventory = [
   { method: 'GET', path: '/api/admin/authors/{authorId}', tag: 'Admin Operations', summary: 'Get admin author detail profile', auth: 'Admin', controller: 'adminController.getAdminAuthorDetail', params: ['authorId'], notes: 'Aggregates author user profile, application record, entitlement status, book counts, publish requests, and royalty metrics.' },
 
   { method: 'GET', path: '/api/admin/royalty-settlements/reconcile', tag: 'Royalty Settlements', summary: 'Reconcile royalty settlements and payouts', auth: 'Admin', controller: 'royaltySettlementController.reconcileSettlements' },
+  { method: 'POST', path: '/api/admin/manual-royalties', tag: 'Manual Royalties', summary: 'Record an informational publisher royalty statement', auth: 'Admin', controller: 'manualRoyaltyController.createStatement', body: 'ManualRoyaltyCreateRequest', notes: 'Informational only; does not affect balances, settlements, or payouts.' },
+  { method: 'GET', path: '/api/admin/manual-royalties', tag: 'Manual Royalties', summary: 'List manual royalty statements', auth: 'Admin', controller: 'manualRoyaltyController.listAdminStatements', query: ['authorId', 'page', 'limit', 'from', 'to'] },
+  { method: 'GET', path: '/api/admin/manual-royalties/{id}', tag: 'Manual Royalties', summary: 'Get a manual royalty statement', auth: 'Admin', controller: 'manualRoyaltyController.getAdminStatement', params: ['id'] },
+  { method: 'POST', path: '/api/admin/manual-royalties/{id}/void', tag: 'Manual Royalties', summary: 'Void a manual royalty statement', auth: 'Admin', controller: 'manualRoyaltyController.voidStatement', params: ['id'], body: 'ManualRoyaltyVoidRequest' },
+  { method: 'GET', path: '/api/authors/me/manual-royalties', tag: 'Manual Royalties', summary: 'List the authenticated author publisher statements', auth: 'Bearer (Author Dashboard)', controller: 'manualRoyaltyController.listMyStatements', query: ['page', 'limit'] },
   { method: 'POST', path: '/api/admin/royalty-settlements/preview', tag: 'Royalty Settlements', summary: 'Preview royalty settlement batch', auth: 'Admin', controller: 'royaltySettlementController.previewSettlement', body: 'SettlementPreviewRequest' },
   { method: 'POST', path: '/api/admin/royalty-settlements', tag: 'Royalty Settlements', summary: 'Create draft royalty settlement batch', auth: 'Admin', controller: 'royaltySettlementController.createDraftSettlement', body: 'SettlementCreateRequest' },
   { method: 'GET', path: '/api/admin/royalty-settlements', tag: 'Royalty Settlements', summary: 'List royalty settlements for admin', auth: 'Admin', controller: 'royaltySettlementController.listSettlementsForAdmin', query: ['authorId', 'status', 'page', 'limit'] },

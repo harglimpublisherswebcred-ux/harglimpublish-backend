@@ -106,6 +106,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Content`.
 
+## GET /api/stats/public
+
+Purpose: Get public published-book and active-author totals.
+
+Authentication: Public.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/stats/public`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/stats/public', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/stats/public', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `System`.
+
 ## POST /api/contact
 
 Purpose: Submit website contact request.
@@ -4963,6 +5014,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Admin Content`.
 
+## GET /api/admin/content
+
+Purpose: Get CMS content including admin-only fields.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/content`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/content', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/content', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Content`.
+
 ## GET /api/admin/users
 
 Purpose: List users.
@@ -8980,7 +9082,7 @@ Related APIs: See endpoints with tag `Admin Shipments`.
 
 ## POST /api/admin/shipments/{id}/assign-courier
 
-Purpose: Assign courier.
+Purpose: Assign or correct courier tracking.
 
 Authentication: Admin.
 
@@ -9816,6 +9918,266 @@ await dio.request('/api/admin/royalty-settlements/reconcile', options: Options(m
 Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
 
 Related APIs: See endpoints with tag `Royalty Settlements`.
+
+## POST /api/admin/manual-royalties
+
+Purpose: Record an informational publisher royalty statement.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `ManualRoyaltyCreateRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/manual-royalties`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'POST', url: '/api/admin/manual-royalties', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/manual-royalties', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Manual Royalties`.
+
+## GET /api/admin/manual-royalties
+
+Purpose: List manual royalty statements.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- `authorId`: optional query parameter.
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `from`: optional query parameter.
+- `to`: optional query parameter.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/manual-royalties`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/manual-royalties', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/manual-royalties', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Manual Royalties`.
+
+## GET /api/admin/manual-royalties/{id}
+
+Purpose: Get a manual royalty statement.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/manual-royalties/:id`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/manual-royalties/:id', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/manual-royalties/:id', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Manual Royalties`.
+
+## POST /api/admin/manual-royalties/{id}/void
+
+Purpose: Void a manual royalty statement.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `ManualRoyaltyVoidRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/manual-royalties/:id/void`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'POST', url: '/api/admin/manual-royalties/:id/void', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/manual-royalties/:id/void', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Manual Royalties`.
+
+## GET /api/authors/me/manual-royalties
+
+Purpose: List the authenticated author publisher statements.
+
+Authentication: Bearer (Author Dashboard).
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/authors/me/manual-royalties`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/authors/me/manual-royalties', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/authors/me/manual-royalties', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Manual Royalties`.
 
 ## POST /api/admin/royalty-settlements/preview
 

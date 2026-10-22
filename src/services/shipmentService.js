@@ -160,31 +160,47 @@ class ShipmentService {
   async assignCourier(shipmentId, courierData = {}, options = {}) {
     return this.execute('assignCourier', async () => {
       const shipment = await this.repository.getById(shipmentId, { session: options.session, lean: true });
-      this.validateTransition(shipment.status, 'COURIER_ASSIGNED');
-      const provider = String(courierData.provider || 'manual').trim().toLowerCase();
+      const correctionStatuses = ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'];
+      const isTrackingCorrection = correctionStatuses.includes(shipment.status);
+      if (!isTrackingCorrection) this.validateTransition(shipment.status, 'COURIER_ASSIGNED');
+      const provider = String(courierData.provider || shipment.courier?.provider || 'manual').trim().toLowerCase();
       const adapter = this.adapters[provider];
       if (!adapter) throw new ShipmentCreationNotAllowedError(`Courier provider ${provider} is not supported`);
 
       const assignment = await adapter.assign(shipment, courierData);
-      const updated = await this.repository.assignCourier(shipment._id, {
+      const assignmentData = {
         ...assignment,
         provider,
         assignedBy: options.actor && options.actor.userId,
         assignedAt: options.now || new Date()
-      }, { session: options.session });
+      };
+      const updated = isTrackingCorrection
+        ? await this.repository.updateCourierTracking(shipment._id, {
+          ...assignmentData,
+          updatedBy: options.actor && options.actor.userId,
+          updatedAt: options.now || new Date(),
+          previousTrackingNumber: shipment.trackingNumber,
+          description: courierData.description || 'Courier tracking details corrected'
+        }, { session: options.session })
+        : await this.repository.assignCourier(shipment._id, assignmentData, { session: options.session });
 
-      await this.recordLedgerEvent(updated, 'COURIER_ASSIGNED', {
+      const ledgerEvent = isTrackingCorrection ? 'TRACKING_UPDATED' : 'COURIER_ASSIGNED';
+
+      await this.recordLedgerEvent(updated, ledgerEvent, {
         previousStatus: shipment.status,
         actor: options.actor,
         actorType: options.actorType || 'ADMIN',
-        reason: 'Courier assigned',
-        metadata: { provider },
+        reason: isTrackingCorrection ? 'Courier tracking details corrected' : 'Courier assigned',
+        metadata: { provider, trackingNumber: updated.trackingNumber },
+        eventKeySuffix: isTrackingCorrection ? updated.trackingNumber : undefined,
         session: options.session
       });
-      await this.publishShipmentEvent(DOMAIN_EVENTS.COURIER_ASSIGNED, updated, {
-        ...options,
-        previousStatus: shipment.status
-      });
+      if (!isTrackingCorrection) {
+        await this.publishShipmentEvent(DOMAIN_EVENTS.COURIER_ASSIGNED, updated, {
+          ...options,
+          previousStatus: shipment.status
+        });
+      }
       return updated;
     });
   }
@@ -309,7 +325,7 @@ class ShipmentService {
 
   async recordLedgerEvent(shipment, eventType, options = {}) {
     const ledger = await this.ledgerRepository.createEntry({
-      eventKey: `${normalizeId(shipment._id)}:${eventType}:${options.previousStatus || ''}:${shipment.status}`,
+      eventKey: `${normalizeId(shipment._id)}:${eventType}:${options.previousStatus || ''}:${shipment.status}:${options.eventKeySuffix || ''}`,
       shipment: shipment._id,
       order: shipment.order,
       payment: shipment.payment,

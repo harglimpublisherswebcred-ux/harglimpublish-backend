@@ -41,7 +41,8 @@ class AuthorDashboardRepository {
     const authorObjectId = new mongoose.Types.ObjectId(authorId.toString());
     
     // Find all books owned by author to match legacy orders without item.author snapshot
-    const authorBooks = await Book.find({ author: authorObjectId }).select('_id title coverImage status royaltyPercentage');
+    const authorBooks = await Book.find({ author: authorObjectId })
+      .select('_id title coverImage status royaltyPercentage mrp printingCost platformCharges deliveryCharges');
     const authorBookMap = new Map();
     authorBooks.forEach((b) => authorBookMap.set(b._id.toString(), b));
 
@@ -57,7 +58,7 @@ class AuthorDashboardRepository {
         { status: { $in: ['PROCESSING', 'SHIPPED', 'DELIVERED'] } },
         { isPaid: true }
       ]
-    }).populate('items.book', 'title coverImage status royaltyPercentage author').sort('-createdAt');
+    }).populate('items.book', 'title coverImage status royaltyPercentage author mrp printingCost platformCharges deliveryCharges').sort('-createdAt');
 
     return { orders, authorBookMap };
   }

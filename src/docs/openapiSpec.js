@@ -11,6 +11,18 @@ const errorExample = {
   message: 'Error message'
 };
 
+const siteContentStringFields = [
+  'homeHeroCtaText', 'homeFeaturedTitle', 'homeBestsellerTitle', 'homeCtaHeading',
+  'homeCtaSubtitle', 'homeCtaButtonText', 'contactSupportEmail', 'contactAddressLine1',
+  'contactAddressLine2', 'careersEmail', 'socialFacebook', 'socialTwitter',
+  'socialInstagram', 'socialLinkedin', 'homeWhyChooseJson', 'aboutValuesJson',
+  'aboutTeamJson', 'publishServicesJson', 'publishStepsJson', 'guidelinesSectionsJson',
+  'guidelinesStepsJson', 'royaltyScheduleJson', 'royaltyExamplesJson', 'royaltyFaqsJson',
+  'returnsStepsJson', 'returnsEligibleJson', 'returnsNotEligibleJson', 'returnsFaqsJson',
+  'privacySectionsJson', 'termsSectionsJson', 'careersBenefitsJson'
+];
+const siteContentProperties = Object.fromEntries(siteContentStringFields.map((field) => [field, { type: 'string' }]));
+
 const endpointExamples = {
   Authentication: { success: true, token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', data: { _id: '66b4f5a2a44d2c0012a9c100', name: 'Ghani Reader', email: 'user@example.com', role: 'reader' } },
   Books: { success: true, data: [{ _id: '66b4f5a2a44d2c0012a9c101', title: 'Enterprise Publishing Systems', slug: 'enterprise-publishing-systems', price: 499, status: 'published' }], pagination: { total: 1, page: 1, pages: 1 } },
@@ -118,6 +130,9 @@ const schemas = {
       packagesJson: { type: 'string' },
       authorGuidelinesText: { type: 'string' },
       royaltySummary: { type: 'string' },
+      announcementActive: { type: 'boolean' },
+      announcementText: { type: 'string' },
+      ...siteContentProperties,
       aboutTitle: { type: 'string', description: 'Compatibility alias for about.title.' },
       aboutSubtitle: { type: 'string', description: 'Compatibility alias for about.subtitle.' },
       aboutStory: { type: 'string', description: 'Compatibility alias for about.body.' },
@@ -142,6 +157,10 @@ const schemas = {
       category: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/Category' }] },
       price: { type: 'number' },
       royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
+      printingCost: { type: 'number', minimum: 0, default: 0 },
+      platformCharges: { type: 'number', minimum: 0, default: 0 },
+      deliveryCharges: { type: 'number', minimum: 0, default: 0 },
+      royaltyPerCopy: { type: 'number', minimum: 0, description: 'Admin/author operational view only when charge-based royalty is configured.' },
       coverImage: { type: 'string' },
       stock: { type: 'integer' },
       reservedStock: { type: 'integer' },
@@ -164,7 +183,12 @@ const schemas = {
     properties: {
       book: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/Book' }] },
       quantity: { type: 'integer', minimum: 1 },
-      price: { type: 'number' }
+      price: { type: 'number' },
+      royaltyPercentage: { type: 'number', minimum: 0, maximum: 100 },
+      royaltyPerCopySnapshot: { type: 'number', minimum: 0 },
+      printingCostSnapshot: { type: 'number', minimum: 0 },
+      platformChargesSnapshot: { type: 'number', minimum: 0 },
+      deliveryChargesSnapshot: { type: 'number', minimum: 0 }
     }
   },
   Order: {
@@ -534,6 +558,9 @@ const schemas = {
       mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
       price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
       royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
+      printingCost: { type: 'number', minimum: 0, default: 0 },
+      platformCharges: { type: 'number', minimum: 0, default: 0 },
+      deliveryCharges: { type: 'number', minimum: 0, default: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
       reservedStock: { type: 'integer', minimum: 0 },
@@ -558,6 +585,9 @@ const schemas = {
       mrp: { type: 'number', minimum: 0, description: 'Canonical book price. Preferred field for new frontend code.' },
       price: { type: 'number', minimum: 0, description: 'Legacy compatibility alias for mrp. If supplied with mrp, both values must match.' },
       royaltyPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0 },
+      printingCost: { type: 'number', minimum: 0 },
+      platformCharges: { type: 'number', minimum: 0 },
+      deliveryCharges: { type: 'number', minimum: 0 },
       coverImage: { type: 'string', format: 'uri' },
       stock: { type: 'integer', minimum: 0 },
       reservedStock: { type: 'integer', minimum: 0 },
@@ -738,6 +768,10 @@ const schemas = {
       packagesJson: { type: 'string' },
       authorGuidelinesText: { type: 'string' },
       royaltySummary: { type: 'string' },
+      announcementActive: { type: 'boolean' },
+      announcementText: { type: 'string' },
+      adminProfileImage: { type: 'string', format: 'uri', description: 'Admin-only. Excluded from public GET /api/content.' },
+      ...siteContentProperties,
       aboutTitle: { type: 'string', description: 'Compatibility alias for about.title.' },
       aboutSubtitle: { type: 'string', description: 'Compatibility alias for about.subtitle.' },
       aboutStory: { type: 'string', description: 'Compatibility alias for about.body.' },
@@ -803,6 +837,10 @@ const schemas = {
       description: { type: 'string' },
       price: { type: 'number', minimum: 0 },
       features: { type: 'array', items: { type: 'string' } },
+      tagline: { type: 'string' },
+      highlighted: { type: 'boolean' },
+      badge: { type: 'string' },
+      sortOrder: { type: 'number' },
       isActive: { type: 'boolean' },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' }
@@ -816,6 +854,10 @@ const schemas = {
       description: { type: 'string' },
       price: { type: 'number', minimum: 0 },
       features: { type: 'array', items: { type: 'string' } },
+      tagline: { type: 'string' },
+      highlighted: { type: 'boolean' },
+      badge: { type: 'string' },
+      sortOrder: { type: 'number' },
       isActive: { type: 'boolean', default: true }
     }
   },
@@ -827,6 +869,10 @@ const schemas = {
       description: { type: 'string' },
       price: { type: 'number', minimum: 0 },
       features: { type: 'array', items: { type: 'string' } },
+      tagline: { type: 'string' },
+      highlighted: { type: 'boolean' },
+      badge: { type: 'string' },
+      sortOrder: { type: 'number' },
       isActive: { type: 'boolean' }
     }
   },
@@ -938,6 +984,63 @@ const schemas = {
     properties: {
       reason: { type: 'string', default: 'Cancelled by admin' }
     }
+  },
+  ManualRoyaltyItem: {
+    type: 'object',
+    properties: {
+      book: { type: 'string' },
+      bookTitle: { type: 'string' },
+      royaltyPerBook: { type: 'number', minimum: 0 },
+      unitsSold: { type: 'integer', minimum: 1 },
+      totalRoyalty: { type: 'number', minimum: 0 }
+    }
+  },
+  ManualRoyaltyStatement: {
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      author: { oneOf: [{ type: 'string' }, { $ref: '#/components/schemas/User' }] },
+      createdBy: { type: 'string' },
+      periodStart: { type: 'string', format: 'date-time' },
+      periodEnd: { type: 'string', format: 'date-time' },
+      note: { type: 'string' },
+      items: { type: 'array', items: { $ref: '#/components/schemas/ManualRoyaltyItem' } },
+      totalUnits: { type: 'integer' },
+      totalRoyalty: { type: 'number' },
+      currency: { type: 'string', enum: ['INR'] },
+      status: { type: 'string', enum: ['RECORDED', 'VOID'] },
+      voidReason: { type: 'string' },
+      voidedAt: { type: 'string', format: 'date-time' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  ManualRoyaltyCreateRequest: {
+    type: 'object',
+    required: ['authorId', 'items'],
+    properties: {
+      authorId: { type: 'string' },
+      periodStart: { type: 'string', format: 'date-time' },
+      periodEnd: { type: 'string', format: 'date-time' },
+      note: { type: 'string', maxLength: 2000 },
+      items: {
+        type: 'array', minItems: 1, maxItems: 100,
+        items: {
+          type: 'object', required: ['bookTitle', 'royaltyPerBook', 'unitsSold'],
+          properties: {
+            bookId: { type: 'string' },
+            bookTitle: { type: 'string' },
+            royaltyPerBook: { type: 'number', exclusiveMinimum: 0 },
+            unitsSold: { type: 'integer', minimum: 1 }
+          }
+        }
+      }
+    }
+  },
+  ManualRoyaltyVoidRequest: {
+    type: 'object',
+    required: ['reason'],
+    properties: { reason: { type: 'string', maxLength: 500 } }
   },
   MultipartImageRequest: {
     type: 'object',

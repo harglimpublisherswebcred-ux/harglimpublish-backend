@@ -43,7 +43,11 @@ test('admin can create, list, view, update and archive a publish package', async
       name: 'Professional',
       description: 'Professional publishing support',
       price: 15000,
-      features: ['Editing', 'Cover design']
+      features: ['Editing', 'Cover design'],
+      tagline: 'Everything needed to publish',
+      highlighted: true,
+      badge: 'Popular',
+      sortOrder: 2
     })
     .expect(201);
 
@@ -51,6 +55,10 @@ test('admin can create, list, view, update and archive a publish package', async
     name: 'Professional',
     price: 15000,
     features: ['Editing', 'Cover design'],
+    tagline: 'Everything needed to publish',
+    highlighted: true,
+    badge: 'Popular',
+    sortOrder: 2,
     isActive: true
   });
 
@@ -70,9 +78,10 @@ test('admin can create, list, view, update and archive a publish package', async
   const updated = await request(app)
     .patch(`/api/admin/publish-packages/${id}`)
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ price: 17500, features: ['Editing', 'Cover design', 'Marketing'] })
+    .send({ price: 17500, features: ['Editing', 'Cover design', 'Marketing'], sortOrder: 1 })
     .expect(200);
   expect(updated.body.data.price).toBe(17500);
+  expect(updated.body.data.sortOrder).toBe(1);
 
   const archived = await request(app)
     .delete(`/api/admin/publish-packages/${id}`)

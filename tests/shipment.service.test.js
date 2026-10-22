@@ -113,6 +113,24 @@ describe('ShipmentService', () => {
     expect(syncedOrder.status).toBe('DELIVERED');
   });
 
+  it('corrects tracking after dispatch without resetting shipment status', async () => {
+    const shipment = await shipmentService.createShipmentForInvoice(invoice._id);
+    await shipmentService.assignCourier(shipment._id, {
+      provider: 'manual', courierName: 'India Post', trackingNumber: 'CP111111111IN'
+    });
+    await shipmentService.updateStatus(shipment._id, { status: 'DISPATCHED' });
+
+    const corrected = await shipmentService.assignCourier(shipment._id, {
+      provider: 'manual', courierName: 'India Post', trackingNumber: 'CP222222222IN'
+    });
+    const ledger = await ShipmentLedger.find({ shipment: shipment._id }).sort({ createdAt: 1 }).lean();
+
+    expect(corrected.status).toBe('IN_TRANSIT');
+    expect(corrected.trackingNumber).toBe('CP222222222IN');
+    expect(corrected.trackingHistory.at(-1).status).toBe('TRACKING_UPDATED');
+    expect(ledger.at(-1).eventType).toBe('TRACKING_UPDATED');
+  });
+
   it('rejects invalid transitions and rolls back transactional shipment creation', async () => {
     const shipment = await shipmentService.createShipmentForInvoice(invoice._id);
     await expect(shipmentService.updateStatus(shipment._id, { status: 'DELIVERED' })).rejects.toMatchObject({ code: 'INVALID_SHIPMENT_TRANSITION' });

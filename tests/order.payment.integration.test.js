@@ -148,6 +148,30 @@ describe('Order payment bridge integration', () => {
     expect(ledgerEvents.map((entry) => entry.eventType)).toEqual(['INTENT_CREATED', 'QR_GENERATED']);
   });
 
+  it('snapshots charge-based royalty per copy from canonical MRP', async () => {
+    book.mrp = 500;
+    book.price = 500;
+    book.royaltyPercentage = 99;
+    book.printingCost = 120;
+    book.platformCharges = 30;
+    book.deliveryCharges = 50;
+    await book.save();
+
+    const checkout = await orderPaymentBridgeService.createOrderWithPaymentIntent({
+      user,
+      items: [{ bookId: book._id, quantity: 2 }],
+      shippingAddress,
+      paymentMethod: 'UPI'
+    });
+    const persisted = await Order.findById(checkout.order._id).lean();
+
+    expect(persisted.items[0].royaltyPerCopySnapshot).toBe(300);
+    expect(persisted.items[0].printingCostSnapshot).toBe(120);
+    expect(persisted.items[0].platformChargesSnapshot).toBe(30);
+    expect(persisted.items[0].deliveryChargesSnapshot).toBe(50);
+    expect(persisted.items[0].royaltyPercentage).toBeUndefined();
+  });
+
   it('submits UTR through existing endpoint and syncs legacy order fields', async () => {
     const checkout = await orderPaymentBridgeService.createOrderWithPaymentIntent({
       user,

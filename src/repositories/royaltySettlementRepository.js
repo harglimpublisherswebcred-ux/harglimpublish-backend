@@ -3,6 +3,7 @@ const Book = require('../models/Book');
 const RoyaltySettlement = require('../models/RoyaltySettlement');
 const RoyaltySettlementClaim = require('../models/RoyaltySettlementClaim');
 const RoyaltyPayout = require('../models/RoyaltyPayout');
+const { royaltyForOrderItem } = require('../utils/royaltyCalculation');
 
 const roundMoney = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
@@ -63,7 +64,8 @@ class RoyaltySettlementRepository {
           return;
         }
 
-        if (typeof item.royaltyPercentage !== 'number') {
+        const calculatedRoyalty = royaltyForOrderItem(item);
+        if (calculatedRoyalty.royaltyAmount === null) {
           excludedItems.legacyRateUnavailable++;
           return;
         }
@@ -71,7 +73,7 @@ class RoyaltySettlementRepository {
         const qty = item.quantity || 0;
         const price = item.price || 0;
         const gross = qty * price;
-        const royalty = roundMoney((gross * item.royaltyPercentage) / 100);
+        const royalty = calculatedRoyalty.royaltyAmount;
 
         eligibleItems.push({
           royaltySourceKey: sourceKey,
@@ -84,6 +86,7 @@ class RoyaltySettlementRepository {
           unitPriceSnapshot: price,
           grossBookRevenue: roundMoney(gross),
           royaltyPercentageSnapshot: item.royaltyPercentage,
+          royaltyPerCopySnapshot: calculatedRoyalty.royaltyPerCopy,
           royaltyAmount: royalty,
           saleDate: order.createdAt,
           eligibilityStatus: 'SETTLEMENT_ELIGIBLE'

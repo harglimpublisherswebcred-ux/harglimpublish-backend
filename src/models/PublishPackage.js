@@ -19,6 +19,10 @@ const publishPackageSchema = new mongoose.Schema(
         type: String,
       }
     ],
+    tagline: { type: String, trim: true, default: '' },
+    highlighted: { type: Boolean, default: false },
+    badge: { type: String, trim: true, default: '' },
+    sortOrder: { type: Number, default: 0 },
     isActive: {
       type: Boolean,
       default: true,

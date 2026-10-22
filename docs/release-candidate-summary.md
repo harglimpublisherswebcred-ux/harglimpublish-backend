@@ -4,13 +4,13 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 195
+Endpoints documented: 202
 
-Models documented: 17
+Models documented: 18
 
 Events documented: 31
 
-Database collections documented: 17
+Database collections documented: 18
 
 Sequence diagrams: 9
 
@@ -26,6 +26,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | --- | --- | --- | --- |
 | GET | `/health` | Public | `server.js` |
 | GET | `/api/content` | Public | `contentController.getContent` |
+| GET | `/api/stats/public` | Public | `publicStatsController.getPublicStats` |
 | POST | `/api/contact` | Public | `contactController.submitContactRequest` |
 | POST | `/api/contact-requests` | Public | `contactController.submitContactRequest` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
@@ -120,6 +121,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | PATCH | `/api/admin/reviews/{id}/status` | Admin | `reviewController.moderateReview` |
 | DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
 | PUT | `/api/admin/content` | Admin | `contentController.updateContent` |
+| GET | `/api/admin/content` | Admin | `contentController.getAdminContent` |
 | GET | `/api/admin/users` | Admin | `adminController.listUsers` |
 | GET | `/api/users` | Admin | `adminController.listUsers` |
 | POST | `/api/admin/users` | Admin | `adminController.createUser` |
@@ -212,6 +214,11 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/dashboard` | Admin | `adminController.getAdminDashboardOverview` |
 | GET | `/api/admin/authors/{authorId}` | Admin | `adminController.getAdminAuthorDetail` |
 | GET | `/api/admin/royalty-settlements/reconcile` | Admin | `royaltySettlementController.reconcileSettlements` |
+| POST | `/api/admin/manual-royalties` | Admin | `manualRoyaltyController.createStatement` |
+| GET | `/api/admin/manual-royalties` | Admin | `manualRoyaltyController.listAdminStatements` |
+| GET | `/api/admin/manual-royalties/{id}` | Admin | `manualRoyaltyController.getAdminStatement` |
+| POST | `/api/admin/manual-royalties/{id}/void` | Admin | `manualRoyaltyController.voidStatement` |
+| GET | `/api/authors/me/manual-royalties` | Bearer (Author Dashboard) | `manualRoyaltyController.listMyStatements` |
 | POST | `/api/admin/royalty-settlements/preview` | Admin | `royaltySettlementController.previewSettlement` |
 | POST | `/api/admin/royalty-settlements` | Admin | `royaltySettlementController.createDraftSettlement` |
 | GET | `/api/admin/royalty-settlements` | Admin | `royaltySettlementController.listSettlementsForAdmin` |

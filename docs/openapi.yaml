@@ -68,6 +68,8 @@ tags:
     name: Admin Analytics
   -
     name: Royalty Settlements
+  -
+    name: Manual Royalties
 paths:
   /health:
     get:
@@ -184,6 +186,114 @@ paths:
       summary: Get global CMS content
       description: "Get global CMS content. Controller: contentController.getContent. Authentication: Public. API routes are rate limited and return standard error envelopes."
       operationId: get_api_content
+      security:
+        []
+      parameters:
+        []
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/stats/public:
+    get:
+      tags:
+        - System
+      summary: Get public published-book and active-author totals
+      description: "Get public published-book and active-author totals. Controller: publicStatsController.getPublicStats. Authentication: Public. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_stats_public
       security:
         []
       parameters:
@@ -12345,6 +12455,115 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+    get:
+      tags:
+        - Admin Content
+      summary: Get CMS content including admin-only fields
+      description: "Get CMS content including admin-only fields. Controller: contentController.getAdminContent. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_content
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/admin/users:
     get:
       tags:
@@ -22859,8 +23078,8 @@ paths:
     post:
       tags:
         - Admin Shipments
-      summary: Assign courier
-      description: "Assign courier. Controller: adminShipmentController.assignCourier. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      summary: Assign or correct courier tracking
+      description: "Assign or correct courier tracking. Controller: adminShipmentController.assignCourier. Authentication: Admin. API routes are rate limited and return standard error envelopes. For PICKED_UP, IN_TRANSIT, or OUT_FOR_DELIVERY shipments, updates tracking without changing shipment status and appends TRACKING_UPDATED."
       operationId: post_api_admin_shipments_id_assign_courier
       security:
         -
@@ -25005,6 +25224,629 @@ paths:
             reason:
               type: string
               default: Cancelled by admin
+  /api/admin/manual-royalties:
+    post:
+      tags:
+        - Manual Royalties
+      summary: Record an informational publisher royalty statement
+      description: "Record an informational publisher royalty statement. Controller: manualRoyaltyController.createStatement. Authentication: Admin. API routes are rate limited and return standard error envelopes. Informational only; does not affect balances, settlements, or payouts."
+      operationId: post_api_admin_manual_royalties
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualRoyaltyCreateRequest"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+    get:
+      tags:
+        - Manual Royalties
+      summary: List manual royalty statements
+      description: "List manual royalty statements. Controller: manualRoyaltyController.listAdminStatements. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_manual_royalties
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: authorId
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        -
+          name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        -
+          name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/admin/manual-royalties/{id}:
+    get:
+      tags:
+        - Manual Royalties
+      summary: Get a manual royalty statement
+      description: "Get a manual royalty statement. Controller: manualRoyaltyController.getAdminStatement. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: get_api_admin_manual_royalties_id
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/admin/manual-royalties/{id}/void:
+    post:
+      tags:
+        - Manual Royalties
+      summary: Void a manual royalty statement
+      description: "Void a manual royalty statement. Controller: manualRoyaltyController.voidStatement. Authentication: Admin. API routes are rate limited and return standard error envelopes."
+      operationId: post_api_admin_manual_royalties_id_void
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualRoyaltyVoidRequest"
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
+  /api/authors/me/manual-royalties:
+    get:
+      tags:
+        - Manual Royalties
+      summary: List the authenticated author publisher statements
+      description: "List the authenticated author publisher statements. Controller: manualRoyaltyController.listMyStatements. Authentication: Bearer (Author Dashboard). API routes are rate limited and return standard error envelopes."
+      operationId: get_api_authors_me_manual_royalties
+      security:
+        -
+          bearerAuth:
+            []
+      parameters:
+        -
+          name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        200:
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+
+        201:
+          description: Created successfully where applicable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+              examples:
+                created:
+                  value:
+                    success: true
+                    data:
+
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/RateLimited"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        SettlementPreviewRequest:
+          type: object
+          required:
+            - authorId
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            from:
+              type: string
+              format: date-time
+              description: Optional sales window start.
+            to:
+              type: string
+              format: date-time
+              description: Optional sales window end.
+        SettlementCreateRequest:
+          type: object
+          required:
+            - authorId
+            - periodStart
+            - periodEnd
+          properties:
+            authorId:
+              type: string
+              description: Author user ObjectId.
+            periodStart:
+              type: string
+              format: date-time
+            periodEnd:
+              type: string
+              format: date-time
+        SettlementMarkPaidRequest:
+          type: object
+          required:
+            - transactionReference
+          properties:
+            paymentMethod:
+              type: string
+              enum:
+                - MANUAL_BANK_TRANSFER
+                - MANUAL_UPI
+                - CHEQUE
+                - OTHER
+              default: MANUAL_BANK_TRANSFER
+            transactionReference:
+              type: string
+              description: External/manual payout reference recorded by admin.
+            paidAt:
+              type: string
+              format: date-time
+              description: Optional. Defaults to current server time.
+            notes:
+              type: string
+        SettlementCancelRequest:
+          type: object
+          properties:
+            reason:
+              type: string
+              default: Cancelled by admin
   /api/admin/royalty-settlements/preview:
     post:
       tags:
@@ -26101,6 +26943,72 @@ components:
           type: string
         royaltySummary:
           type: string
+        announcementActive:
+          type: boolean
+        announcementText:
+          type: string
+        homeHeroCtaText:
+          type: string
+        homeFeaturedTitle:
+          type: string
+        homeBestsellerTitle:
+          type: string
+        homeCtaHeading:
+          type: string
+        homeCtaSubtitle:
+          type: string
+        homeCtaButtonText:
+          type: string
+        contactSupportEmail:
+          type: string
+        contactAddressLine1:
+          type: string
+        contactAddressLine2:
+          type: string
+        careersEmail:
+          type: string
+        socialFacebook:
+          type: string
+        socialTwitter:
+          type: string
+        socialInstagram:
+          type: string
+        socialLinkedin:
+          type: string
+        homeWhyChooseJson:
+          type: string
+        aboutValuesJson:
+          type: string
+        aboutTeamJson:
+          type: string
+        publishServicesJson:
+          type: string
+        publishStepsJson:
+          type: string
+        guidelinesSectionsJson:
+          type: string
+        guidelinesStepsJson:
+          type: string
+        royaltyScheduleJson:
+          type: string
+        royaltyExamplesJson:
+          type: string
+        royaltyFaqsJson:
+          type: string
+        returnsStepsJson:
+          type: string
+        returnsEligibleJson:
+          type: string
+        returnsNotEligibleJson:
+          type: string
+        returnsFaqsJson:
+          type: string
+        privacySectionsJson:
+          type: string
+        termsSectionsJson:
+          type: string
+        careersBenefitsJson:
+          type: string
         aboutTitle:
           type: string
           description: Compatibility alias for about.title.
@@ -26164,6 +27072,22 @@ components:
           minimum: 0
           maximum: 100
           default: 0
+        printingCost:
+          type: number
+          minimum: 0
+          default: 0
+        platformCharges:
+          type: number
+          minimum: 0
+          default: 0
+        deliveryCharges:
+          type: number
+          minimum: 0
+          default: 0
+        royaltyPerCopy:
+          type: number
+          minimum: 0
+          description: Admin/author operational view only when charge-based royalty is configured.
         coverImage:
           type: string
         stock:
@@ -26219,6 +27143,22 @@ components:
           minimum: 1
         price:
           type: number
+        royaltyPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        royaltyPerCopySnapshot:
+          type: number
+          minimum: 0
+        printingCostSnapshot:
+          type: number
+          minimum: 0
+        platformChargesSnapshot:
+          type: number
+          minimum: 0
+        deliveryChargesSnapshot:
+          type: number
+          minimum: 0
     Order:
       type: object
       properties:
@@ -26844,6 +27784,18 @@ components:
           minimum: 0
           maximum: 100
           default: 0
+        printingCost:
+          type: number
+          minimum: 0
+          default: 0
+        platformCharges:
+          type: number
+          minimum: 0
+          default: 0
+        deliveryCharges:
+          type: number
+          minimum: 0
+          default: 0
         coverImage:
           type: string
           format: uri
@@ -26906,6 +27858,15 @@ components:
           minimum: 0
           maximum: 100
           default: 0
+        printingCost:
+          type: number
+          minimum: 0
+        platformCharges:
+          type: number
+          minimum: 0
+        deliveryCharges:
+          type: number
+          minimum: 0
         coverImage:
           type: string
           format: uri
@@ -27247,6 +28208,76 @@ components:
           type: string
         royaltySummary:
           type: string
+        announcementActive:
+          type: boolean
+        announcementText:
+          type: string
+        adminProfileImage:
+          type: string
+          format: uri
+          description: Admin-only. Excluded from public GET /api/content.
+        homeHeroCtaText:
+          type: string
+        homeFeaturedTitle:
+          type: string
+        homeBestsellerTitle:
+          type: string
+        homeCtaHeading:
+          type: string
+        homeCtaSubtitle:
+          type: string
+        homeCtaButtonText:
+          type: string
+        contactSupportEmail:
+          type: string
+        contactAddressLine1:
+          type: string
+        contactAddressLine2:
+          type: string
+        careersEmail:
+          type: string
+        socialFacebook:
+          type: string
+        socialTwitter:
+          type: string
+        socialInstagram:
+          type: string
+        socialLinkedin:
+          type: string
+        homeWhyChooseJson:
+          type: string
+        aboutValuesJson:
+          type: string
+        aboutTeamJson:
+          type: string
+        publishServicesJson:
+          type: string
+        publishStepsJson:
+          type: string
+        guidelinesSectionsJson:
+          type: string
+        guidelinesStepsJson:
+          type: string
+        royaltyScheduleJson:
+          type: string
+        royaltyExamplesJson:
+          type: string
+        royaltyFaqsJson:
+          type: string
+        returnsStepsJson:
+          type: string
+        returnsEligibleJson:
+          type: string
+        returnsNotEligibleJson:
+          type: string
+        returnsFaqsJson:
+          type: string
+        privacySectionsJson:
+          type: string
+        termsSectionsJson:
+          type: string
+        careersBenefitsJson:
+          type: string
         aboutTitle:
           type: string
           description: Compatibility alias for about.title.
@@ -27398,6 +28429,14 @@ components:
           type: array
           items:
             type: string
+        tagline:
+          type: string
+        highlighted:
+          type: boolean
+        badge:
+          type: string
+        sortOrder:
+          type: number
         isActive:
           type: boolean
         createdAt:
@@ -27424,6 +28463,14 @@ components:
           type: array
           items:
             type: string
+        tagline:
+          type: string
+        highlighted:
+          type: boolean
+        badge:
+          type: string
+        sortOrder:
+          type: number
         isActive:
           type: boolean
           default: true
@@ -27442,6 +28489,14 @@ components:
           type: array
           items:
             type: string
+        tagline:
+          type: string
+        highlighted:
+          type: boolean
+        badge:
+          type: string
+        sortOrder:
+          type: number
         isActive:
           type: boolean
     PublishRequestCreate:
@@ -27620,6 +28675,117 @@ components:
         reason:
           type: string
           default: Cancelled by admin
+    ManualRoyaltyItem:
+      type: object
+      properties:
+        book:
+          type: string
+        bookTitle:
+          type: string
+        royaltyPerBook:
+          type: number
+          minimum: 0
+        unitsSold:
+          type: integer
+          minimum: 1
+        totalRoyalty:
+          type: number
+          minimum: 0
+    ManualRoyaltyStatement:
+      type: object
+      properties:
+        _id:
+          type: string
+        author:
+          oneOf:
+            -
+              type: string
+            -
+              $ref: "#/components/schemas/User"
+        createdBy:
+          type: string
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        note:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManualRoyaltyItem"
+        totalUnits:
+          type: integer
+        totalRoyalty:
+          type: number
+        currency:
+          type: string
+          enum:
+            - INR
+        status:
+          type: string
+          enum:
+            - RECORDED
+            - VOID
+        voidReason:
+          type: string
+        voidedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ManualRoyaltyCreateRequest:
+      type: object
+      required:
+        - authorId
+        - items
+      properties:
+        authorId:
+          type: string
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        note:
+          type: string
+          maxLength: 2000
+        items:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - bookTitle
+              - royaltyPerBook
+              - unitsSold
+            properties:
+              bookId:
+                type: string
+              bookTitle:
+                type: string
+              royaltyPerBook:
+                type: number
+                exclusiveMinimum: 0
+              unitsSold:
+                type: integer
+                minimum: 1
+    ManualRoyaltyVoidRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          maxLength: 500
     MultipartImageRequest:
       type: object
       required:

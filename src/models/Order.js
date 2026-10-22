@@ -38,7 +38,11 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           min: 0,
           max: 100
-        }
+        },
+        royaltyPerCopySnapshot: { type: Number, min: 0 },
+        printingCostSnapshot: { type: Number, min: 0 },
+        platformChargesSnapshot: { type: Number, min: 0 },
+        deliveryChargesSnapshot: { type: Number, min: 0 }
       },
     ],
     shippingAddress: {

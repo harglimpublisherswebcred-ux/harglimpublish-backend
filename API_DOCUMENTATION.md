@@ -515,3 +515,19 @@ Rules:
 - Upload endpoints require valid Cloudinary configuration.
 - Maintenance worker handles expired payment intents, expired inventory reservations, and failed notification retries unless disabled by environment.
 - Background queue is currently process-local; for multi-instance production, back it with Redis/RabbitMQ/SQS in a future infrastructure sprint.
+
+## Frontend Alignment APIs
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/stats/public` | Public | Count published books and active authors |
+| GET | `/api/admin/content` | Admin | Read CMS content including `adminProfileImage` |
+| POST | `/api/admin/manual-royalties` | Admin | Record an informational royalty statement |
+| GET | `/api/admin/manual-royalties` | Admin | List manual statements with pagination and filters |
+| GET | `/api/admin/manual-royalties/{id}` | Admin | View a manual statement |
+| POST | `/api/admin/manual-royalties/{id}/void` | Admin | Void a statement while preserving history |
+| GET | `/api/authors/me/manual-royalties` | Author dashboard | List the authenticated author's recorded statements |
+
+Admin book payloads now accept non-negative `printingCost`, `platformCharges`, and `deliveryCharges`. When any charge is configured, checkout snapshots `royaltyPerCopy = max(0, mrp - charges)`; older books without charge configuration retain percentage-based snapshots.
+
+Publishing package payloads also accept `tagline`, `highlighted`, `badge`, and `sortOrder`. Post-dispatch tracking may be corrected through the existing assign-courier endpoint until delivery without changing shipment status.

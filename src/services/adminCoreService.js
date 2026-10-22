@@ -1,6 +1,7 @@
 const adminCoreRepository = require('../repositories/adminCoreRepository');
 const { sendPublishRequestUpdate } = require('../utils/emailService');
 const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
+const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
 
 const notFound = (message) => {
   const error = new Error(message);
@@ -106,6 +107,12 @@ const sanitizeUser = (user) => {
   return data;
 };
 
+const withRoyaltyPerCopy = (book) => {
+  const data = typeof book.toObject === 'function' ? book.toObject() : { ...book };
+  const royaltyPerCopy = royaltyPerCopyFromBook(data);
+  return { ...data, ...(royaltyPerCopy !== null && { royaltyPerCopy }) };
+};
+
 class AdminCoreService {
   constructor(repository = adminCoreRepository) {
     this.repository = repository;
@@ -164,13 +171,13 @@ class AdminCoreService {
       this.repository.countBooksByQuery(query)
     ]);
 
-    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
+    return { data: data.map(withRoyaltyPerCopy), pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 
   async getBook(id) {
     const book = await this.repository.findBookById(id);
     if (!book) throw notFound('Book not found');
-    return book;
+    return withRoyaltyPerCopy(book);
   }
 
   async getUser(id) {
@@ -278,7 +285,7 @@ class AdminCoreService {
       if (existing) continue;
 
       try {
-        return await this.repository.createBook({ ...data, slug });
+        return withRoyaltyPerCopy(await this.repository.createBook({ ...data, slug }));
       } catch (error) {
         if (isBookSlugDuplicateError(error)) continue;
         throw error;
@@ -291,7 +298,7 @@ class AdminCoreService {
   async updateBook(id, data) {
     const book = await this.repository.updateBook(id, normalizeBookPricingInput(data));
     if (!book) throw notFound('Book not found');
-    return book;
+    return withRoyaltyPerCopy(book);
   }
 
   async deleteBook(id) {
@@ -327,8 +334,15 @@ class AdminCoreService {
       this.repository.listOrders(query, { skip, limit: limitNum, sort: buildCreatedAtSort(filters.sort) }),
       this.repository.countOrdersByQuery(query)
     ]);
+    const shipments = await this.repository.findShipmentsByOrderIds(data.map((order) => order._id));
+    const shipmentByOrder = new Map();
+    shipments.forEach((shipment) => {
+      const key = String(shipment.order);
+      if (!shipmentByOrder.has(key)) shipmentByOrder.set(key, shipment);
+    });
+    const orders = data.map((order) => ({ ...order, shipment: shipmentByOrder.get(String(order._id)) || null }));
 
-    return { data, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
+    return { data: orders, pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) } };
   }
 
   async updateOrderStatus(id, status) {

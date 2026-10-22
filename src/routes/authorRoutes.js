@@ -36,6 +36,7 @@ const {
 const { uploadImage, uploadDocument } = require('../controllers/uploadController');
 const { upload, requireCloudinaryConfig, handleUploadError } = require('../config/cloudinary');
 const royaltySettlementController = require('../controllers/royaltySettlementController');
+const manualRoyaltyController = require('../controllers/manualRoyaltyController');
 
 // Dashboard access purchase & status endpoints (for approved authors)
 router.get('/me/dashboard-access', protect, authorize('author', 'admin'), getDashboardAccessStatus);
@@ -71,6 +72,7 @@ router.get('/me/analytics', protect, requireAuthorDashboardAccess, getMyAnalytic
 router.get('/me/royalties', protect, requireAuthorDashboardAccess, getMyRoyalties);
 
 // Royalty Settlements
+router.get('/me/manual-royalties', protect, requireAuthorDashboardAccess, manualRoyaltyController.listMyStatements);
 router.get('/me/royalty-settlements', protect, requireAuthorDashboardAccess, royaltySettlementController.getAuthorSettlements);
 router.get('/me/royalty-settlements/:id', protect, requireAuthorDashboardAccess, royaltySettlementController.getAuthorSettlementDetail);
 

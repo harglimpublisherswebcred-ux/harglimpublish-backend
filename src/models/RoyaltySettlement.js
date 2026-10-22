@@ -54,9 +54,12 @@ const royaltySettlementItemSchema = new mongoose.Schema(
     },
     royaltyPercentageSnapshot: {
       type: Number,
-      required: true,
       min: 0,
       max: 100
+    },
+    royaltyPerCopySnapshot: {
+      type: Number,
+      min: 0
     },
     royaltyAmount: {
       type: Number,

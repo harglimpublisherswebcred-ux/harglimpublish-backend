@@ -1,4 +1,5 @@
 const authorRepository = require('../repositories/authorRepository');
+const mongoose = require('mongoose');
 
 const pageMeta = (page, limit, defaultLimit = 12) => {
   const pageNum = parseInt(page, 10) || 1;
@@ -33,6 +34,11 @@ class AuthorService {
   }
 
   async getAuthorById(id) {
+    if (!mongoose.isValidObjectId(id)) {
+      const error = new Error('Author not found');
+      error.statusCode = 404;
+      throw error;
+    }
     const author = await this.repository.findAuthorById(id);
     if (!author) {
       const error = new Error('Author not found');

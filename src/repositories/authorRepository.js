@@ -24,6 +24,7 @@ class AuthorRepository {
 
   findPublishedBooksByAuthor(authorId, { sort, skip, limit }) {
     return Book.find({ author: authorId, status: 'published' })
+      .select('-royaltyPercentage -reservedStock -printingCost -platformCharges -deliveryCharges')
       .populate('category', 'name slug')
       .sort(sort)
       .skip(skip)

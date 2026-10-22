@@ -1,5 +1,6 @@
 const authorDashboardRepository = require('../repositories/authorDashboardRepository');
 const User = require('../models/User');
+const { royaltyForOrderItem, royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
 
 const serviceError = (message, statusCode) => {
   const error = new Error(message);
@@ -45,7 +46,8 @@ class AuthorDashboardService {
         grossBookRevenue: 0,
         knownAccruedRoyalty: 0,
         unresolvedLegacySales: 0,
-        currentRoyaltyPercentage: typeof book.royaltyPercentage === 'number' ? book.royaltyPercentage : 0
+        currentRoyaltyPercentage: typeof book.royaltyPercentage === 'number' ? book.royaltyPercentage : 0,
+        royaltyPerCopy: royaltyPerCopyFromBook(book)
       });
     });
 
@@ -66,14 +68,12 @@ class AuthorDashboardService {
           totalUnitsSold += qty;
           totalGrossRevenue += lineGross;
 
-          let pct = null;
-          let lineRoyalty = null;
-          let royaltyStatus = 'HISTORICAL_RATE_UNAVAILABLE';
+          const royalty = royaltyForOrderItem(item);
+          const pct = royalty.royaltyPercentage;
+          const lineRoyalty = royalty.royaltyAmount;
+          const royaltyStatus = lineRoyalty === null ? 'HISTORICAL_RATE_UNAVAILABLE' : 'CALCULATED';
 
-          if (typeof item.royaltyPercentage === 'number') {
-            pct = item.royaltyPercentage;
-            lineRoyalty = roundMoney((lineGross * pct) / 100);
-            royaltyStatus = 'CALCULATED';
+          if (lineRoyalty !== null) {
             totalAccruedKnown += lineRoyalty;
           } else {
             unresolvedLegacySales += 1;
@@ -99,6 +99,7 @@ class AuthorDashboardService {
               unitPrice,
               grossRevenue: roundMoney(lineGross),
               royaltyPercentageSnapshot: pct,
+              royaltyPerCopy: royalty.royaltyPerCopy,
               accruedRoyalty: lineRoyalty,
               royaltyStatus,
               saleDate: order.createdAt,
@@ -195,9 +196,9 @@ class AuthorDashboardService {
             bucket.units += qty;
             bucket.revenue += gross;
 
-            if (typeof item.royaltyPercentage === 'number') {
-              const rVal = (gross * item.royaltyPercentage) / 100;
-              bucket.knownRoyalty += rVal;
+            const royalty = royaltyForOrderItem(item);
+            if (royalty.royaltyAmount !== null) {
+              bucket.knownRoyalty += royalty.royaltyAmount;
             } else {
               bucket.unresolvedLegacyCount += 1;
             }
@@ -260,15 +261,10 @@ class AuthorDashboardService {
           const unitPrice = item.price || 0;
           const gross = qty * unitPrice;
 
-          let pct = null;
-          let lineRoyalty = null;
-          let royaltyStatus = 'HISTORICAL_RATE_UNAVAILABLE';
-
-          if (typeof item.royaltyPercentage === 'number') {
-            pct = item.royaltyPercentage;
-            lineRoyalty = roundMoney((gross * pct) / 100);
-            royaltyStatus = 'CALCULATED';
-          }
+          const royalty = royaltyForOrderItem(item);
+          const pct = royalty.royaltyPercentage;
+          const lineRoyalty = royalty.royaltyAmount;
+          const royaltyStatus = lineRoyalty === null ? 'HISTORICAL_RATE_UNAVAILABLE' : 'CALCULATED';
 
           allTransactions.push({
             orderNumber: order.orderNumber,
@@ -278,6 +274,7 @@ class AuthorDashboardService {
             unitPrice,
             grossBookRevenue: roundMoney(gross),
             royaltyPercentageSnapshot: pct,
+            royaltyPerCopy: royalty.royaltyPerCopy,
             royaltyAmount: lineRoyalty,
             royaltyStatus,
             saleDate: order.createdAt,

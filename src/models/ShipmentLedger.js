@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const SHIPMENT_LEDGER_EVENTS = [
   'SHIPMENT_CREATED',
   'COURIER_ASSIGNED',
+  'TRACKING_UPDATED',
   'PICKUP_SCHEDULED',
   'PICKED_UP',
   'IN_TRANSIT',

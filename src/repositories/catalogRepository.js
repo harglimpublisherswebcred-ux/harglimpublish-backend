@@ -2,6 +2,8 @@ const Book = require('../models/Book');
 const Category = require('../models/Category');
 const Review = require('../models/Review');
 
+const PUBLIC_BOOK_FIELDS = '-royaltyPercentage -reservedStock -printingCost -platformCharges -deliveryCharges';
+
 class CatalogRepository {
   findCategoryBySlug(slug) {
     return Category.findOne({ slug });
@@ -9,6 +11,7 @@ class CatalogRepository {
 
   findPublishedBooks(query, { sort, skip, limit }) {
     return Book.find(query)
+      .select(PUBLIC_BOOK_FIELDS)
       .populate('author', 'name')
       .populate('category', 'name slug')
       .sort(sort)
@@ -22,6 +25,7 @@ class CatalogRepository {
 
   findPublishedBookBySlug(slug) {
     return Book.findOne({ slug, status: 'published' })
+      .select(PUBLIC_BOOK_FIELDS)
       .populate('author', 'name bio profilePicture')
       .populate('category', 'name slug');
   }
@@ -31,6 +35,7 @@ class CatalogRepository {
       { $text: { $search: search }, status: 'published' },
       { score: { $meta: 'textScore' } }
     )
+      .select(PUBLIC_BOOK_FIELDS)
       .populate('author', 'name')
       .sort({ score: { $meta: 'textScore' } })
       .skip(skip)
@@ -51,6 +56,7 @@ class CatalogRepository {
       _id: { $ne: book._id },
       status: 'published'
     })
+      .select(PUBLIC_BOOK_FIELDS)
       .populate('author', 'name')
       .limit(limit);
   }

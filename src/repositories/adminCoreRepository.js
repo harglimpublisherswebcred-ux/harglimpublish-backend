@@ -2,6 +2,7 @@ const Book = require('../models/Book');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const PublishRequest = require('../models/PublishRequest');
+const Shipment = require('../models/Shipment');
 
 class AdminCoreRepository {
   getRevenueAggregation() {
@@ -114,6 +115,13 @@ class AdminCoreRepository {
 
   countOrdersByQuery(query = {}) {
     return Order.countDocuments(query);
+  }
+
+  findShipmentsByOrderIds(orderIds = []) {
+    return Shipment.find({ order: { $in: orderIds } })
+      .select('_id order status courier trackingNumber trackingUrl')
+      .sort({ createdAt: -1 })
+      .lean();
   }
 
   findOrderById(id) {

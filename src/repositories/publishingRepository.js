@@ -7,7 +7,7 @@ class PublishingRepository {
   }
 
   listActivePackages() {
-    return PublishPackage.find({ isActive: true }).sort({ price: 1, createdAt: 1 });
+    return PublishPackage.find({ isActive: true }).sort({ sortOrder: 1, price: 1, createdAt: 1 });
   }
 
   async listPackages(filters = {}) {
@@ -28,7 +28,9 @@ class PublishingRepository {
       ? { price: 1, createdAt: -1 }
       : filters.sort === 'price_desc'
         ? { price: -1, createdAt: -1 }
-        : { createdAt: -1 };
+        : filters.sort === 'sort_order'
+          ? { sortOrder: 1, createdAt: -1 }
+          : { createdAt: -1 };
 
     const [items, total] = await Promise.all([
       PublishPackage.find(query).sort(sort).skip((page - 1) * limit).limit(limit).lean(),
