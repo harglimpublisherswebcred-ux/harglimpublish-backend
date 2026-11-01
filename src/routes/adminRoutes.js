@@ -18,6 +18,7 @@ const {
   listUsers,
   getUser,
   createUser,
+  resendAuthorInvite,
   updateUser,
   updateUserRole,
   updateUserStatus,
@@ -45,6 +46,8 @@ const {
 } = require('../controllers/publishController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
+const spotlightController = require('../controllers/spotlightController');
+const { spotlightUpload, requireCloudinaryConfig, handleUploadError } = require('../config/cloudinary');
 
 router.use(protect);
 router.use(authorize('admin'));
@@ -52,6 +55,10 @@ router.use(authorize('admin'));
 router.get('/dashboard', getAdminDashboardOverview);
 router.get('/analytics', getAdminAnalytics);
 router.get('/stats', getAdminAnalytics);
+router.get('/spotlights', spotlightController.listAdmin);
+router.post('/spotlights', requireCloudinaryConfig, spotlightUpload.single('image'), handleUploadError, spotlightController.create);
+router.patch('/spotlights/:id', spotlightUpload.single('image'), handleUploadError, spotlightController.update);
+router.delete('/spotlights/:id', spotlightController.archive);
 router.get('/analytics/dashboard', adminAnalyticsController.dashboard);
 router.get('/analytics/revenue', adminAnalyticsController.revenue);
 router.get('/analytics/books', adminAnalyticsController.books);
@@ -61,6 +68,7 @@ router.get('/analytics/shipments', adminAnalyticsController.shipments);
 router.get('/analytics/customers', adminAnalyticsController.customers);
 router.get('/users', listUsers);
 router.post('/users', createUser);
+router.post('/users/:id/resend-invite', resendAuthorInvite);
 router.get('/users/:id', getUser);
 router.put('/users/:id', updateUser);
 router.patch('/users/:id', updateUser);

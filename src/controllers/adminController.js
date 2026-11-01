@@ -184,8 +184,16 @@ const getUser = async (req, res) => {
 // @access  Private (Admin)
 const createUser = async (req, res) => {
   try {
-    const user = await adminCoreService.createUser(req.body);
+    const user = await adminCoreService.createUser(req.body, req.user);
     res.status(201).json({ success: true, data: user });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+  }
+};
+
+const resendAuthorInvite = async (req, res) => {
+  try {
+    res.json({ success: true, data: await adminCoreService.resendAuthorInvite(req.params.id) });
   } catch (error) {
     res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
@@ -302,6 +310,7 @@ module.exports = {
   listUsers,
   getUser,
   createUser,
+  resendAuthorInvite,
   updateUser,
   updateUserRole,
   updateUserStatus,

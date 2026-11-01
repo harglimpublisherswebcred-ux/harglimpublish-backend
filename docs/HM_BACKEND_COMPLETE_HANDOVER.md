@@ -3034,3 +3034,40 @@ Public book APIs exclude `royaltyPercentage`, `reservedStock`, `printingCost`, `
 ### Publishing Package Cards
 
 Publish package create/update accepts and public package reads return `tagline`, `highlighted`, `badge`, and `sortOrder`. Public packages are ordered by `sortOrder`, then price and creation time.
+
+## Frontend Alignment Revision 2026-11
+
+### Author Operational Reads
+
+All authenticated `/api/authors/me/*` responses send `Cache-Control: no-store`. `GET /api/authors/me/books` and `GET /api/authors/me/books/{bookId}` select books by the assigned `Book.author`, regardless of who created them, and return current `royaltyPerCopy` (`null` for percentage-only books). Performance returns every assigned book, including zero-sale books. Royalty history and recent sales return immutable `royaltyPerCopySnapshot` for charge-snapshot lines.
+
+`POST /api/authors/me/books/{bookId}/submit` requires `packageId`. Missing, malformed, archived, inactive, or unknown packages return `400`; the backend never silently creates or selects a package.
+
+### Author Spotlights
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/spotlights` | Public | List active spotlights with pagination |
+| GET | `/api/admin/spotlights` | Admin | List active and inactive spotlights |
+| POST | `/api/admin/spotlights` | Admin | Upload and create a spotlight |
+| PATCH | `/api/admin/spotlights/{id}` | Admin | Update metadata or replace the image |
+| DELETE | `/api/admin/spotlights/{id}` | Admin | Soft archive the spotlight |
+
+Create uses `multipart/form-data` with required `image` and `author_name`; optional fields are `caption`, `authorId`, `sortOrder`, and `isActive`. Images must be JPG, PNG, or WebP and no larger than 10 MB. The original is capped at 1600 pixels and `thumbnail` is a Cloudinary 400x400 crop.
+
+### Admin Author Invitations
+
+`POST /api/admin/users` retains password-based creation for all roles. When `role=author`, the password may be omitted to create a seven-day set-password invitation. The response contains `invited: true` and `emailSent`; it never returns the token. If paid dashboard gating is enabled, an active admin-granted entitlement is created.
+
+`POST /api/admin/users/{id}/resend-invite` rotates and resends the token. It returns `409` after the author has set a password. Duplicate email creation returns `409`.
+
+### CMS Seed
+
+The idempotent seed utility validates through `ContentService` and is dry-run first:
+
+```bash
+npm run seed:content:dry-run -- --file C:/path/site-content-seed.json
+npm run seed:content -- --file C:/path/site-content-seed.json
+```
+
+Production apply additionally requires `--force-production`. See `docs/content-seeding.md`.

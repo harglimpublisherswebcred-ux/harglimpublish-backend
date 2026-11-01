@@ -156,6 +156,7 @@ app.use('/api/books', require('./src/routes/bookRoutes'));
 app.use('/api/categories', require('./src/routes/categoryRoutes'));
 app.use('/api/content', require('./src/routes/contentRoutes'));
 app.use('/api/stats', require('./src/routes/publicStatsRoutes'));
+app.use('/api/spotlights', require('./src/routes/spotlightRoutes'));
 app.use('/api/contact', require('./src/routes/contactRoutes'));
 app.use('/api/contact-requests', require('./src/routes/contactRoutes'));
 app.use('/api/author-applications', require('./src/routes/authorApplicationRoutes'));
@@ -178,7 +179,7 @@ app.use((req, res, next) => {
 
 // Global Error handling middleware
 app.use((err, req, res, next) => {
-  logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+  logger.error(`${err.statusCode || err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
   
   res.status(err.statusCode || 500).json({
     success: false,

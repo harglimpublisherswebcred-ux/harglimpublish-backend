@@ -1,7 +1,9 @@
+const mongoose = require('mongoose');
 const authorBookRepository = require('../repositories/authorBookRepository');
 const Category = require('../models/Category');
 const logger = require('../utils/logger');
 const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
+const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
 
 class AuthorBookError extends Error {
   constructor(message, code = 'AUTHOR_BOOK_ERROR', statusCode = 400, details = {}) {
@@ -67,6 +69,11 @@ const PROTECTED_ADMIN_FIELDS = new Set([
 const hasValue = (val) => val !== undefined && val !== null;
 const MAX_BOOK_SLUG_ATTEMPTS = 50;
 
+const withAuthorRoyalty = (book) => {
+  const data = book && typeof book.toObject === 'function' ? book.toObject() : { ...book };
+  return { ...data, royaltyPerCopy: royaltyPerCopyFromBook(data) };
+};
+
 const filterAndNormalizeAuthorPayload = (payload = {}, isUpdate = false) => {
   const filtered = {};
 
@@ -117,7 +124,7 @@ class AuthorBookService {
       books.map(async (book) => {
         const latestRequest = await this.repository.findLatestPublishRequestByBookId(book._id);
         return {
-          ...book,
+          ...withAuthorRoyalty(book),
           publishingStatus: latestRequest ? latestRequest.status : (book.status === 'published' ? 'APPROVED' : 'DRAFT'),
           latestPublishRequest: latestRequest || null
         };
@@ -139,7 +146,7 @@ class AuthorBookService {
     const latestRequest = await this.repository.findLatestPublishRequestByBookId(book._id);
 
     return {
-      book,
+      book: withAuthorRoyalty(book),
       publishingStatus: latestRequest ? latestRequest.status : (book.status === 'published' ? 'APPROVED' : 'DRAFT'),
       latestPublishRequest: latestRequest || null
     };
@@ -285,8 +292,17 @@ class AuthorBookService {
       throw new AuthorBookValidationError('Manuscript file URL (fileUrl) is required for publishing submission');
     }
 
-    let defaultPkg = await this.repository.getDefaultPackage();
-    const packageId = payload.packageId || defaultPkg._id;
+    if (!payload.packageId) {
+      throw new AuthorBookValidationError('packageId is required');
+    }
+    if (!mongoose.isValidObjectId(payload.packageId)) {
+      throw new AuthorBookValidationError('packageId is invalid');
+    }
+    const selectedPackage = await this.repository.findActivePackageById(payload.packageId);
+    if (!selectedPackage) {
+      throw new AuthorBookValidationError('Publishing package was not found or is inactive');
+    }
+    const packageId = selectedPackage._id;
 
     const categoryDoc = await this.Category.findById(book.category);
     const genre = payload.genre || (categoryDoc ? categoryDoc.name : 'General');

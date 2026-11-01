@@ -1,5 +1,9 @@
 const adminCoreRepository = require('../repositories/adminCoreRepository');
 const { sendPublishRequestUpdate } = require('../utils/emailService');
+const { sendAuthorInviteEmail } = require('../utils/emailService');
+const crypto = require('crypto');
+const authorAccessService = require('./authorAccessService');
+const { isPaidAuthorDashboardAccessEnabled } = require('../config/features');
 const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
 const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
 
@@ -186,7 +190,7 @@ class AdminCoreService {
     return user;
   }
 
-  async createUser(payload = {}) {
+  async createUser(payload = {}, actor) {
     const name = payload.name ? String(payload.name).trim() : '';
     const email = payload.email ? String(payload.email).trim().toLowerCase() : '';
     const password = payload.password ? String(payload.password) : '';
@@ -198,7 +202,10 @@ class AdminCoreService {
     if (!name) throw serviceError('Name is required');
     if (!email) throw serviceError('Email is required');
     if (!emailPattern.test(email)) throw serviceError('Please add a valid email');
-    if (!password || password.length < 6) throw serviceError('Password must be at least 6 characters');
+    const isAuthorInvite = role === 'author' && !password;
+    if (!isAuthorInvite && (!password || password.length < 6)) {
+      throw serviceError('Password must be at least 6 characters');
+    }
     if (!allowedRoles.has(role)) throw serviceError('Invalid user role');
     if (isActive === undefined) throw serviceError('Invalid user status');
 
@@ -206,14 +213,53 @@ class AdminCoreService {
     if (existing) throw serviceError('User with this email already exists', 409);
 
     try {
-      const user = await this.repository.createUser({ name, email, password, role, isActive });
-      return sanitizeUser(user);
+      const inviteToken = isAuthorInvite ? crypto.randomBytes(32).toString('hex') : null;
+      const user = await this.repository.createUser({
+        name,
+        email,
+        ...(password && { password }),
+        role,
+        isActive,
+        ...(inviteToken && {
+          passwordResetToken: crypto.createHash('sha256').update(inviteToken).digest('hex'),
+          passwordResetExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        })
+      });
+
+      if (role === 'author' && actor && isPaidAuthorDashboardAccessEnabled()) {
+        try {
+          await authorAccessService.adminGrantEntitlement(actor, user._id, 'Granted during admin author creation');
+        } catch (error) {
+          await this.repository.deleteUserById(user._id);
+          throw error;
+        }
+      }
+
+      const emailSent = inviteToken ? await sendAuthorInviteEmail(user, inviteToken) : undefined;
+      return {
+        ...sanitizeUser(user),
+        ...(inviteToken && { invited: true, emailSent })
+      };
     } catch (error) {
       if (error && error.code === 11000) {
         throw serviceError('User with this email already exists', 409);
       }
       throw error;
     }
+  }
+
+  async resendAuthorInvite(id) {
+    const user = await this.repository.findUserByIdWithPassword(id);
+    if (!user) throw notFound('User not found');
+    if (user.role !== 'author') throw serviceError('Only author invitations can be resent');
+    if (user.password) throw serviceError('User has already set a password', 409);
+
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    user.passwordResetToken = crypto.createHash('sha256').update(inviteToken).digest('hex');
+    user.passwordResetExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.repository.saveUser(user);
+    const emailSent = await sendAuthorInviteEmail(user, inviteToken);
+    return { _id: user._id, name: user.name, email: user.email, role: user.role, invited: true, emailSent };
   }
 
   async updateUserRole(id, role) {
@@ -269,11 +315,25 @@ class AdminCoreService {
     return { success: true, message: 'User deactivated', data: user };
   }
 
-  createBook(data, actor) {
-    return this.createBookWithServerSlug({
+  async createBook(data, actor) {
+    const book = await this.createBookWithServerSlug({
       ...normalizeBookPricingInput(data),
       author: data.author || actor._id
     });
+
+    if (data.author && actor && isPaidAuthorDashboardAccessEnabled()) {
+      const assignedAuthor = await this.repository.findUserById(data.author);
+      if (assignedAuthor?.role === 'author') {
+        try {
+          await authorAccessService.adminGrantEntitlement(actor, assignedAuthor._id, 'Granted when admin assigned a book');
+        } catch (error) {
+          await this.repository.deleteBook(book._id);
+          throw error;
+        }
+      }
+    }
+
+    return book;
   }
 
   async createBookWithServerSlug(data) {

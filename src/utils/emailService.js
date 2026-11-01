@@ -5,19 +5,23 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
+    if (process.env.NODE_ENV === 'test') return true;
     if (!resend || !process.env.RESEND_API_KEY) {
       logger.warn('RESEND_API_KEY is not set. Email not sent.');
       return false;
     }
 
-    const data = await resend.emails.send({
+    const result = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'onboarding@resend.dev',
       to,
       subject,
       html,
     });
 
-    logger.info(`Email sent to ${to}: ${data.id}`);
+    if (result.error) throw new Error(result.error.message || 'Email provider rejected the request');
+    const messageId = result.data?.id || result.id;
+
+    logger.info(`Email sent to ${to}: ${messageId}`);
     return true;
   } catch (error) {
     logger.error(`Error sending email to ${to}: ${error.message}`);
@@ -65,9 +69,23 @@ const sendPublishRequestUpdate = async (user, request, status) => {
   return sendEmail({ to: user.email, subject, html });
 };
 
+const sendAuthorInviteEmail = async (user, token) => {
+  const frontendUrl = String(process.env.FRONTEND_URL || '').replace(/\/$/, '');
+  const inviteUrl = `${frontendUrl || 'https://harglimpublishers.com'}/reset-password/${encodeURIComponent(token)}`;
+  const subject = 'Set up your Harglim author account';
+  const html = `
+    <h1>Welcome, ${user.name}!</h1>
+    <p>An administrator created an author account for you at Harglim Publishers.</p>
+    <p><a href="${inviteUrl}">Set your password</a> to activate your login. This link expires in 7 days.</p>
+    <p>If you did not expect this invitation, you can ignore this email.</p>
+  `;
+  return sendEmail({ to: user.email, subject, html });
+};
+
 module.exports = {
   sendEmail,
   sendWelcomeEmail,
   sendOrderConfirmation,
-  sendPublishRequestUpdate
+  sendPublishRequestUpdate,
+  sendAuthorInviteEmail
 };

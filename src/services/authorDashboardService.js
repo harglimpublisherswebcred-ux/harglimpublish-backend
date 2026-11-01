@@ -100,6 +100,7 @@ class AuthorDashboardService {
               grossRevenue: roundMoney(lineGross),
               royaltyPercentageSnapshot: pct,
               royaltyPerCopy: royalty.royaltyPerCopy,
+              royaltyPerCopySnapshot: royalty.source === 'CHARGE_SNAPSHOT' ? royalty.royaltyPerCopy : null,
               accruedRoyalty: lineRoyalty,
               royaltyStatus,
               saleDate: order.createdAt,
@@ -116,8 +117,7 @@ class AuthorDashboardService {
         grossBookRevenue: roundMoney(b.grossBookRevenue),
         knownAccruedRoyalty: roundMoney(b.knownAccruedRoyalty)
       }))
-      .sort((a, b) => b.unitsSold - a.unitsSold)
-      .slice(0, 5);
+      .sort((a, b) => b.unitsSold - a.unitsSold);
 
     const dataStatus = unresolvedLegacySales > 0 ? 'PARTIAL' : 'COMPLETE';
 
@@ -275,6 +275,7 @@ class AuthorDashboardService {
             grossBookRevenue: roundMoney(gross),
             royaltyPercentageSnapshot: pct,
             royaltyPerCopy: royalty.royaltyPerCopy,
+            royaltyPerCopySnapshot: royalty.source === 'CHARGE_SNAPSHOT' ? royalty.royaltyPerCopy : null,
             royaltyAmount: lineRoyalty,
             royaltyStatus,
             saleDate: order.createdAt,

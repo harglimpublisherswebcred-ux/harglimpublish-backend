@@ -110,18 +110,8 @@ class AuthorBookRepository {
     );
   }
 
-  async getDefaultPackage() {
-    let pkg = await this.PublishPackage.findOne({ isActive: true });
-    if (!pkg) {
-      pkg = await this.PublishPackage.create({
-        name: 'Standard Author Package',
-        description: 'Standard self-publishing package',
-        price: 0,
-        features: ['Editing', 'Distribution', 'Cover Formatting'],
-        isActive: true
-      });
-    }
-    return pkg;
+  async findActivePackageById(packageId) {
+    return this.PublishPackage.findOne({ _id: packageId, isActive: true }).lean();
   }
 }
 

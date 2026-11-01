@@ -38,6 +38,13 @@ const { upload, requireCloudinaryConfig, handleUploadError } = require('../confi
 const royaltySettlementController = require('../controllers/royaltySettlementController');
 const manualRoyaltyController = require('../controllers/manualRoyaltyController');
 
+const disableAuthorResponseCaching = (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+};
+
+router.use('/me', disableAuthorResponseCaching);
+
 // Dashboard access purchase & status endpoints (for approved authors)
 router.get('/me/dashboard-access', protect, authorize('author', 'admin'), getDashboardAccessStatus);
 router.post('/me/dashboard-access/purchase', protect, authorize('author', 'admin'), initiatePurchase);

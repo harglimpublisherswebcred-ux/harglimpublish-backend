@@ -62,6 +62,10 @@ class AdminCoreRepository {
     return User.findById(id).select('-password');
   }
 
+  findUserByIdWithPassword(id) {
+    return User.findById(id).select('+password +passwordResetToken +passwordResetExpires');
+  }
+
   findUserByEmail(email) {
     return User.findOne({ email }).select('-password');
   }
@@ -69,6 +73,10 @@ class AdminCoreRepository {
   createUser(data) {
     const user = new User(data);
     return user.save();
+  }
+
+  deleteUserById(id) {
+    return User.findByIdAndDelete(id);
   }
 
   updateUser(id, data) {

@@ -613,12 +613,12 @@ const schemas = {
   },
   BookSubmissionRequest: {
     type: 'object',
-    required: ['fileUrl'],
+    required: ['fileUrl', 'packageId'],
     properties: {
       fileUrl: { type: 'string', format: 'uri', description: 'Uploaded manuscript URL. documentUrl or manuscriptUrl are accepted compatibility aliases.' },
       documentUrl: { type: 'string', format: 'uri', description: 'Compatibility alias for fileUrl.' },
       manuscriptUrl: { type: 'string', format: 'uri', description: 'Compatibility alias for fileUrl.' },
-      packageId: { type: 'string', description: 'Optional PublishPackage ObjectId. Defaults to the first active package when omitted.' },
+      packageId: { type: 'string', description: 'Required active PublishPackage ObjectId.' },
       genre: { type: 'string', description: 'Optional. Defaults from category name or General.' },
       wordCount: { type: 'integer', minimum: 1, description: 'Optional. Defaults from pages * 300 or 25000.' },
       pages: { type: 'integer', minimum: 1, description: 'Optional helper for deriving wordCount when wordCount is omitted.' }
@@ -794,11 +794,11 @@ const schemas = {
   },
   AdminUserCreateRequest: {
     type: 'object',
-    required: ['name', 'email', 'password'],
+    required: ['name', 'email'],
     properties: {
       name: { type: 'string', minLength: 2 },
       email: { type: 'string', format: 'email' },
-      password: { type: 'string', minLength: 6 },
+      password: { type: 'string', minLength: 6, description: 'Required except when role=author. Omit for a seven-day set-password invitation.' },
       role: { type: 'string', enum: ['user', 'visitor', 'reader', 'author', 'admin'], default: 'reader', description: 'Admin-only role assignment. user is normalized to reader.' },
       isActive: { type: 'boolean', default: true },
       status: { type: 'string', enum: ['Active', 'Suspended'], description: 'Frontend compatibility alias for isActive.' }
@@ -1041,6 +1041,29 @@ const schemas = {
     type: 'object',
     required: ['reason'],
     properties: { reason: { type: 'string', maxLength: 500 } }
+  },
+  MultipartSpotlightCreateRequest: {
+    type: 'object',
+    required: ['image', 'author_name'],
+    properties: {
+      image: { type: 'string', format: 'binary', description: 'JPG, PNG, or WebP; maximum 10 MB.' },
+      author_name: { type: 'string', maxLength: 120 },
+      caption: { type: 'string', maxLength: 500 },
+      authorId: { type: 'string', description: 'Optional active author User ObjectId.' },
+      sortOrder: { type: 'number', default: 0 },
+      isActive: { type: 'boolean', default: true }
+    }
+  },
+  MultipartSpotlightUpdateRequest: {
+    type: 'object',
+    properties: {
+      image: { type: 'string', format: 'binary', description: 'Optional replacement JPG, PNG, or WebP; maximum 10 MB.' },
+      author_name: { type: 'string', maxLength: 120 },
+      caption: { type: 'string', maxLength: 500 },
+      authorId: { type: 'string', description: 'Optional active author User ObjectId. Empty value removes the link.' },
+      sortOrder: { type: 'number' },
+      isActive: { type: 'boolean' }
+    }
   },
   MultipartImageRequest: {
     type: 'object',

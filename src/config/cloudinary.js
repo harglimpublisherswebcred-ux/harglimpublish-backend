@@ -107,6 +107,30 @@ const upload = multer({
   }
 });
 
+const spotlightStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: 'harglim/spotlights',
+    resource_type: 'image',
+    public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '')}`,
+    transformation: [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto' }],
+  }),
+});
+
+const spotlightUpload = multer({
+  storage: spotlightStorage,
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, callback) => {
+    const extension = path.extname(file.originalname || '').toLowerCase();
+    const allowedMime = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const allowedExtension = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+    if (file.fieldname !== 'image' || !allowedMime.has(file.mimetype) || !allowedExtension.has(extension)) {
+      return callback(new Error('Spotlight image must be a JPG, PNG, or WebP file'));
+    }
+    return callback(null, true);
+  },
+});
+
 const logUploadStart = (req, res, next) => {
   req.uploadStartedAt = Date.now();
   logger.info('upload.started', {
@@ -179,6 +203,7 @@ const handleUploadError = (error, req, res, next) => {
 module.exports = {
   cloudinary,
   upload,
+  spotlightUpload,
   logUploadStart,
   isCloudinaryConfigured,
   getMissingCloudinaryConfig,

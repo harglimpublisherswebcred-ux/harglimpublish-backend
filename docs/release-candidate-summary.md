@@ -4,13 +4,13 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 202
+Endpoints documented: 208
 
-Models documented: 18
+Models documented: 19
 
 Events documented: 31
 
-Database collections documented: 18
+Database collections documented: 19
 
 Sequence diagrams: 9
 
@@ -27,6 +27,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/health` | Public | `server.js` |
 | GET | `/api/content` | Public | `contentController.getContent` |
 | GET | `/api/stats/public` | Public | `publicStatsController.getPublicStats` |
+| GET | `/api/spotlights` | Public | `spotlightController.listPublic` |
 | POST | `/api/contact` | Public | `contactController.submitContactRequest` |
 | POST | `/api/contact-requests` | Public | `contactController.submitContactRequest` |
 | POST | `/api/auth/register` | Public | `authController.registerUser` |
@@ -122,9 +123,14 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | DELETE | `/api/admin/reviews/{id}` | Admin | `reviewController.deleteReview` |
 | PUT | `/api/admin/content` | Admin | `contentController.updateContent` |
 | GET | `/api/admin/content` | Admin | `contentController.getAdminContent` |
+| GET | `/api/admin/spotlights` | Admin | `spotlightController.listAdmin` |
+| POST | `/api/admin/spotlights` | Admin | `spotlightController.create` |
+| PATCH | `/api/admin/spotlights/{id}` | Admin | `spotlightController.update` |
+| DELETE | `/api/admin/spotlights/{id}` | Admin | `spotlightController.archive` |
 | GET | `/api/admin/users` | Admin | `adminController.listUsers` |
 | GET | `/api/users` | Admin | `adminController.listUsers` |
 | POST | `/api/admin/users` | Admin | `adminController.createUser` |
+| POST | `/api/admin/users/{id}/resend-invite` | Admin | `adminController.resendAuthorInvite` |
 | GET | `/api/admin/users/{id}` | Admin | `adminController.getUser` |
 | PUT | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |
 | PATCH | `/api/admin/users/{id}` | Admin | `adminController.updateUser` |

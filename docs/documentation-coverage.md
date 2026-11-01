@@ -1,12 +1,12 @@
 # Documentation Coverage Report
 
-Endpoint inventory: 202
+Endpoint inventory: 208
 
-Models documented: 18
+Models documented: 19
 
 Events documented: 31
 
-Database collections documented: 18
+Database collections documented: 19
 
 Sequence diagrams: 9
 

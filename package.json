@@ -11,6 +11,8 @@
     "format": "prettier --write src/",
     "seed:dummy": "node scripts/seedDummyData.js",
     "seed:dummy:dry-run": "node scripts/seedDummyData.js --dry-run",
+    "seed:content": "node scripts/contentSeed.js --apply",
+    "seed:content:dry-run": "node scripts/contentSeed.js",
     "migrate:book-mrp": "node scripts/bookMrpMigration.js --apply",
     "migrate:book-mrp:dry-run": "node scripts/bookMrpMigration.js",
     "migrate:book-slug": "node scripts/bookSlugMigration.js --apply",

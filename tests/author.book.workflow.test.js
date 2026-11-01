@@ -354,7 +354,7 @@ describe('Phase 4: Author-Owned Books + Editorial Publishing Workflow Integratio
       const resubmitRes = await request(app)
         .post(`/api/authors/me/books/${bookId}/submit`)
         .set('Authorization', `Bearer ${authorToken1}`)
-        .send({ fileUrl: 'https://res.cloudinary.com/manuscript-v2.pdf' });
+        .send({ fileUrl: 'https://res.cloudinary.com/manuscript-v2.pdf', packageId: publishPackage._id });
       expect(resubmitRes.status).toBe(201);
 
       // 8. Admin Approves and Publishes
@@ -403,7 +403,7 @@ describe('Phase 4: Author-Owned Books + Editorial Publishing Workflow Integratio
       const submitRes = await request(app)
         .post(`/api/authors/me/books/${bookId}/submit`)
         .set('Authorization', `Bearer ${authorToken1}`)
-        .send({ fileUrl: 'https://res.cloudinary.com/manuscript.pdf' });
+        .send({ fileUrl: 'https://res.cloudinary.com/manuscript.pdf', packageId: publishPackage._id });
       expect(submitRes.status).toBe(201);
 
       // 3. Author CANNOT access paid dashboard metrics
@@ -442,7 +442,7 @@ describe('Phase 4: Author-Owned Books + Editorial Publishing Workflow Integratio
       const submitRes = await request(app)
         .post(`/api/authors/me/books/${bookId}/submit`)
         .set('Authorization', `Bearer ${authorToken1}`)
-        .send({ fileUrl: 'https://res.cloudinary.com/manuscript.pdf' });
+        .send({ fileUrl: 'https://res.cloudinary.com/manuscript.pdf', packageId: publishPackage._id });
       expect(submitRes.status).toBe(201);
     });
   });

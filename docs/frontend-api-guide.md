@@ -157,6 +157,58 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `System`.
 
+## GET /api/spotlights
+
+Purpose: List active author spotlights.
+
+Authentication: Public.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/spotlights`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/spotlights', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/spotlights', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Spotlights`.
+
 ## POST /api/contact
 
 Purpose: Submit website contact request.
@@ -5065,6 +5117,213 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Admin Content`.
 
+## GET /api/admin/spotlights
+
+Purpose: List all author spotlights.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- `page`: optional query parameter.
+- `limit`: optional query parameter.
+- `isActive`: optional query parameter.
+- `search`: optional query parameter.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/spotlights`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/spotlights', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/spotlights', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Spotlights`.
+
+## POST /api/admin/spotlights
+
+Purpose: Create author spotlight.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `MultipartSpotlightCreateRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/spotlights`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'POST', url: '/api/admin/spotlights', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/spotlights', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Spotlights`.
+
+## PATCH /api/admin/spotlights/{id}
+
+Purpose: Update author spotlight.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `MultipartSpotlightUpdateRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/spotlights/:id`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'PATCH', url: '/api/admin/spotlights/:id', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/spotlights/:id', options: Options(method: 'PATCH', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Spotlights`.
+
+## DELETE /api/admin/spotlights/{id}
+
+Purpose: Archive author spotlight.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/spotlights/:id`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'DELETE', url: '/api/admin/spotlights/:id', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/spotlights/:id', options: Options(method: 'DELETE', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Spotlights`.
+
 ## GET /api/admin/users
 
 Purpose: List users.
@@ -5177,7 +5436,7 @@ Related APIs: See endpoints with tag `Admin Users`.
 
 ## POST /api/admin/users
 
-Purpose: Create user.
+Purpose: Create user or invite author.
 
 Authentication: Admin.
 
@@ -5220,6 +5479,57 @@ await axios.request({ method: 'POST', url: '/api/admin/users', headers: { Author
 Example Flutter Dio Request:
 ```dart
 await dio.request('/api/admin/users', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Users`.
+
+## POST /api/admin/users/{id}/resend-invite
+
+Purpose: Resend author set-password invitation.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- `id`: path parameter.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/users/:id/resend-invite`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'POST', url: '/api/admin/users/:id/resend-invite', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/users/:id/resend-invite', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
 ```
 
 Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.

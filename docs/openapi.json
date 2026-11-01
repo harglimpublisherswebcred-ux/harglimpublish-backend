@@ -27,6 +27,9 @@
       "name": "Content"
     },
     {
+      "name": "Spotlights"
+    },
+    {
       "name": "Contact"
     },
     {
@@ -70,6 +73,9 @@
     },
     {
       "name": "Admin Content"
+    },
+    {
+      "name": "Admin Spotlights"
     },
     {
       "name": "Admin Users"
@@ -418,6 +424,179 @@
         "operationId": "get_api_stats_public",
         "security": [],
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/spotlights": {
+      "get": {
+        "tags": [
+          "Spotlights"
+        ],
+        "summary": "List active author spotlights",
+        "description": "List active author spotlights. Controller: spotlightController.listPublic. Authentication: Public. API routes are rate limited and return standard error envelopes.",
+        "operationId": "get_api_spotlights",
+        "security": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -15275,7 +15454,7 @@
           "Author Publishing"
         ],
         "summary": "Submit author book for editorial review",
-        "description": "Submit author book for editorial review. Controller: authorBookController.submitBookForReview. Authentication: Author. API routes are rate limited and return standard error envelopes.",
+        "description": "Submit author book for editorial review. Controller: authorBookController.submitBookForReview. Authentication: Author. API routes are rate limited and return standard error envelopes. packageId is required and must reference an active publishing package.",
         "operationId": "post_api_authors_me_books_bookId_submit",
         "security": [
           {
@@ -17807,6 +17986,698 @@
         }
       }
     },
+    "/api/admin/spotlights": {
+      "get": {
+        "tags": [
+          "Admin Spotlights"
+        ],
+        "summary": "List all author spotlights",
+        "description": "List all author spotlights. Controller: spotlightController.listAdmin. Authentication: Admin. API routes are rate limited and return standard error envelopes.",
+        "operationId": "get_api_admin_spotlights",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Spotlights"
+        ],
+        "summary": "Create author spotlight",
+        "description": "Create author spotlight. Controller: spotlightController.create. Authentication: Admin. API routes are rate limited and return standard error envelopes. Multipart image field. Accepts JPG, PNG, or WebP up to 10 MB.",
+        "operationId": "post_api_admin_spotlights",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MultipartSpotlightCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/spotlights/{id}": {
+      "patch": {
+        "tags": [
+          "Admin Spotlights"
+        ],
+        "summary": "Update author spotlight",
+        "description": "Update author spotlight. Controller: spotlightController.update. Authentication: Admin. API routes are rate limited and return standard error envelopes. All fields are optional; a supplied image replaces the existing image.",
+        "operationId": "patch_api_admin_spotlights_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MultipartSpotlightUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin Spotlights"
+        ],
+        "summary": "Archive author spotlight",
+        "description": "Archive author spotlight. Controller: spotlightController.archive. Authentication: Admin. API routes are rate limited and return standard error envelopes. Soft delete: sets isActive=false.",
+        "operationId": "delete_api_admin_spotlights_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/users": {
       "get": {
         "tags": [
@@ -18011,8 +18882,8 @@
         "tags": [
           "Admin Users"
         ],
-        "summary": "Create user",
-        "description": "Create user. Controller: adminController.createUser. Authentication: Admin. API routes are rate limited and return standard error envelopes. Creates a local password user through the existing User model hashing flow. Accepts role=user as a frontend alias for reader.",
+        "summary": "Create user or invite author",
+        "description": "Create user or invite author. Controller: adminController.createUser. Authentication: Admin. API routes are rate limited and return standard error envelopes. Password remains required for ordinary users. For role=author only, omitting password creates a seven-day set-password invitation and grants dashboard access when paid gating is enabled.",
         "operationId": "post_api_admin_users",
         "security": [
           {
@@ -18238,6 +19109,170 @@
             "name": "search",
             "in": "query",
             "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created successfully where applicable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSuccess"
+                },
+                "examples": {
+                  "created": {
+                    "value": {
+                      "success": true,
+                      "data": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "SettlementPreviewRequest": {
+            "type": "object",
+            "required": [
+              "authorId"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window start."
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional sales window end."
+              }
+            }
+          },
+          "SettlementCreateRequest": {
+            "type": "object",
+            "required": [
+              "authorId",
+              "periodStart",
+              "periodEnd"
+            ],
+            "properties": {
+              "authorId": {
+                "type": "string",
+                "description": "Author user ObjectId."
+              },
+              "periodStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "periodEnd": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "SettlementMarkPaidRequest": {
+            "type": "object",
+            "required": [
+              "transactionReference"
+            ],
+            "properties": {
+              "paymentMethod": {
+                "type": "string",
+                "enum": [
+                  "MANUAL_BANK_TRANSFER",
+                  "MANUAL_UPI",
+                  "CHEQUE",
+                  "OTHER"
+                ],
+                "default": "MANUAL_BANK_TRANSFER"
+              },
+              "transactionReference": {
+                "type": "string",
+                "description": "External/manual payout reference recorded by admin."
+              },
+              "paidAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Optional. Defaults to current server time."
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "SettlementCancelRequest": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string",
+                "default": "Cancelled by admin"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{id}/resend-invite": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Resend author set-password invitation",
+        "description": "Resend author set-password invitation. Controller: adminController.resendAuthorInvite. Authentication: Admin. API routes are rate limited and return standard error envelopes. Returns 409 after the author has set a password.",
+        "operationId": "post_api_admin_users_id_resend_invite",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -39559,7 +40594,8 @@
       "BookSubmissionRequest": {
         "type": "object",
         "required": [
-          "fileUrl"
+          "fileUrl",
+          "packageId"
         ],
         "properties": {
           "fileUrl": {
@@ -39579,7 +40615,7 @@
           },
           "packageId": {
             "type": "string",
-            "description": "Optional PublishPackage ObjectId. Defaults to the first active package when omitted."
+            "description": "Required active PublishPackage ObjectId."
           },
           "genre": {
             "type": "string",
@@ -40153,8 +41189,7 @@
         "type": "object",
         "required": [
           "name",
-          "email",
-          "password"
+          "email"
         ],
         "properties": {
           "name": {
@@ -40167,7 +41202,8 @@
           },
           "password": {
             "type": "string",
-            "minLength": 6
+            "minLength": 6,
+            "description": "Required except when role=author. Omit for a seven-day set-password invitation."
           },
           "role": {
             "type": "string",
@@ -40798,6 +41834,68 @@
           "reason": {
             "type": "string",
             "maxLength": 500
+          }
+        }
+      },
+      "MultipartSpotlightCreateRequest": {
+        "type": "object",
+        "required": [
+          "image",
+          "author_name"
+        ],
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary",
+            "description": "JPG, PNG, or WebP; maximum 10 MB."
+          },
+          "author_name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "authorId": {
+            "type": "string",
+            "description": "Optional active author User ObjectId."
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "MultipartSpotlightUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary",
+            "description": "Optional replacement JPG, PNG, or WebP; maximum 10 MB."
+          },
+          "author_name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "caption": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "authorId": {
+            "type": "string",
+            "description": "Optional active author User ObjectId. Empty value removes the link."
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         }
       },

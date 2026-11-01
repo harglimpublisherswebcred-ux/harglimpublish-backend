@@ -116,6 +116,38 @@
       ]
     },
     {
+      "name": "Spotlights",
+      "item": [
+        {
+          "name": "List active author spotlights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spotlights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "spotlights"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Contact",
       "item": [
         {
@@ -4165,6 +4197,145 @@
       ]
     },
     {
+      "name": "Admin Spotlights",
+      "item": [
+        {
+          "name": "List all author spotlights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/spotlights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "spotlights"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create author spotlight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/spotlights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "spotlights"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update author spotlight",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/spotlights/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "spotlights",
+                ":id"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive author spotlight",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/spotlights/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "spotlights",
+                ":id"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Admin Users",
       "item": [
         {
@@ -4233,7 +4404,7 @@
           ]
         },
         {
-          "name": "Create user",
+          "name": "Create user or invite author",
           "request": {
             "method": "POST",
             "header": [
@@ -4261,6 +4432,41 @@
                   "language": "json"
                 }
               }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resend author set-password invitation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/:id/resend-invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                ":id",
+                "resend-invite"
+              ]
             }
           },
           "event": [

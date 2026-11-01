@@ -354,7 +354,7 @@ Response:
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
 | GET | `/api/admin/users` | Admin | List users | `adminController.listUsers` | Query: `page`, `limit`, `role`, `isActive`, `search` |
-| POST | `/api/admin/users` | Admin | Create user | `adminController.createUser` | Body: `AdminUserCreateRequest`<br>Creates a local password user. `role=user` maps to `reader`; password is hashed and never returned. |
+| POST | `/api/admin/users` | Admin | Create user or invite author | `adminController.createUser` | Body: `AdminUserCreateRequest`<br>Password is required except for `role=author`. Omitting it sends a seven-day set-password invitation. |
 | GET | `/api/admin/users/{id}` | Admin | Get user | `adminController.getUser` | Params: `id` |
 | PUT | `/api/admin/users/{id}` | Admin | Update user | `adminController.updateUser` | Params: `id`<br>Body: `AdminUserUpdateRequest`<br>Supports partial updates. Accepts `role`, `isActive`, or frontend `status`. |
 | PATCH | `/api/admin/users/{id}` | Admin | Partially update user | `adminController.updateUser` | Compatibility alias with the same contract as PUT. |
@@ -527,7 +527,17 @@ Rules:
 | GET | `/api/admin/manual-royalties/{id}` | Admin | View a manual statement |
 | POST | `/api/admin/manual-royalties/{id}/void` | Admin | Void a statement while preserving history |
 | GET | `/api/authors/me/manual-royalties` | Author dashboard | List the authenticated author's recorded statements |
+| GET | `/api/spotlights` | Public | List active author spotlight images with pagination |
+| GET | `/api/admin/spotlights` | Admin | List all spotlights |
+| POST | `/api/admin/spotlights` | Admin | Create spotlight from multipart image upload |
+| PATCH | `/api/admin/spotlights/{id}` | Admin | Update spotlight metadata or image |
+| DELETE | `/api/admin/spotlights/{id}` | Admin | Soft archive spotlight |
+| POST | `/api/admin/users/{id}/resend-invite` | Admin | Rotate and resend author set-password invitation |
 
 Admin book payloads now accept non-negative `printingCost`, `platformCharges`, and `deliveryCharges`. When any charge is configured, checkout snapshots `royaltyPerCopy = max(0, mrp - charges)`; older books without charge configuration retain percentage-based snapshots.
 
 Publishing package payloads also accept `tagline`, `highlighted`, `badge`, and `sortOrder`. Post-dispatch tracking may be corrected through the existing assign-courier endpoint until delivery without changing shipment status.
+
+Author publishing submission now requires an active `packageId`; the backend no longer silently chooses or creates a package. Author operational reads use `Cache-Control: no-store`, include all assigned books, and expose current or snapshotted rupee royalty values where applicable.
+
+Spotlight create requires multipart fields `image` and `author_name`; optional fields are `caption`, `authorId`, `sortOrder`, and `isActive`. Allowed image types are JPG, PNG, and WebP up to 10 MB.

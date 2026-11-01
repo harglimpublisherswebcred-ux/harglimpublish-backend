@@ -140,6 +140,13 @@ const normalizeCompatibilityFields = (payload = {}, current = defaultContent) =>
     if (payload[group] !== undefined) normalized[group] = { ...(current[group] || {}), ...payload[group] };
   });
 
+  if (payload.siteSettings?.siteContent !== undefined) {
+    normalized.siteSettings.siteContent = {
+      ...(current.siteSettings?.siteContent || {}),
+      ...(payload.siteSettings.siteContent || {}),
+    };
+  }
+
   JSON_LIST_FIELDS.forEach((field) => {
     if (payload[field] === undefined) return;
     const value = parseJsonList(field, payload[field]);
@@ -225,10 +232,10 @@ class ContentService {
       throw error;
     }
 
-    update.updatedBy = actor?._id || actor?.id;
+    if (actor?._id || actor?.id) update.updatedBy = actor._id || actor.id;
     const content = await this.repository.upsertGlobal(update);
     logger.info('content.updated', {
-      actorId: update.updatedBy,
+      actorId: update.updatedBy || 'content-seed',
       fields: Object.keys(update).filter((field) => field !== 'updatedBy'),
     });
     const stored = content && typeof content.toObject === 'function' ? content.toObject() : content;
