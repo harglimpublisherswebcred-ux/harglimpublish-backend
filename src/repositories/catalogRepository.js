@@ -6,7 +6,10 @@ const PUBLIC_BOOK_FIELDS = '-royaltyPercentage -reservedStock -printingCost -pla
 
 class CatalogRepository {
   findCategoryBySlug(slug) {
-    return Category.findOne({ slug });
+    return Category.findOne({
+      slug,
+      $or: [{ active: true }, { active: { $exists: false }, isActive: true }]
+    });
   }
 
   findPublishedBooks(query, { sort, skip, limit }) {
@@ -30,20 +33,21 @@ class CatalogRepository {
       .populate('category', 'name slug');
   }
 
-  searchPublishedBooks(search, { skip, limit }) {
+  searchPublishedBooks(search, { filter = {}, sort, skip, limit }) {
     return Book.find(
-      { $text: { $search: search }, status: 'published' },
+      { ...filter, $text: { $search: search }, status: 'published' },
       { score: { $meta: 'textScore' } }
     )
       .select(PUBLIC_BOOK_FIELDS)
       .populate('author', 'name')
-      .sort({ score: { $meta: 'textScore' } })
+      .populate('category', 'name slug')
+      .sort(sort || { score: { $meta: 'textScore' }, _id: 1 })
       .skip(skip)
       .limit(limit);
   }
 
-  countPublishedSearch(search) {
-    return Book.countDocuments({ $text: { $search: search }, status: 'published' });
+  countPublishedSearch(search, filter = {}) {
+    return Book.countDocuments({ ...filter, $text: { $search: search }, status: 'published' });
   }
 
   findBookForRelated(slug) {

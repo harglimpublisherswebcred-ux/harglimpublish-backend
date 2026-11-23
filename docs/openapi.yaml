@@ -2342,11 +2342,23 @@ paths:
       tags:
         - Books
       summary: List books
-      description: "List books. Controller: bookController.getBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
+      description: "List books. Controller: bookController.getBooks. Authentication: Public. API routes are rate limited and return standard error envelopes. All filters and sorting are applied server-side before pagination. Sort values: newest, price_asc, price_desc, rating, featured."
       operationId: get_api_books
       security:
         []
       parameters:
+        -
+          name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: search
+          in: query
+          required: false
+          schema:
+            type: string
         -
           name: page
           in: query
@@ -2384,6 +2396,18 @@ paths:
           schema:
             type: number
             minimum: 0
+        -
+          name: format
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: minRating
+          in: query
+          required: false
+          schema:
+            type: string
         -
           name: sort
           in: query
@@ -3387,7 +3411,7 @@ paths:
       tags:
         - Books
       summary: Search books
-      description: "Search books. Controller: bookController.searchBooks. Authentication: Public. API routes are rate limited and return standard error envelopes."
+      description: "Search books. Controller: bookController.searchBooks. Authentication: Public. API routes are rate limited and return standard error envelopes. Search and filters operate on the complete matching set before pagination."
       operationId: get_api_search
       security:
         []
@@ -3415,6 +3439,62 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
+        -
+          name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: minPrice
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        -
+          name: maxPrice
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        -
+          name: format
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: minRating
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+        -
+          name: featured
+          in: query
+          required: false
+          schema:
+            type: boolean
+        -
+          name: bestseller
+          in: query
+          required: false
+          schema:
+            type: boolean
+        -
+          name: newRelease
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         200:
           description: Successful response.
@@ -4025,6 +4105,7 @@ paths:
                     addressLine1: 12 MG Road
                     addressLine2: Near Central Mall
                     city: Bengaluru
+                    state: Karnataka
                     postalCode: 560001
                     country: India
                   paymentMethod: UPI
@@ -6080,7 +6161,7 @@ paths:
       tags:
         - Author Applications
       summary: Submit author application
-      description: "Submit author application. Controller: authorApplicationController.submitAuthorApplication. Authentication: Bearer. API routes are rate limited and return standard error envelopes."
+      description: "Submit author application. Controller: authorApplicationController.submitAuthorApplication. Authentication: Bearer. API routes are rate limited and return standard error envelopes. Accepts optional penName, fullName, email, phone, bio, experience, and portfolioUrl. Missing fullName/email default to the authenticated account."
       operationId: post_api_author_applications
       security:
         -
@@ -6101,6 +6182,15 @@ paths:
                   type: object
                   properties:
                     penName:
+                      type: string
+                    fullName:
+                      type: string
+                      description: Optional contact name; defaults to the authenticated account name.
+                    email:
+                      type: string
+                      format: email
+                      description: Optional contact email; defaults to the authenticated account email.
+                    phone:
                       type: string
                     bio:
                       type: string
@@ -28212,6 +28302,8 @@ components:
               type: string
             city:
               type: string
+            state:
+              type: string
             postalCode:
               type: string
             country:
@@ -28311,6 +28403,8 @@ components:
           type: string
         city:
           type: string
+        state:
+          type: string
         postalCode:
           type: string
         country:
@@ -28379,18 +28473,24 @@ components:
           type: string
           maxLength: 2000
         profilePicture:
-          type: string
+          type:
+            - string
+            - null
           format: uri
+          description: Send null or an empty string to clear.
         profileImage:
-          type: string
+          type:
+            - string
+            - null
           format: uri
-          description: Compatibility alias for profilePicture.
+          description: Compatibility alias for profilePicture; send null or an empty string to clear.
     AuthorPaymentDetailsRequest:
       type: object
       additionalProperties: true
       properties:
         paymentDetails:
           type: object
+          description: Partial update. Omitted fields preserve existing values; empty strings clear individual fields. The response never includes the raw account number.
           properties:
             accountHolderName:
               type: string
@@ -28828,6 +28928,15 @@ components:
       type: object
       properties:
         penName:
+          type: string
+        fullName:
+          type: string
+          description: Optional contact name; defaults to the authenticated account name.
+        email:
+          type: string
+          format: email
+          description: Optional contact email; defaults to the authenticated account email.
+        phone:
           type: string
         bio:
           type: string

@@ -20,7 +20,7 @@ const endpointInventory = [
   { method: 'PUT', path: '/api/auth/change-password', tag: 'Authentication', summary: 'Change current user password', auth: 'Bearer', controller: 'authController.changePassword', body: 'ChangePasswordRequest' },
   { method: 'POST', path: '/api/auth/change-password', tag: 'Authentication', summary: 'Change current user password alias', auth: 'Bearer', controller: 'authController.changePassword', body: 'ChangePasswordRequest' },
 
-  { method: 'GET', path: '/api/books', tag: 'Books', summary: 'List books', auth: 'Public', controller: 'bookController.getBooks', query: ['page', 'limit', 'category', 'minPrice', 'maxPrice', 'sort', 'featured', 'bestseller', 'newRelease'] },
+  { method: 'GET', path: '/api/books', tag: 'Books', summary: 'List books', auth: 'Public', controller: 'bookController.getBooks', query: ['q', 'search', 'page', 'limit', 'category', 'minPrice', 'maxPrice', 'format', 'minRating', 'sort', 'featured', 'bestseller', 'newRelease'], notes: 'All filters and sorting are applied server-side before pagination. Sort values: newest, price_asc, price_desc, rating, featured.' },
   { method: 'GET', path: '/api/books/{slug}', tag: 'Books', summary: 'Get book by slug', auth: 'Public', controller: 'bookController.getBookBySlug', params: ['slug'] },
   { method: 'GET', path: '/api/books/{slug}/related', tag: 'Books', summary: 'Get related books', auth: 'Public', controller: 'bookController.getRelatedBooks', params: ['slug'] },
   { method: 'GET', path: '/api/books/{slug}/reviews', tag: 'Books', summary: 'List approved book reviews', auth: 'Public', controller: 'bookController.getBookReviews', params: ['slug'], query: ['page', 'limit'] },
@@ -28,7 +28,7 @@ const endpointInventory = [
   { method: 'POST', path: '/api/books/{slug}/reviews', tag: 'Books', summary: 'Create book review', auth: 'Bearer', controller: 'reviewController.createReview', params: ['slug'], body: 'ReviewRequest' },
   { method: 'PUT', path: '/api/books/{slug}/reviews/{reviewId}', tag: 'Books', summary: 'Update book review', auth: 'Bearer', controller: 'reviewController.updateReview', params: ['slug', 'reviewId'], body: 'ReviewRequest' },
   { method: 'DELETE', path: '/api/books/{slug}/reviews/{reviewId}', tag: 'Books', summary: 'Delete book review', auth: 'Bearer', controller: 'reviewController.deleteReview', params: ['slug', 'reviewId'] },
-  { method: 'GET', path: '/api/search', tag: 'Books', summary: 'Search books', auth: 'Public', controller: 'bookController.searchBooks', query: ['q', 'page', 'limit'] },
+  { method: 'GET', path: '/api/search', tag: 'Books', summary: 'Search books', auth: 'Public', controller: 'bookController.searchBooks', query: ['q', 'page', 'limit', 'category', 'minPrice', 'maxPrice', 'format', 'minRating', 'sort', 'featured', 'bestseller', 'newRelease'], notes: 'Search and filters operate on the complete matching set before pagination.' },
 
   { method: 'GET', path: '/api/categories', tag: 'Categories', summary: 'List categories', auth: 'Public', controller: 'categoryController.listCategories', query: ['page', 'limit', 'featured', 'active', 'search', 'sort'], notes: 'Public list returns active categories by default and includes system-managed book counts.' },
   { method: 'GET', path: '/api/categories/{slug}', tag: 'Categories', summary: 'Get category by slug', auth: 'Public', controller: 'categoryController.getCategoryBySlug', params: ['slug'], notes: 'Only active categories are returned publicly.' },
@@ -54,7 +54,7 @@ const endpointInventory = [
   
   { method: 'GET', path: '/api/users/me/author-application', tag: 'Users', summary: 'Get current user author application', auth: 'Bearer', controller: 'authorApplicationController.getMyAuthorApplication' },
   { method: 'GET', path: '/api/author-applications/me', tag: 'Author Applications', summary: 'Get current user author application alias', auth: 'Bearer', controller: 'authorApplicationController.getMyAuthorApplication', notes: 'Compatibility alias for GET /api/users/me/author-application.' },
-  { method: 'POST', path: '/api/author-applications', tag: 'Author Applications', summary: 'Submit author application', auth: 'Bearer', controller: 'authorApplicationController.submitAuthorApplication', body: 'AuthorApplicationRequest' },
+  { method: 'POST', path: '/api/author-applications', tag: 'Author Applications', summary: 'Submit author application', auth: 'Bearer', controller: 'authorApplicationController.submitAuthorApplication', body: 'AuthorApplicationRequest', notes: 'Accepts optional penName, fullName, email, phone, bio, experience, and portfolioUrl. Missing fullName/email default to the authenticated account.' },
   { method: 'GET', path: '/api/users/{id}/orders', tag: 'Users', summary: 'List user orders', auth: 'Bearer', controller: 'userController.getUserOrders', params: ['id'], query: ['page', 'limit', 'status'] },
   { method: 'GET', path: '/api/users/{id}/orders/{orderId}/payments', tag: 'Users', summary: 'Get payment attempts for a user order', auth: 'Bearer', controller: 'userController.getUserOrderPayments', params: ['id', 'orderId'], query: ['page', 'limit'] },
   { method: 'GET', path: '/api/users/{id}/payments', tag: 'Users', summary: 'Get user payment attempts', auth: 'Bearer', controller: 'userController.getUserPayments', params: ['id'], query: ['page', 'limit', 'status', 'order'] },

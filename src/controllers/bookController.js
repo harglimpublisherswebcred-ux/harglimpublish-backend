@@ -8,7 +8,7 @@ const getBooks = async (req, res) => {
     const result = await catalogService.listBooks(req.query);
     res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 

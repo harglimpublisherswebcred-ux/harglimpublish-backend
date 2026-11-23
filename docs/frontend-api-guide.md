@@ -935,11 +935,15 @@ Path Parameters:
 - None.
 
 Query Parameters:
+- `q`: optional query parameter.
+- `search`: optional query parameter.
 - `page`: optional query parameter.
 - `limit`: optional query parameter.
 - `category`: optional query parameter.
 - `minPrice`: optional query parameter.
 - `maxPrice`: optional query parameter.
+- `format`: optional query parameter.
+- `minRating`: optional query parameter.
 - `sort`: optional query parameter.
 - `featured`: optional query parameter.
 - `bestseller`: optional query parameter.
@@ -1306,6 +1310,15 @@ Query Parameters:
 - `q`: optional query parameter.
 - `page`: optional query parameter.
 - `limit`: optional query parameter.
+- `category`: optional query parameter.
+- `minPrice`: optional query parameter.
+- `maxPrice`: optional query parameter.
+- `format`: optional query parameter.
+- `minRating`: optional query parameter.
+- `sort`: optional query parameter.
+- `featured`: optional query parameter.
+- `bestseller`: optional query parameter.
+- `newRelease`: optional query parameter.
 
 Request Body: No request body.
 

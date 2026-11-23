@@ -66,14 +66,38 @@ test('supports author application frontend contract and admin approval promotes 
   const missing = await request(app).get('/api/users/me/author-application').set('Authorization', `Bearer ${readerToken}`).expect(404);
   expect(missing.body.success).toBe(false);
 
-  const created = await request(app).post('/api/author-applications').set('Authorization', `Bearer ${readerToken}`).send({ penName: 'Reader Pen', portfolioUrl: 'https://example.com' }).expect(201);
+  const created = await request(app).post('/api/author-applications').set('Authorization', `Bearer ${readerToken}`).send({
+    penName: 'Reader Pen',
+    fullName: 'Reader Contact',
+    email: 'reader.contact@example.com',
+    phone: '+91 98765 43210',
+    portfolioUrl: 'https://example.com'
+  }).expect(201);
   expect(created.body.application.status).toBe('pending');
+  expect(created.body.application).toMatchObject({
+    fullName: 'Reader Contact',
+    email: 'reader.contact@example.com',
+    phone: '+91 98765 43210'
+  });
 
   const list = await request(app).get('/api/admin/author-applications?status=pending').set('Authorization', `Bearer ${adminToken}`).expect(200);
   expect(list.body.data).toHaveLength(1);
 
   await request(app).put(`/api/admin/author-applications/${created.body.application._id}/status`).set('Authorization', `Bearer ${adminToken}`).send({ status: 'approved' }).expect(200);
   expect((await User.findById(reader._id)).role).toBe('author');
+});
+
+test('author application contact identity falls back to the authenticated account', async () => {
+  const created = await request(app)
+    .post('/api/author-applications')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ penName: 'Reader Pen' })
+    .expect(201);
+
+  expect(created.body.application).toMatchObject({
+    fullName: reader.name,
+    email: reader.email
+  });
 });
 
 test('supports author application /me compatibility alias', async () => {
@@ -813,5 +837,142 @@ test('supports legacy book price compatibility and rejects mrp conflicts', async
       price: 350,
       status: 'published'
     })
+    .expect(400);
+});
+
+test('applies public catalog search, filters, and sorting before pagination', async () => {
+  await Book.syncIndexes();
+  const otherCategory = await Category.create({ name: 'Other Catalog', slug: 'other-catalog' });
+
+  await Book.create([
+    {
+      title: 'Publishing Essentials', slug: 'publishing-essentials', description: 'Publishing workflow',
+      author: author._id, category: book.category, mrp: 250, format: 'paperback', ratings: 4.2,
+      isFeatured: true, status: 'published'
+    },
+    {
+      title: 'Publishing Advanced', slug: 'publishing-advanced', description: 'Publishing operations',
+      author: author._id, category: book.category, mrp: 450, format: 'paperback', ratings: 4.8,
+      isFeatured: false, status: 'published'
+    },
+    {
+      title: 'Publishing Elsewhere', slug: 'publishing-elsewhere', description: 'Publishing in another category',
+      author: author._id, category: otherCategory._id, mrp: 350, format: 'paperback', ratings: 5,
+      status: 'published'
+    }
+  ]);
+
+  const page = await request(app)
+    .get('/api/books?q=Publishing&category=sprint-12&format=paperback&minRating=4&sort=price_desc&page=1&limit=1')
+    .expect(200);
+
+  expect(page.body.pagination).toEqual({ total: 2, page: 1, limit: 1, pages: 2 });
+  expect(page.body.data).toHaveLength(1);
+  expect(page.body.data[0].title).toBe('Publishing Advanced');
+
+  const search = await request(app)
+    .get('/api/search?q=Publishing&category=sprint-12&featured=true&page=1&limit=10')
+    .expect(200);
+
+  expect(search.body.pagination.total).toBe(1);
+  expect(search.body.data[0].title).toBe('Publishing Essentials');
+
+  await request(app).get('/api/books?featured=not-a-boolean').expect(400);
+  await request(app).get('/api/books?minPrice=500&maxPrice=100').expect(400);
+});
+
+test('preserves saved address state and supports explicit profile clearing', async () => {
+  const saved = await request(app)
+    .put('/api/users/me/addresses')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ addresses: [{
+      label: 'Home', fullName: 'Reader', addressLine1: '12 MG Road', city: 'Bengaluru',
+      state: 'Karnataka', postalCode: '560001', country: 'India', isDefault: true
+    }] })
+    .expect(200);
+
+  expect(saved.body.data[0].state).toBe('Karnataka');
+  const readback = await request(app)
+    .get('/api/users/me/addresses')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .expect(200);
+  expect(readback.body.data[0].state).toBe('Karnataka');
+
+  await request(app)
+    .put('/api/users/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ profilePicture: 'https://example.com/reader.jpg' })
+    .expect(200);
+  const clearedReader = await request(app)
+    .put('/api/users/me')
+    .set('Authorization', `Bearer ${readerToken}`)
+    .send({ profilePicture: null })
+    .expect(200);
+  expect(clearedReader.body.data.profilePicture).toBe('');
+
+  await request(app)
+    .put(`/api/authors/${author._id}`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({ bio: 'Temporary bio', profilePicture: 'https://example.com/author.jpg' })
+    .expect(200);
+  const clearedAuthor = await request(app)
+    .put(`/api/authors/${author._id}`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({ bio: '', profilePicture: null })
+    .expect(200);
+  expect(clearedAuthor.body.data.bio).toBe('');
+  expect(clearedAuthor.body.data.profilePicture).toBe('');
+});
+
+test('preserves omitted payout fields and never returns the raw account number', async () => {
+  await request(app)
+    .put(`/api/authors/${author._id}/payment-details`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({ paymentDetails: {
+      accountHolderName: 'Author Name', bankName: 'First Bank', accountNumber: '123456789', ifscCode: 'TEST0001'
+    } })
+    .expect(200);
+
+  const partial = await request(app)
+    .put(`/api/authors/${author._id}/payment-details`)
+    .set('Authorization', `Bearer ${authorToken}`)
+    .send({ paymentDetails: { bankName: 'Updated Bank' } })
+    .expect(200);
+
+  expect(partial.body.data.bankName).toBe('Updated Bank');
+  expect(partial.body.data.accountNumberMasked).toBe('*****6789');
+  expect(partial.body.data.accountNumber).toBeUndefined();
+
+  const readback = await request(app)
+    .get('/api/authors/me/payment-details')
+    .set('Authorization', `Bearer ${authorToken}`)
+    .expect(200);
+  expect(readback.body.data.accountNumberMasked).toBe('*****6789');
+  expect(JSON.stringify(readback.body)).not.toContain('123456789');
+});
+
+test('validates nested CMS sections and gives canonical fields precedence over legacy mirrors', async () => {
+  const canonical = await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      faq: [],
+      faqsJson: '[{"question":"stale","answer":"stale"}]',
+      announcements: [{ title: 'Canonical', message: 'Keep this', active: false }],
+      announcementText: 'stale legacy announcement',
+      siteSettings: { siteContent: { homeWhyChooseJson: '[{"title":"Editorial support"}]' } }
+    })
+    .expect(200);
+
+  expect(canonical.body.data.faq).toEqual([]);
+  expect(canonical.body.data.announcements).toHaveLength(1);
+  expect(canonical.body.data.announcements[0].title).toBe('Canonical');
+  expect(canonical.body.data.siteSettings.siteContent.homeWhyChooseJson)
+    .toBe('[{"title":"Editorial support"}]');
+
+  await request(app)
+    .put('/api/admin/content')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({ siteSettings: { siteContent: { homeWhyChooseJson: '{"not":"an array"}' } } })
     .expect(400);
 });

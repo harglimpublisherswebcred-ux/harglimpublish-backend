@@ -29,6 +29,12 @@ const validatePortfolioUrl = (url) => {
   }
 };
 
+const validateEmail = (email) => {
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+    throw new AuthorApplicationError('email must be a valid email address', 400);
+  }
+};
+
 class AuthorApplicationService {
   constructor(repo = repository) {
     this.repository = repo;
@@ -40,7 +46,7 @@ class AuthorApplicationService {
       throw new AuthorApplicationError('Author application already exists', 409);
     }
 
-    const data = this.normalizePayload(payload);
+    const data = this.normalizePayload(payload, user);
     if (existing && existing.status === 'rejected') {
       return this.repository.updateById(existing._id, {
         ...data,
@@ -97,13 +103,17 @@ class AuthorApplicationService {
     return this.repository.findById(updated._id);
   }
 
-  normalizePayload(payload = {}) {
+  normalizePayload(payload = {}, user = {}) {
     const data = {
       penName: optionalString(payload.penName),
+      fullName: optionalString(payload.fullName) || optionalString(user.name),
+      email: optionalString(payload.email) || optionalString(user.email),
+      phone: optionalString(payload.phone),
       bio: optionalString(payload.bio),
       portfolioUrl: optionalString(payload.portfolioUrl),
       experience: optionalString(payload.experience)
     };
+    validateEmail(data.email);
     validatePortfolioUrl(data.portfolioUrl);
     return data;
   }

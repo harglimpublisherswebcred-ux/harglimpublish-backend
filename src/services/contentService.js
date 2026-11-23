@@ -132,7 +132,7 @@ const normalizeCompatibilityFields = (payload = {}, current = defaultContent) =>
     if (payload[group] === undefined && supplied.length === 0) return;
     normalized[group] = { ...(current[group] || {}), ...(payload[group] || {}) };
     supplied.forEach(([alias, field]) => {
-      normalized[group][field] = payload[alias];
+      if (payload[group]?.[field] === undefined) normalized[group][field] = payload[alias];
     });
   });
 
@@ -141,17 +141,22 @@ const normalizeCompatibilityFields = (payload = {}, current = defaultContent) =>
   });
 
   if (payload.siteSettings?.siteContent !== undefined) {
-    normalized.siteSettings.siteContent = {
+    const siteContent = {
       ...(current.siteSettings?.siteContent || {}),
       ...(payload.siteSettings.siteContent || {}),
     };
+    PAGE_SECTION_JSON_FIELDS.forEach((field) => {
+      if (payload.siteSettings.siteContent?.[field] === undefined) return;
+      siteContent[field] = parseJsonList(field, payload.siteSettings.siteContent[field]).serialized;
+    });
+    normalized.siteSettings.siteContent = siteContent;
   }
 
   JSON_LIST_FIELDS.forEach((field) => {
     if (payload[field] === undefined) return;
     const value = parseJsonList(field, payload[field]);
     normalized[field] = value.serialized;
-    if (field === 'faqsJson') normalized.faq = value.parsed;
+    if (field === 'faqsJson' && payload.faq === undefined) normalized.faq = value.parsed;
   });
 
   const socialAliases = {
@@ -161,14 +166,17 @@ const normalizeCompatibilityFields = (payload = {}, current = defaultContent) =>
   const suppliedSocials = Object.entries(socialAliases).filter(([field]) => payload[field] !== undefined);
   if (suppliedSocials.length > 0) {
     normalized.socialLinks = { ...(current.socialLinks || {}), ...(normalized.socialLinks || {}) };
-    suppliedSocials.forEach(([field, target]) => { normalized.socialLinks[target] = payload[field]; });
+    suppliedSocials.forEach(([field, target]) => {
+      if (payload.socialLinks?.[target] === undefined) normalized.socialLinks[target] = payload[field];
+    });
   }
 
-  if (payload.contactSupportEmail !== undefined) {
+  if (payload.contactSupportEmail !== undefined && payload.siteSettings?.supportEmail === undefined) {
     normalized.siteSettings = { ...(current.siteSettings || {}), ...(normalized.siteSettings || {}), supportEmail: payload.contactSupportEmail };
   }
 
-  if (payload.announcementActive !== undefined || payload.announcementText !== undefined) {
+  if (payload.announcements === undefined
+    && (payload.announcementActive !== undefined || payload.announcementText !== undefined)) {
     const active = payload.announcementActive !== undefined
       ? payload.announcementActive === true
       : Boolean(current.announcementActive);

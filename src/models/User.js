@@ -20,6 +20,7 @@ const savedAddressSchema = new mongoose.Schema(
     addressLine1: { type: String, required: true, trim: true },
     addressLine2: { type: String, trim: true, default: '' },
     city: { type: String, required: true, trim: true },
+    state: { type: String, trim: true, default: '' },
     postalCode: { type: String, required: true, trim: true },
     country: { type: String, required: true, trim: true },
     phone: { type: String, trim: true, default: '' },

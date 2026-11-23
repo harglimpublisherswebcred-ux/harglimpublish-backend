@@ -13,6 +13,19 @@ const authorApplicationSchema = new mongoose.Schema(
       type: String,
       trim: true
     },
+    fullName: {
+      type: String,
+      trim: true
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true
+    },
+    phone: {
+      type: String,
+      trim: true
+    },
     bio: {
       type: String,
       trim: true

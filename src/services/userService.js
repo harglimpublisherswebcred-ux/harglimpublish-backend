@@ -83,6 +83,7 @@ const normalizeSavedAddresses = (payload) => {
       addressLine1: String(address.addressLine1).trim(),
       addressLine2: String(address.addressLine2 || '').trim(),
       city: String(address.city).trim(),
+      state: String(address.state || '').trim(),
       postalCode: String(address.postalCode).trim(),
       country: String(address.country).trim(),
       phone: String(address.phone || address.mobile || address.mobileNumber || '').trim(),
@@ -148,7 +149,9 @@ class UserService {
     const user = await this.repository.findById(userId);
     if (!user) throw userNotFound();
     if (updates.name) user.name = updates.name;
-    if (updates.profilePicture) user.profilePicture = updates.profilePicture;
+    if (Object.prototype.hasOwnProperty.call(updates, 'profilePicture')) {
+      user.profilePicture = optionalString(updates.profilePicture) || '';
+    }
     await this.repository.save(user);
     return {
       _id: user._id,
@@ -170,12 +173,16 @@ class UserService {
     }
 
     const name = optionalString(updates.name);
-    const bio = optionalString(updates.bio);
-    const profilePicture = optionalString(updates.profilePicture || updates.profileImage);
+    const hasBio = Object.prototype.hasOwnProperty.call(updates, 'bio');
+    const hasProfilePicture = Object.prototype.hasOwnProperty.call(updates, 'profilePicture')
+      || Object.prototype.hasOwnProperty.call(updates, 'profileImage');
+    const profilePictureValue = Object.prototype.hasOwnProperty.call(updates, 'profilePicture')
+      ? updates.profilePicture
+      : updates.profileImage;
 
     if (name) user.name = name;
-    if (bio !== undefined) user.bio = bio;
-    if (profilePicture) user.profilePicture = profilePicture;
+    if (hasBio) user.bio = optionalString(updates.bio) || '';
+    if (hasProfilePicture) user.profilePicture = optionalString(profilePictureValue) || '';
 
     await this.repository.save(user);
     return {
@@ -200,12 +207,18 @@ class UserService {
     }
 
     const source = updates.paymentDetails || updates.payoutDetails || updates;
+    const current = user.payoutDetails && typeof user.payoutDetails.toObject === 'function'
+      ? user.payoutDetails.toObject()
+      : (user.payoutDetails || {});
+    const nextValue = (field) => Object.prototype.hasOwnProperty.call(source, field)
+      ? (optionalString(source[field]) || '')
+      : (current[field] || '');
     const payoutDetails = {
-      accountHolderName: optionalString(source.accountHolderName),
-      bankName: optionalString(source.bankName),
-      accountNumber: optionalString(source.accountNumber),
-      ifscCode: optionalString(source.ifscCode),
-      upiId: optionalString(source.upiId),
+      accountHolderName: nextValue('accountHolderName'),
+      bankName: nextValue('bankName'),
+      accountNumber: nextValue('accountNumber'),
+      ifscCode: nextValue('ifscCode'),
+      upiId: nextValue('upiId'),
       updatedAt: new Date()
     };
 

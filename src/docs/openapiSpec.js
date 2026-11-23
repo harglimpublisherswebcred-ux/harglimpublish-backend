@@ -389,6 +389,7 @@ const schemas = {
           addressLine1: { type: 'string' },
           addressLine2: { type: 'string' },
           city: { type: 'string' },
+          state: { type: 'string' },
           postalCode: { type: 'string' },
           country: { type: 'string' },
           email: { type: 'string', format: 'email', description: 'Optional delivery/contact email.' },
@@ -446,6 +447,7 @@ const schemas = {
       addressLine1: { type: 'string' },
       addressLine2: { type: 'string' },
       city: { type: 'string' },
+      state: { type: 'string' },
       postalCode: { type: 'string' },
       country: { type: 'string' },
       phone: { type: 'string' },
@@ -486,8 +488,8 @@ const schemas = {
     properties: {
       name: { type: 'string' },
       bio: { type: 'string', maxLength: 2000 },
-      profilePicture: { type: 'string', format: 'uri' },
-      profileImage: { type: 'string', format: 'uri', description: 'Compatibility alias for profilePicture.' }
+      profilePicture: { type: ['string', 'null'], format: 'uri', description: 'Send null or an empty string to clear.' },
+      profileImage: { type: ['string', 'null'], format: 'uri', description: 'Compatibility alias for profilePicture; send null or an empty string to clear.' }
     }
   },
   AuthorPaymentDetailsRequest: {
@@ -496,6 +498,7 @@ const schemas = {
     properties: {
       paymentDetails: {
         type: 'object',
+        description: 'Partial update. Omitted fields preserve existing values; empty strings clear individual fields. The response never includes the raw account number.',
         properties: {
           accountHolderName: { type: 'string' },
           bankName: { type: 'string' },
@@ -721,6 +724,9 @@ const schemas = {
     type: 'object',
     properties: {
       penName: { type: 'string' },
+      fullName: { type: 'string', description: 'Optional contact name; defaults to the authenticated account name.' },
+      email: { type: 'string', format: 'email', description: 'Optional contact email; defaults to the authenticated account email.' },
+      phone: { type: 'string' },
       bio: { type: 'string' },
       portfolioUrl: { type: 'string', format: 'uri' },
       experience: { type: 'string' }
@@ -1111,6 +1117,7 @@ const schemaExamples = {
       addressLine1: '12 MG Road',
       addressLine2: 'Near Central Mall',
       city: 'Bengaluru',
+      state: 'Karnataka',
       postalCode: '560001',
       country: 'India'
     },
@@ -1307,6 +1314,9 @@ const schemaExamples = {
     type: 'object',
     properties: {
       penName: { type: 'string' },
+      fullName: { type: 'string', description: 'Optional contact name; defaults to the authenticated account name.' },
+      email: { type: 'string', format: 'email', description: 'Optional contact email; defaults to the authenticated account email.' },
+      phone: { type: 'string' },
       bio: { type: 'string' },
       portfolioUrl: { type: 'string', format: 'uri' },
       experience: { type: 'string' }
