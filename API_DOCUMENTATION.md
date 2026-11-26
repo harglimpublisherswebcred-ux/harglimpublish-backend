@@ -10,10 +10,11 @@ Generated from `src/docs/apiInventory.js` and aligned with Swagger/OpenAPI.
 |---|---|
 | Package | `hm_backend` |
 | Version | `1.0.0` |
-| API Inventory | `121` endpoints |
+| API Inventory | `214` unique method/path contracts |
 | OpenAPI | `/api/docs.json` |
 | Swagger UI | `/api/docs` |
 | Health Check | `/health` |
+| Readiness Check | `/health/ready` |
 
 ## Base URLs
 
@@ -38,10 +39,29 @@ Login/register/reset-password responses include an access token and refresh toke
 {
   "name": "Reader User",
   "email": "reader@example.com",
-  "password": "StrongPass123!",
-  "role": "reader"
+  "password": "StrongPass123!"
 }
 ```
+
+Public registration always creates a `reader`. Never send or trust a public registration role.
+
+## Production Hardening APIs
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| `GET` | `/api/publishing-terms` | Public | Current publishing terms version and enforcement status |
+| `GET` | `/api/authors/me/publishing-terms` | Author/Admin | Current user's acceptance status |
+| `POST` | `/api/authors/me/publishing-terms/accept` | Author/Admin | Accept the exact current version |
+| `GET` | `/api/admin/operations/runtime-metrics` | Admin | Per-instance latency, status, uptime and memory metrics |
+| `GET` | `/api/admin/shipments/couriers` | Admin | Truthful configured/unconfigured courier capabilities |
+
+Terms acceptance payload:
+
+```json
+{ "version": "<currentVersion>" }
+```
+
+When publishing-terms enforcement is enabled, manuscript submission requires a current acceptance. Read [production-hardening.md](docs/production-hardening.md) for deployment order and error behavior.
 
 `POST /api/auth/login`
 

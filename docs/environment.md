@@ -12,6 +12,12 @@ This document is generated from actual environment references in `server.js`, `s
 | `SERVER_REQUEST_TIMEOUT_MS` | Optional | `120000` | `server.js` | HTTP request timeout in milliseconds. | Keep high enough for slow clients but lower than platform hard limits. | `120000` | No |
 | `SERVER_HEADERS_TIMEOUT_MS` | Optional | `65000` | `server.js` | HTTP header timeout in milliseconds. | Keep lower than request timeout. | `65000` | No |
 | `SERVER_KEEP_ALIVE_TIMEOUT_MS` | Optional | `5000` | `server.js` | HTTP keep-alive timeout in milliseconds. | Keep aligned with reverse proxy settings. | `5000` | No |
+| `CORS_ORIGINS` | Required for production unless `FRONTEND_URL` is set | Development allows all origins | `src/config/http.js` | Comma-separated browser origins allowed to call the API. | Set exact production and preview origins; never use `*` with cookies. | `https://harglimpublishers.com,https://www.harglimpublishers.com` | No |
+| `CORS_ALLOW_CREDENTIALS` | Optional | `false` | `src/config/http.js` | Enables credentialed CORS requests. | Keep `false` for bearer-token storage; coordinate CSRF protection before enabling cookies. | `false` | No |
+| `RATE_LIMIT_WINDOW_MS` | Optional | `900000` | `src/config/http.js`, `server.js` | Global API rate-limit window. | Tune from staging traffic and platform capacity. | `900000` | No |
+| `RATE_LIMIT_MAX` | Optional | `100` | `src/config/http.js`, `server.js` | Maximum requests per client IP in the global window. | Raise only after load testing; multi-instance deployments need a shared rate-limit store. | `100` | No |
+| `AUTH_RATE_LIMIT_WINDOW_MS` | Optional | `900000` | `src/config/http.js`, `server.js` | Authentication rate-limit window. | Keep stricter than the global API policy. | `900000` | No |
+| `AUTH_RATE_LIMIT_MAX` | Optional | `10` | `src/config/http.js`, `server.js` | Maximum authentication requests per client IP in the auth window. | Tune carefully to protect login while supporting legitimate retries. | `10` | No |
 | `MONGODB_URI` | Required | None | `src/config/database.js` | MongoDB connection string. | Use a production MongoDB replica set/Atlas URI with credentials from a secret manager. | `mongodb://localhost:27017/hm_backend` | Yes |
 | `MONGODB_MAX_POOL_SIZE` | Optional | `20` | `src/config/database.js` | Maximum MongoDB connection pool size. | Tune based on Render instance size and Atlas tier. | `20` | No |
 | `MONGODB_MIN_POOL_SIZE` | Optional | `0` | `src/config/database.js` | Minimum MongoDB connection pool size. | Keep low for small instances unless warm pools are required. | `0` | No |
@@ -22,6 +28,9 @@ This document is generated from actual environment references in `server.js`, `s
 | `JWT_EXPIRE` | Optional | `30d` | `src/utils/tokenUtils.js` | JWT expiry duration. | Use short expiry aligned to frontend session policy. | `7d` | No |
 | `GOOGLE_CLIENT_ID` | Required for Google Login usage | None | `src/services/googleIdentityProvider.js` | Verifies Google ID token audience for `POST /api/auth/google`. | Configure the production Google OAuth web client ID; do not use placeholders. | `CHANGE_ME_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com` | No |
 | `AUTHOR_DASHBOARD_PAID_ACCESS_ENABLED` | Optional | `true` | `src/config/features.js`, `src/middleware/authorDashboardMiddleware.js`, `src/services/userContextService.js`, `src/services/authorAccessService.js` | Feature flag for paid Author Dashboard gating. | Set explicitly to `false` for the client requirement where approved authors get dashboard access without payment. Missing value keeps old paid-entitlement behavior. | `false` | No |
+| `PUBLISHING_TERMS_ENFORCEMENT_ENABLED` | Optional | `false` | `src/services/publishingTermsService.js` | Requires current version acceptance before manuscript submission. | Keep false until the frontend acceptance flow is deployed, then enable in staging before production. | `false` | No |
+| `PUBLISHING_TERMS_VERSION` | Required when enforcement is enabled | None | `src/services/publishingTermsService.js` | Canonical legal terms version stored with immutable acceptance records and publish requests. | Increment whenever terms content changes. | `2026-11-25` | No |
+| `PUBLISHING_TERMS_EFFECTIVE_AT` | Optional | None | `src/services/publishingTermsService.js` | ISO effective timestamp returned to clients. | Set to the approved legal effective date. | `2026-11-25T00:00:00.000Z` | No |
 | `MERCHANT_UPI_ID` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant UPI VPA for dynamic QR generation. | Configure a valid production merchant VPA. | `merchant@upi` | No |
 | `MERCHANT_NAME` | Required for QR payment generation | None | `src/config/payment.js`, tests | Merchant display name in UPI QR payload. | Use the legal payment receiver name. | `Harglim Publishers` | No |
 | `MERCHANT_CODE` | Optional | None | `src/config/payment.js` | Optional UPI merchant category/code. | Set only if required by payment operations. | `0000` | No |
@@ -67,6 +76,9 @@ The real `.env` was inspected by key name only; secret values were not printed o
 
 ### Missing From Current `.env`
 
+- `CORS_ORIGINS` or `FRONTEND_URL` is now required for production startup.
+- `PUBLISHING_TERMS_VERSION` and `PUBLISHING_TERMS_EFFECTIVE_AT` should be set before enabling enforcement.
+- Rate-limit variables are optional and use documented defaults when absent.
 - `MONGOMS_DOWNLOAD_DIR` is absent. This is test-only and not required for production runtime.
 
 ### Present But Unused

@@ -4,7 +4,7 @@ Swagger URL: `/api/docs`
 
 OpenAPI validation status: generated from the internal OpenAPI 3.1 builder and JSON-parse validated during generation.
 
-Endpoints documented: 208
+Endpoints documented: 214
 
 Models documented: 19
 
@@ -25,6 +25,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | Method | Path | Auth | Controller |
 | --- | --- | --- | --- |
 | GET | `/health` | Public | `server.js` |
+| GET | `/health/ready` | Public | `server.js` |
 | GET | `/api/content` | Public | `contentController.getContent` |
 | GET | `/api/stats/public` | Public | `publicStatsController.getPublicStats` |
 | GET | `/api/spotlights` | Public | `spotlightController.listPublic` |
@@ -115,6 +116,9 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | POST | `/api/uploads/publishing-document` | Author/Admin | `uploadController.uploadDocument` |
 | POST | `/api/uploads/publishing-image` | Author/Admin | `uploadController.uploadImage` |
 | POST | `/api/publish-requests` | Author/Admin | `publishController.createPublishRequest` |
+| GET | `/api/publishing-terms` | Public | `publishingTermsController.getCurrentTerms` |
+| GET | `/api/authors/me/publishing-terms` | Author/Admin | `publishingTermsController.getMyTermsStatus` |
+| POST | `/api/authors/me/publishing-terms/accept` | Author/Admin | `publishingTermsController.acceptCurrentTerms` |
 | GET | `/api/publish-packages` | Public | `publishController.getPublishPackages` |
 | GET | `/api/admin/analytics` | Admin | `adminController.getAdminAnalytics` |
 | GET | `/api/admin/reviews` | Admin | `reviewController.listReviews` |
@@ -178,6 +182,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/authors/{authorId}/dashboard` | Admin | `adminController.getAdminAuthorDashboard` |
 | GET | `/api/admin/authors/{authorId}/royalties` | Admin | `adminController.getAdminAuthorRoyalties` |
 | GET | `/api/admin/operations/dashboard` | Admin | `adminOperationsController.dashboardSummary` |
+| GET | `/api/admin/operations/runtime-metrics` | Admin | `adminOperationsController.runtimeMetricsSnapshot` |
 | GET | `/api/admin/operations/search` | Admin | `adminOperationsController.globalSearch` |
 | GET | `/api/admin/operations/payments` | Admin | `adminOperationsController.listPayments` |
 | GET | `/api/admin/operations/payments/{id}` | Admin | `adminOperationsController.getPaymentDetail` |
@@ -201,6 +206,7 @@ Production readiness score: 93/100. Remaining documentation/runtime risk is main
 | GET | `/api/admin/notifications/{id}` | Admin | `adminNotificationController.getNotification` |
 | POST | `/api/admin/notifications/{id}/retry` | Admin | `adminNotificationController.retryNotification` |
 | GET | `/api/admin/shipments/search` | Admin | `adminShipmentController.searchShipments` |
+| GET | `/api/admin/shipments/couriers` | Admin | `adminShipmentController.listCouriers` |
 | GET | `/api/admin/shipments` | Admin | `adminShipmentController.listShipments` |
 | GET | `/api/admin/shipments/{id}/tracking` | Admin | `adminShipmentController.getTracking` |
 | GET | `/api/admin/shipments/{id}` | Admin | `adminShipmentController.getShipment` |

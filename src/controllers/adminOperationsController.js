@@ -1,4 +1,5 @@
 const adminOperationsService = require('../services/adminOperationsService');
+const runtimeMetrics = require('../observability/runtimeMetrics');
 
 const sendSuccess = (res, data, status = 200) => res.status(status).json({ success: true, data });
 
@@ -145,6 +146,10 @@ const globalSearch = async (req, res) => {
   }
 };
 
+const runtimeMetricsSnapshot = async (req, res) => {
+  sendSuccess(res, runtimeMetrics.snapshot());
+};
+
 module.exports = {
   listPayments,
   getPaymentDetail,
@@ -160,5 +165,6 @@ module.exports = {
   listInventoryLedger,
   combinedTimeline,
   dashboardSummary,
-  globalSearch
+  globalSearch,
+  runtimeMetricsSnapshot
 };

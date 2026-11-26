@@ -55,6 +55,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `System`.
 
+## GET /health/ready
+
+Purpose: Readiness check.
+
+Authentication: Public.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/health/ready`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/health/ready', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/health/ready', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `System`.
+
 ## GET /api/content
 
 Purpose: Get global CMS content.
@@ -4714,6 +4765,159 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Publishing`.
 
+## GET /api/publishing-terms
+
+Purpose: Get current publishing terms version.
+
+Authentication: Public.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/publishing-terms`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/publishing-terms', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/publishing-terms', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Publishing`.
+
+## GET /api/authors/me/publishing-terms
+
+Purpose: Get current author publishing terms acceptance status.
+
+Authentication: Author/Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/authors/me/publishing-terms`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/authors/me/publishing-terms', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/authors/me/publishing-terms', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Publishing`.
+
+## POST /api/authors/me/publishing-terms/accept
+
+Purpose: Accept current publishing terms.
+
+Authentication: Author/Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: Uses schema `PublishingTermsAcceptanceRequest`.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/authors/me/publishing-terms/accept`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'POST', url: '/api/authors/me/publishing-terms/accept', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/authors/me/publishing-terms/accept', options: Options(method: 'POST', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Publishing`.
+
 ## GET /api/publish-packages
 
 Purpose: List publish packages.
@@ -7990,6 +8194,57 @@ Common Mistakes: Missing bearer token on protected endpoints, sending invalid Ob
 
 Related APIs: See endpoints with tag `Admin Operations`.
 
+## GET /api/admin/operations/runtime-metrics
+
+Purpose: Get process runtime metrics.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/operations/runtime-metrics`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/operations/runtime-metrics', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/operations/runtime-metrics', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Operations`.
+
 ## GET /api/admin/operations/search
 
 Purpose: Global operations search.
@@ -9236,6 +9491,57 @@ await axios.request({ method: 'GET', url: '/api/admin/shipments/search', headers
 Example Flutter Dio Request:
 ```dart
 await dio.request('/api/admin/shipments/search', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
+```
+
+Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.
+
+Related APIs: See endpoints with tag `Admin Shipments`.
+
+## GET /api/admin/shipments/couriers
+
+Purpose: List courier capabilities.
+
+Authentication: Admin.
+
+Headers: `Authorization: Bearer <token>` when protected; `Content-Type: application/json` unless multipart upload.
+
+Path Parameters:
+- None.
+
+Query Parameters:
+- None.
+
+Request Body: No request body.
+
+Validation Rules: See `docs/openapi.yaml` request body schema and runtime validators/controllers.
+
+Success Response:
+```json
+{ "success": true, "data": {} }
+```
+
+Error Response:
+```json
+{ "success": false, "message": "Error message" }
+```
+
+Status Codes: 200, 201 where created, 400, 401, 403, 404, 429, 500.
+
+Frontend Integration Notes: Keep the response envelope checks defensive because some legacy auth errors return `status: "error"`.
+
+Example Fetch Request:
+```js
+await fetch(`${API_BASE_URL}/api/admin/shipments/couriers`, { method: 'GET', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Axios Request:
+```js
+await axios.request({ method: 'GET', url: '/api/admin/shipments/couriers', headers: { Authorization: `Bearer ${token}` } });
+```
+
+Example Flutter Dio Request:
+```dart
+await dio.request('/api/admin/shipments/couriers', options: Options(method: 'GET', headers: {'Authorization': 'Bearer $token'}));
 ```
 
 Common Mistakes: Missing bearer token on protected endpoints, sending invalid ObjectId values, or assuming admin endpoints are customer-accessible.

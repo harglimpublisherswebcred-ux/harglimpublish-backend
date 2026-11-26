@@ -1,4 +1,5 @@
 const shipmentService = require('../services/shipmentService');
+const courierCatalogService = require('../services/courierCatalogService');
 
 const sendSuccess = (res, data, status = 200) => res.status(status).json({ success: true, data });
 
@@ -94,6 +95,10 @@ const getTracking = async (req, res) => {
   }
 };
 
+const listCouriers = async (req, res) => {
+  sendSuccess(res, courierCatalogService.list());
+};
+
 module.exports = {
   listShipments,
   searchShipments,
@@ -101,5 +106,6 @@ module.exports = {
   assignCourier,
   updateStatus,
   cancelShipment,
-  getTracking
+  getTracking,
+  listCouriers
 };

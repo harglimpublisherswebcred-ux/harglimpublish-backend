@@ -33,6 +33,17 @@ const publishRequestSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    termsAcceptance: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PublishingTermsAcceptance'
+    },
+    termsVersion: {
+      type: String,
+      trim: true
+    },
+    termsAcceptedAt: {
+      type: Date
+    },
     status: {
       type: String,
       enum: ['PENDING', 'UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'REJECTED', 'pending', 'reviewed', 'accepted', 'rejected'],
@@ -60,5 +71,6 @@ publishRequestSchema.index({ user: 1, createdAt: -1 });
 publishRequestSchema.index({ book: 1, status: 1 });
 publishRequestSchema.index({ status: 1, createdAt: -1 });
 publishRequestSchema.index({ packageId: 1, createdAt: -1 });
+publishRequestSchema.index({ user: 1, termsVersion: 1, createdAt: -1 });
 
 module.exports = mongoose.model('PublishRequest', publishRequestSchema);

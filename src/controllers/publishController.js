@@ -14,7 +14,11 @@ const createPublishRequest = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      ...(error.code ? { error: error.code } : {}),
+      message: error.message
+    });
   }
 };
 

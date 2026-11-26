@@ -9,6 +9,15 @@ const ENV_KEYS = [
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
+  'CORS_ORIGINS',
+  'FRONTEND_URL',
+  'RATE_LIMIT_WINDOW_MS',
+  'RATE_LIMIT_MAX',
+  'AUTH_RATE_LIMIT_WINDOW_MS',
+  'AUTH_RATE_LIMIT_MAX',
+  'PUBLISHING_TERMS_ENFORCEMENT_ENABLED',
+  'PUBLISHING_TERMS_VERSION',
+  'PUBLISHING_TERMS_EFFECTIVE_AT',
   'PAYMENT_EXPIRY_DURATION',
   'QR_EXPIRY_MINUTES',
   'UPLOAD_MAX_BYTES'
@@ -46,6 +55,7 @@ describe('Environment validation', () => {
     process.env.CLOUDINARY_CLOUD_NAME = 'real-cloud';
     process.env.CLOUDINARY_API_KEY = 'real-key';
     process.env.CLOUDINARY_API_SECRET = 'real-secret';
+    process.env.CORS_ORIGINS = 'https://harglimpublishers.com';
 
     expect(() => validateEnvironment({ strict: true })).not.toThrow();
   });
@@ -80,5 +90,26 @@ describe('Environment validation', () => {
 
     process.env.PAYMENT_EXPIRY_DURATION = 'later';
     expect(() => validateEnvironment({ strict: false })).toThrow(/PAYMENT_EXPIRY_DURATION/);
+  });
+
+  it('requires a production CORS allowlist and a terms version when enforcement is enabled', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/hm_backend';
+    process.env.JWT_SECRET = 'long-production-secret';
+    process.env.MERCHANT_UPI_ID = 'merchant@upi';
+    process.env.MERCHANT_NAME = 'Harglim Publishers';
+    process.env.CLOUDINARY_CLOUD_NAME = 'real-cloud';
+    process.env.CLOUDINARY_API_KEY = 'real-key';
+    process.env.CLOUDINARY_API_SECRET = 'real-secret';
+    process.env.PUBLISHING_TERMS_ENFORCEMENT_ENABLED = 'true';
+
+    expect(() => validateEnvironment({ strict: true })).toThrow(/CORS_ORIGINS/);
+
+    process.env.CORS_ORIGINS = 'https://harglimpublishers.com';
+    expect(() => validateEnvironment({ strict: true })).toThrow(/PUBLISHING_TERMS_VERSION/);
+
+    process.env.PUBLISHING_TERMS_VERSION = '2026-11-25';
+    process.env.PUBLISHING_TERMS_EFFECTIVE_AT = '2026-11-25T00:00:00.000Z';
+    expect(() => validateEnvironment({ strict: true })).not.toThrow();
   });
 });

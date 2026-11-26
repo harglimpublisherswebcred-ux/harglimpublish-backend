@@ -737,6 +737,13 @@ const schemas = {
     required: ['status'],
     properties: { status: { type: 'string', enum: ['approved', 'rejected'] } }
   },
+  PublishingTermsAcceptanceRequest: {
+    type: 'object',
+    required: ['version'],
+    properties: {
+      version: { type: 'string', description: 'Exact current version returned by GET /api/publishing-terms.' }
+    }
+  },
   ReviewRequest: {
     type: 'object',
     properties: { book: { type: 'string' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' } }
@@ -1540,41 +1547,7 @@ function buildOpenApiSpec() {
       200: {
         description: 'Successful response.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { success: { value: successExampleFor(endpoint) } } } }
-  },
-  SettlementPreviewRequest: {
-    type: 'object',
-    required: ['authorId'],
-    properties: {
-      authorId: { type: 'string', description: 'Author user ObjectId.' },
-      from: { type: 'string', format: 'date-time', description: 'Optional sales window start.' },
-      to: { type: 'string', format: 'date-time', description: 'Optional sales window end.' }
-    }
-  },
-  SettlementCreateRequest: {
-    type: 'object',
-    required: ['authorId', 'periodStart', 'periodEnd'],
-    properties: {
-      authorId: { type: 'string', description: 'Author user ObjectId.' },
-      periodStart: { type: 'string', format: 'date-time' },
-      periodEnd: { type: 'string', format: 'date-time' }
-    }
-  },
-  SettlementMarkPaidRequest: {
-    type: 'object',
-    required: ['transactionReference'],
-    properties: {
-      paymentMethod: { type: 'string', enum: ['MANUAL_BANK_TRANSFER', 'MANUAL_UPI', 'CHEQUE', 'OTHER'], default: 'MANUAL_BANK_TRANSFER' },
-      transactionReference: { type: 'string', description: 'External/manual payout reference recorded by admin.' },
-      paidAt: { type: 'string', format: 'date-time', description: 'Optional. Defaults to current server time.' },
-      notes: { type: 'string' }
-    }
-  },
-  SettlementCancelRequest: {
-    type: 'object',
-    properties: {
-      reason: { type: 'string', default: 'Cancelled by admin' }
-    }
-  },
+      },
       201: {
         description: 'Created successfully where applicable.',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' }, examples: { created: { value: successExampleFor(endpoint) } } } }
@@ -1587,10 +1560,12 @@ function buildOpenApiSpec() {
       500: { $ref: '#/components/responses/InternalServerError' }
     };
 
-    if (endpoint.tag === 'Uploads') {
+    if (endpoint.tag === 'Uploads' || endpoint.path === '/health/ready' || endpoint.path.includes('/publishing-terms')) {
       responses[503] = { $ref: '#/components/responses/ServiceUnavailable' };
     }
-    if (endpoint.tag === 'Admin Categories' || endpoint.path.includes('/operations/payments')) {
+    if (endpoint.tag === 'Admin Categories'
+      || endpoint.path.includes('/operations/payments')
+      || endpoint.path.endsWith('/publishing-terms/accept')) {
       responses[409] = { $ref: '#/components/responses/Conflict' };
     }
 

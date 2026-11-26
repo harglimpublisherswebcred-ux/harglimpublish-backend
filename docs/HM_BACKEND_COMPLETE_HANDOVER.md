@@ -38,6 +38,35 @@ Revision 1.2 adds production Google Login / Sign-up while preserving the HM auth
 - Google is identity-only and cannot grant author approval, admin privilege, dashboard entitlement, payment state, publishing state, royalty state, or settlement state.
 - Google-authenticated users receive the same HM access token, refresh token, and `AuthSession` behavior as password login.
 
+## Production Hardening Addendum (2026-11-26)
+
+The following additive contracts are available:
+
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| GET | `/health/ready` | Public | Returns 200 only when MongoDB is connected, otherwise 503. |
+| GET | `/api/publishing-terms` | Public | Returns the current publishing terms version, effective date, and enforcement flag. |
+| GET | `/api/authors/me/publishing-terms` | Author/Admin | Returns the authenticated user's current terms acceptance status. |
+| POST | `/api/authors/me/publishing-terms/accept` | Author/Admin | Records an immutable, versioned publishing terms acceptance. |
+| GET | `/api/admin/operations/runtime-metrics` | Admin | Returns per-process request latency, status, uptime, and memory metrics. |
+| GET | `/api/admin/shipments/couriers` | Admin | Returns configured and unavailable courier capabilities truthfully. |
+
+Terms acceptance request:
+
+```http
+POST /api/authors/me/publishing-terms/accept
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{ "version": "<currentVersion from GET /api/publishing-terms>" }
+```
+
+When enforcement is enabled, manuscript submission returns `403 PUBLISHING_TERMS_ACCEPTANCE_REQUIRED` until the current version has been accepted. A successful publish request snapshots the acceptance ID, version, and timestamp. Repeating acceptance for the same unchanged version is idempotent. Terms content must never change without incrementing `PUBLISHING_TERMS_VERSION`.
+
+Courier UI must display only records with `available=true` as configured services. External providers currently return `NOT_CONFIGURED`; manual courier assignment remains available.
+
 ## Security Hotfix: Public Registration Contract
 
 Public registration always creates a `reader` account. Frontend clients must not send a `role` field to `POST /api/auth/register`.

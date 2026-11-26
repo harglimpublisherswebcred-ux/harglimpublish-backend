@@ -1,5 +1,6 @@
 const endpointInventory = [
   { method: 'GET', path: '/health', tag: 'System', summary: 'Health check', auth: 'Public', controller: 'server.js', notes: 'Returns server liveness only.' },
+  { method: 'GET', path: '/health/ready', tag: 'System', summary: 'Readiness check', auth: 'Public', controller: 'server.js', notes: 'Returns 200 only when MongoDB is connected; otherwise returns 503.' },
   { method: 'GET', path: '/api/content', tag: 'Content', summary: 'Get global CMS content', auth: 'Public', controller: 'contentController.getContent' },
   { method: 'GET', path: '/api/stats/public', tag: 'System', summary: 'Get public published-book and active-author totals', auth: 'Public', controller: 'publicStatsController.getPublicStats' },
   { method: 'GET', path: '/api/spotlights', tag: 'Spotlights', summary: 'List active author spotlights', auth: 'Public', controller: 'spotlightController.listPublic', query: ['page', 'limit'] },
@@ -103,6 +104,9 @@ const endpointInventory = [
   { method: 'POST', path: '/api/uploads/publishing-image', tag: 'Uploads', summary: 'Upload publishing cover image', auth: 'Author/Admin', controller: 'uploadController.uploadImage', body: 'MultipartImageRequest', notes: 'Multipart field: image. Allowed: jpg, jpeg, png, webp, gif. Default max size: 25MB. Requires Cloudinary configuration.' },
 
   { method: 'POST', path: '/api/publish-requests', tag: 'Publishing', summary: 'Create publish request', auth: 'Author/Admin', controller: 'publishController.createPublishRequest', body: 'PublishRequestCreate' },
+  { method: 'GET', path: '/api/publishing-terms', tag: 'Publishing', summary: 'Get current publishing terms version', auth: 'Public', controller: 'publishingTermsController.getCurrentTerms' },
+  { method: 'GET', path: '/api/authors/me/publishing-terms', tag: 'Publishing', summary: 'Get current author publishing terms acceptance status', auth: 'Author/Admin', controller: 'publishingTermsController.getMyTermsStatus' },
+  { method: 'POST', path: '/api/authors/me/publishing-terms/accept', tag: 'Publishing', summary: 'Accept current publishing terms', auth: 'Author/Admin', controller: 'publishingTermsController.acceptCurrentTerms', body: 'PublishingTermsAcceptanceRequest' },
   { method: 'GET', path: '/api/publish-packages', tag: 'Publishing', summary: 'List publish packages', auth: 'Public', controller: 'publishController.getPublishPackages' },
 
   { method: 'GET', path: '/api/admin/analytics', tag: 'Admin Core', summary: 'Admin analytics summary', auth: 'Admin', controller: 'adminController.getAdminAnalytics' },
@@ -170,6 +174,7 @@ const endpointInventory = [
   { method: 'GET', path: '/api/admin/authors/{authorId}/royalties', tag: 'Admin Author Access', summary: 'Admin inspect author royalty history', auth: 'Admin', controller: 'adminController.getAdminAuthorRoyalties', params: ['authorId'], query: ['page', 'limit', 'bookId', 'from', 'to'] },
 
   { method: 'GET', path: '/api/admin/operations/dashboard', tag: 'Admin Operations', summary: 'Operations dashboard', auth: 'Admin', controller: 'adminOperationsController.dashboardSummary' },
+  { method: 'GET', path: '/api/admin/operations/runtime-metrics', tag: 'Admin Operations', summary: 'Get process runtime metrics', auth: 'Admin', controller: 'adminOperationsController.runtimeMetricsSnapshot', notes: 'Returns per-instance request latency samples, status counts, in-flight requests, uptime, and memory. Use a platform metrics backend for multi-instance aggregation.' },
   { method: 'GET', path: '/api/admin/operations/search', tag: 'Admin Operations', summary: 'Global operations search', auth: 'Admin', controller: 'adminOperationsController.globalSearch', query: ['q', 'type', 'page', 'limit'] },
   { method: 'GET', path: '/api/admin/operations/payments', tag: 'Admin Operations', summary: 'List payments', auth: 'Admin', controller: 'adminOperationsController.listPayments', query: ['status', 'page', 'limit', 'from', 'to'] },
   { method: 'GET', path: '/api/admin/operations/payments/{id}', tag: 'Admin Operations', summary: 'Payment detail', auth: 'Admin', controller: 'adminOperationsController.getPaymentDetail', params: ['id'] },
@@ -196,6 +201,7 @@ const endpointInventory = [
   { method: 'POST', path: '/api/admin/notifications/{id}/retry', tag: 'Admin Notifications', summary: 'Retry failed notification', auth: 'Admin', controller: 'adminNotificationController.retryNotification', params: ['id'], body: 'NotificationRetryRequest' },
 
   { method: 'GET', path: '/api/admin/shipments/search', tag: 'Admin Shipments', summary: 'Search shipments', auth: 'Admin', controller: 'adminShipmentController.searchShipments', query: ['q', 'search', 'status', 'customer', 'order', 'payment', 'invoice', 'page', 'limit', 'from', 'to'] },
+  { method: 'GET', path: '/api/admin/shipments/couriers', tag: 'Admin Shipments', summary: 'List courier capabilities', auth: 'Admin', controller: 'adminShipmentController.listCouriers', notes: 'Only providers with available=true may be presented as configured. External providers remain NOT_CONFIGURED until credentials and adapters are implemented.' },
   { method: 'GET', path: '/api/admin/shipments', tag: 'Admin Shipments', summary: 'List shipments', auth: 'Admin', controller: 'adminShipmentController.listShipments', query: ['status', 'customer', 'order', 'payment', 'invoice', 'page', 'limit', 'from', 'to'] },
   { method: 'GET', path: '/api/admin/shipments/{id}/tracking', tag: 'Admin Shipments', summary: 'Get shipment tracking', auth: 'Admin', controller: 'adminShipmentController.getTracking', params: ['id'] },
   { method: 'GET', path: '/api/admin/shipments/{id}', tag: 'Admin Shipments', summary: 'Get shipment', auth: 'Admin', controller: 'adminShipmentController.getShipment', params: ['id'] },

@@ -1,4 +1,5 @@
 const publishingRepository = require('../repositories/publishingRepository');
+const publishingTermsService = require('./publishingTermsService');
 const mongoose = require('mongoose');
 
 const serviceError = (message, statusCode = 400) => {
@@ -15,11 +16,12 @@ const parseBoolean = (value, fieldName) => {
 };
 
 class PublishingService {
-  constructor(repository = publishingRepository) {
+  constructor(repository = publishingRepository, termsService = publishingTermsService) {
     this.repository = repository;
+    this.termsService = termsService;
   }
 
-  createPublishRequest(user, payload) {
+  async createPublishRequest(user, payload) {
     const { title, genre, wordCount, packageId, fileUrl } = payload;
     if (!title || !genre || !wordCount || !packageId || !fileUrl) {
       const error = new Error('All fields are required');
@@ -27,13 +29,19 @@ class PublishingService {
       throw error;
     }
 
+    const acceptance = await this.termsService.assertAccepted(user);
     return this.repository.createPublishRequest({
       user: user._id,
       title,
       genre,
       wordCount,
       packageId,
-      fileUrl
+      fileUrl,
+      ...(acceptance ? {
+        termsAcceptance: acceptance._id,
+        termsVersion: acceptance.version,
+        termsAcceptedAt: acceptance.acceptedAt
+      } : {})
     });
   }
 

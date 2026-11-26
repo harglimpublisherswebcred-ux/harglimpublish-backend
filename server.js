@@ -16,6 +16,8 @@ const { registerSubscribers } = require('./src/events/registerSubscribers');
 const { mountSwagger } = require('./src/docs/swagger');
 const { renderDeveloperPortal } = require('./src/docs/developerPortal');
 const maintenanceWorker = require('./src/workers/maintenanceWorker');
+const { buildCorsOptions, getRateLimitSettings } = require('./src/config/http');
+const runtimeMetrics = require('./src/observability/runtimeMetrics');
 
 let server;
 let isShuttingDown = false;
@@ -59,6 +61,7 @@ const app = express();
 const requestTimeoutMs = Number(process.env.SERVER_REQUEST_TIMEOUT_MS || 120000);
 const headersTimeoutMs = Number(process.env.SERVER_HEADERS_TIMEOUT_MS || 65000);
 const keepAliveTimeoutMs = Number(process.env.SERVER_KEEP_ALIVE_TIMEOUT_MS || 5000);
+const rateLimitSettings = getRateLimitSettings();
 
 // Railway/Render/Heroku/Nginx terminate TLS and forward the real client IP in
 // X-Forwarded-For; trust one proxy hop in production so rate limiting uses it.
@@ -71,6 +74,7 @@ registerSubscribers();
 // Middleware
 app.use((req, res, next) => {
   const startedAt = process.hrtime.bigint();
+  runtimeMetrics.requestStarted();
   const incomingRequestId = Array.isArray(req.headers['x-request-id'])
     ? req.headers['x-request-id'][0]
     : req.headers['x-request-id'];
@@ -80,6 +84,7 @@ app.use((req, res, next) => {
 
   res.on('finish', () => {
     const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+    runtimeMetrics.requestCompleted({ durationMs, statusCode: res.statusCode });
     const level = durationMs > 3000 || res.statusCode >= 500 ? 'warn' : 'info';
     logger[level]('http.request_completed', {
       requestId,
@@ -95,7 +100,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(helmet());
-app.use(cors());
+app.use(cors(buildCorsOptions()));
 // Integrate morgan with winston
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json({ limit: bodyLimit }));
@@ -127,10 +132,11 @@ app.use((req, res, next) => {
 
 // Global Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  windowMs: rateLimitSettings.windowMs,
+  max: rateLimitSettings.max,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => req.method === 'OPTIONS',
   message: { success: false, message: 'Too many requests from this IP, please try again later.' }
 });
 app.use('/api', limiter); // Apply to all API routes
@@ -138,8 +144,9 @@ mountSwagger(app);
 
 // Auth Specific Rate Limiting (Stricter)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'test' ? 1000 : 10, // Keep tests from tripping auth limits during regression.
+  windowMs: rateLimitSettings.authWindowMs,
+  max: process.env.NODE_ENV === 'test' ? 1000 : rateLimitSettings.authMax,
+  skip: (req) => req.method === 'OPTIONS',
   message: { success: false, message: 'Too many login attempts, please try again later.' }
 });
 
@@ -148,6 +155,16 @@ app.get('/', renderDeveloperPortal);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
+});
+
+app.get('/health/ready', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'READY' : 'NOT_READY',
+    database: ready ? 'connected' : 'disconnected',
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Routes will be imported here

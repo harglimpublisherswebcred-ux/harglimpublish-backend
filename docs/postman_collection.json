@@ -54,6 +54,33 @@
           ]
         },
         {
+          "name": "Readiness check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Get public published-book and active-author totals",
           "request": {
             "method": "GET",
@@ -3358,6 +3385,111 @@
           ]
         },
         {
+          "name": "Get current publishing terms version",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/publishing-terms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "publishing-terms"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get current author publishing terms acceptance status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/authors/me/publishing-terms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "authors",
+                "me",
+                "publishing-terms"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Accept current publishing terms",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/authors/me/publishing-terms/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "authors",
+                "me",
+                "publishing-terms",
+                "accept"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "List publish packages",
           "request": {
             "method": "GET",
@@ -5789,6 +5921,40 @@
           ]
         },
         {
+          "name": "Get process runtime metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/operations/runtime-metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "operations",
+                "runtime-metrics"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Global operations search",
           "request": {
             "method": "GET",
@@ -6710,6 +6876,40 @@
                 "admin",
                 "shipments",
                 "search"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"status is not 500\", function () { pm.expect(pm.response.code).to.not.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List courier capabilities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/shipments/couriers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "shipments",
+                "couriers"
               ]
             }
           },
