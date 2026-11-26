@@ -6,6 +6,7 @@ const authorAccessService = require('./authorAccessService');
 const { isPaidAuthorDashboardAccessEnabled } = require('../config/features');
 const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
 const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
+const { normalizeBookLanguageInput } = require('../utils/bookLanguage');
 
 const notFound = (message) => {
   const error = new Error(message);
@@ -13,9 +14,10 @@ const notFound = (message) => {
   return error;
 };
 
-const serviceError = (message, statusCode = 400) => {
+const serviceError = (message, statusCode = 400, code) => {
   const error = new Error(message);
   error.statusCode = statusCode;
+  if (code) error.code = code;
   return error;
 };
 
@@ -88,7 +90,12 @@ const buildCreatedAtSort = (value) => {
 };
 
 const normalizeBookPricingInput = (payload = {}) => {
-  const data = { ...payload };
+  let data;
+  try {
+    data = normalizeBookLanguageInput(payload);
+  } catch (error) {
+    throw serviceError(error.message, 400, error.code);
+  }
   delete data.slug;
   const hasMrp = hasValue(data.mrp);
   const hasPrice = hasValue(data.price);

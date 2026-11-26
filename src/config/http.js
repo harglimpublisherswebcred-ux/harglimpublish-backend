@@ -29,6 +29,7 @@ const buildCorsOptions = () => {
       callback(error);
     },
     credentials: parseBoolean(process.env.CORS_ALLOW_CREDENTIALS, false),
+    exposedHeaders: ['X-Request-Id', 'Retry-After', 'RateLimit', 'RateLimit-Policy'],
     optionsSuccessStatus: 204
   };
 };
@@ -37,7 +38,11 @@ const getRateLimitSettings = () => ({
   windowMs: parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
   max: parsePositiveInteger(process.env.RATE_LIMIT_MAX, 100),
   authWindowMs: parsePositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
-  authMax: parsePositiveInteger(process.env.AUTH_RATE_LIMIT_MAX, 10)
+  authMax: parsePositiveInteger(process.env.AUTH_RATE_LIMIT_MAX, 10),
+  uploadWindowMs: parsePositiveInteger(process.env.UPLOAD_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
+  uploadMax: parsePositiveInteger(process.env.UPLOAD_RATE_LIMIT_MAX, 30),
+  sensitiveWindowMs: parsePositiveInteger(process.env.SENSITIVE_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
+  sensitiveMax: parsePositiveInteger(process.env.SENSITIVE_RATE_LIMIT_MAX, 120)
 });
 
 module.exports = {

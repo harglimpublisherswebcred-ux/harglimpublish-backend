@@ -11,6 +11,9 @@ const itemSchema = new mongoose.Schema({
 const manualRoyaltyStatementSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  idempotencyKey: { type: String, trim: true, maxlength: 128, immutable: true, select: false },
+  requestHash: { type: String, select: false, immutable: true },
+  replacementFor: { type: mongoose.Schema.Types.ObjectId, ref: 'ManualRoyaltyStatement', immutable: true },
   periodStart: Date,
   periodEnd: Date,
   note: { type: String, trim: true, maxlength: 2000 },
@@ -34,5 +37,10 @@ const manualRoyaltyStatementSchema = new mongoose.Schema({
 manualRoyaltyStatementSchema.index({ author: 1, status: 1, createdAt: -1 });
 manualRoyaltyStatementSchema.index({ createdAt: -1 });
 manualRoyaltyStatementSchema.index({ periodStart: 1, periodEnd: 1 });
+manualRoyaltyStatementSchema.index(
+  { createdBy: 1, idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: 'string' } } }
+);
+manualRoyaltyStatementSchema.index({ replacementFor: 1 }, { sparse: true });
 
 module.exports = mongoose.model('ManualRoyaltyStatement', manualRoyaltyStatementSchema);

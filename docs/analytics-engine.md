@@ -1,5 +1,13 @@
 # Analytics & Reporting Engine
 
+## Author Analytics Contract
+
+`GET /api/authors/me/analytics` accepts either `range=<1-365>d` or an inclusive `from` and `to` pair. Invalid dates, reversed bounds, incomplete custom ranges, and ranges longer than 365 days return HTTP 400.
+
+The response preserves `period`, `startDate`, `endDate`, and `series`, and adds `bounds` plus a read-optimized `summary`. The summary includes units, revenue, known royalty, order count, sale-line count, unresolved legacy count, currency, and `COMPLETE` or `PARTIAL` data status. Bounds are reported in UTC and are inclusive.
+
+Historical lines without reliable purchase-time royalty evidence remain explicitly unresolved. The service never substitutes a current book royalty rate for missing historical evidence.
+
 Sprint 10 adds an event-driven analytics projection and admin reporting APIs.
 
 ## Architecture

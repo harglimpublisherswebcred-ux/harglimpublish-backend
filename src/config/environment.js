@@ -88,6 +88,10 @@ const validateEnvironment = ({ strict = isProduction() } = {}) => {
   validateNumber('RATE_LIMIT_MAX', errors, { min: 1 });
   validateNumber('AUTH_RATE_LIMIT_WINDOW_MS', errors, { min: 1000 });
   validateNumber('AUTH_RATE_LIMIT_MAX', errors, { min: 1 });
+  validateNumber('UPLOAD_RATE_LIMIT_WINDOW_MS', errors, { min: 1000 });
+  validateNumber('UPLOAD_RATE_LIMIT_MAX', errors, { min: 1 });
+  validateNumber('SENSITIVE_RATE_LIMIT_WINDOW_MS', errors, { min: 1000 });
+  validateNumber('SENSITIVE_RATE_LIMIT_MAX', errors, { min: 1 });
   validateUrlList('CORS_ORIGINS', errors);
 
   if (enabled('PUBLISHING_TERMS_ENFORCEMENT_ENABLED')) {

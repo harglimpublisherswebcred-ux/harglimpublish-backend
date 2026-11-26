@@ -21079,14 +21079,24 @@
           "Manual Royalties"
         ],
         "summary": "Record an informational publisher royalty statement",
-        "description": "Record an informational publisher royalty statement. Controller: manualRoyaltyController.createStatement. Authentication: Admin. API routes are rate limited and return standard error envelopes. Informational only; does not affect balances, settlements, or payouts.",
+        "description": "Record an informational publisher royalty statement. Controller: manualRoyaltyController.createStatement. Authentication: Admin. API routes are rate limited and return standard error envelopes. Informational only; does not affect balances, settlements, or payouts. Idempotency-Key is recommended for safe retries.",
         "operationId": "post_api_admin_manual_royalties",
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -21146,6 +21156,9 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "429": {
             "$ref": "#/components/responses/RateLimited"
           },
@@ -21169,6 +21182,14 @@
         "parameters": [
           {
             "name": "authorId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
             "in": "query",
             "required": false,
             "schema": {
@@ -21264,6 +21285,9 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "429": {
             "$ref": "#/components/responses/RateLimited"
           },
@@ -21344,6 +21368,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
@@ -21435,6 +21462,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
@@ -21529,6 +21559,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
@@ -22350,6 +22383,10 @@
               "error"
             ]
           },
+          "error": {
+            "type": "string",
+            "description": "Stable machine-readable error code when available."
+          },
           "message": {
             "type": "string"
           },
@@ -22789,6 +22826,12 @@
               "ebook",
               "audiobook"
             ]
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "Optional canonical language name. Unicode is supported."
           },
           "createdAt": {
             "type": "string",
@@ -23664,6 +23707,11 @@
           "pages": {
             "type": "integer",
             "minimum": 1
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
           }
         }
       },
@@ -23709,6 +23757,11 @@
           "pages": {
             "type": "integer",
             "minimum": 1
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
           }
         }
       },
@@ -23816,6 +23869,11 @@
               "audiobook"
             ],
             "default": "paperback"
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
           }
         }
       },
@@ -23910,6 +23968,11 @@
               "ebook",
               "audiobook"
             ]
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
           }
         }
       },
@@ -25126,6 +25189,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "replacementFor": {
+            "type": "string",
+            "description": "Optional void statement replaced by this statement."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -25157,6 +25224,15 @@
           "note": {
             "type": "string",
             "maxLength": 2000
+          },
+          "replacementFor": {
+            "type": "string",
+            "description": "Optional ObjectId of a VOID statement for the same author."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "Body compatibility alias; prefer the Idempotency-Key header."
           },
           "items": {
             "type": "array",

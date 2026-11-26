@@ -137,7 +137,7 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => req.method === 'OPTIONS',
-  message: { success: false, message: 'Too many requests from this IP, please try again later.' }
+  message: { success: false, error: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests from this IP, please try again later.' }
 });
 app.use('/api', limiter); // Apply to all API routes
 mountSwagger(app);
@@ -147,7 +147,25 @@ const authLimiter = rateLimit({
   windowMs: rateLimitSettings.authWindowMs,
   max: process.env.NODE_ENV === 'test' ? 1000 : rateLimitSettings.authMax,
   skip: (req) => req.method === 'OPTIONS',
-  message: { success: false, message: 'Too many login attempts, please try again later.' }
+  message: { success: false, error: 'AUTH_RATE_LIMIT_EXCEEDED', message: 'Too many login attempts, please try again later.' }
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: rateLimitSettings.uploadWindowMs,
+  max: process.env.NODE_ENV === 'test' ? 1000 : rateLimitSettings.uploadMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS',
+  message: { success: false, error: 'UPLOAD_RATE_LIMIT_EXCEEDED', message: 'Too many upload requests. Please try again later.' }
+});
+
+const sensitiveWriteLimiter = rateLimit({
+  windowMs: rateLimitSettings.sensitiveWindowMs,
+  max: process.env.NODE_ENV === 'test' ? 1000 : rateLimitSettings.sensitiveMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method),
+  message: { success: false, error: 'WRITE_RATE_LIMIT_EXCEEDED', message: 'Too many write requests. Please try again later.' }
 });
 
 // Health check endpoint
@@ -179,28 +197,35 @@ app.use('/api/contact-requests', require('./src/routes/contactRoutes'));
 app.use('/api/author-applications', require('./src/routes/authorApplicationRoutes'));
 app.use('/api/reviews', require('./src/routes/reviewRoutes'));
 app.use('/api/search', require('./src/routes/searchRoutes'));
-app.use('/api/orders', require('./src/routes/orderRoutes'));
-app.use('/api/admin', require('./src/routes/adminRoutes'));
-app.use('/api/uploads', require('./src/routes/uploadsRoutes'));
+app.use('/api/orders', sensitiveWriteLimiter, require('./src/routes/orderRoutes'));
+app.use('/api/admin', sensitiveWriteLimiter, require('./src/routes/adminRoutes'));
+app.use('/api/uploads', uploadLimiter, require('./src/routes/uploadsRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
-app.use('/api/authors', require('./src/routes/authorRoutes'));
+app.use('/api/authors/me/uploads', uploadLimiter);
+app.use('/api/authors', sensitiveWriteLimiter, require('./src/routes/authorRoutes'));
+app.use('/api/publish-requests', sensitiveWriteLimiter);
 app.use('/api', require('./src/routes/publishRoutes')); // Since the endpoints are /publish-requests and /publish-packages
 
 // 404 handler
 app.use((req, res, next) => {
   res.status(404).json({
     success: false,
+    error: 'ROUTE_NOT_FOUND',
     message: 'Route not found'
   });
 });
 
 // Global Error handling middleware
 app.use((err, req, res, next) => {
-  logger.error(`${err.statusCode || err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+  const statusCode = err.statusCode || err.status || 500;
+  logger.error(`${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
   
-  res.status(err.statusCode || 500).json({
+  res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    ...(err.code && { error: err.code }),
+    message: statusCode >= 500 && process.env.NODE_ENV === 'production'
+      ? 'Internal Server Error'
+      : (err.message || 'Internal Server Error'),
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });

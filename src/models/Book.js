@@ -100,6 +100,11 @@ const bookSchema = new mongoose.Schema(
       enum: ['hardcover', 'paperback', 'ebook', 'audiobook'],
       default: 'paperback',
     },
+    language: {
+      type: String,
+      trim: true,
+      maxlength: 80,
+    },
   },
   {
     timestamps: true,
@@ -115,7 +120,8 @@ bookSchema.virtual('royaltyPerCopy').get(function getRoyaltyPerCopy() {
 });
 
 // Create a text index for search
-bookSchema.index({ title: 'text', description: 'text' });
+// Keep the public `language` field independent from MongoDB text-search language overrides.
+bookSchema.index({ title: 'text', description: 'text' }, { language_override: '_searchLanguage' });
 bookSchema.index({ status: 1, createdAt: -1 });
 bookSchema.index({ category: 1, status: 1, createdAt: -1 });
 bookSchema.index({ author: 1, status: 1, createdAt: -1 });

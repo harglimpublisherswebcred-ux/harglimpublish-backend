@@ -217,6 +217,8 @@ const content = await res.json();
 ```
 ## Books
 
+Book create and update contracts accept optional `language` as a trimmed Unicode string with a maximum of 80 characters. Omitting it preserves an existing or missing value; unrelated updates never clear it. Invalid types and blank values return HTTP 400.
+
 | Method | Path | Auth | Summary | Controller | Contract Notes |
 |---|---|---|---|---|---|
 | GET | `/api/books` | Public | List books | `bookController.getBooks` | Query: `page`, `limit`, `category`, `minPrice`, `maxPrice`, `sort`, `featured`, `bestseller`, `newRelease` |
@@ -547,6 +549,8 @@ Rules:
 | GET | `/api/admin/manual-royalties/{id}` | Admin | View a manual statement |
 | POST | `/api/admin/manual-royalties/{id}/void` | Admin | Void a statement while preserving history |
 | GET | `/api/authors/me/manual-royalties` | Author dashboard | List the authenticated author's recorded statements |
+
+Manual royalty creation supports the `Idempotency-Key` header. Corrections are append-only: void the original and create a replacement with `replacementFor`. Admin filters include `authorId`, `status`, `from`, `to`, `page`, and `limit`; author projections exclude private administrator identity and email data.
 | GET | `/api/spotlights` | Public | List active author spotlight images with pagination |
 | GET | `/api/admin/spotlights` | Admin | List all spotlights |
 | POST | `/api/admin/spotlights` | Admin | Create spotlight from multipart image upload |

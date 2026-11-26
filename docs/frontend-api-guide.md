@@ -10612,6 +10612,7 @@ Path Parameters:
 
 Query Parameters:
 - `authorId`: optional query parameter.
+- `status`: optional query parameter.
 - `page`: optional query parameter.
 - `limit`: optional query parameter.
 - `from`: optional query parameter.

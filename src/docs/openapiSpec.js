@@ -70,6 +70,7 @@ const schemas = {
     properties: {
       success: { type: 'boolean', examples: [false] },
       status: { type: 'string', examples: ['error'] },
+      error: { type: 'string', description: 'Stable machine-readable error code when available.' },
       message: { type: 'string' },
       stack: { type: 'string', description: 'Development only.' }
     }
@@ -174,6 +175,7 @@ const schemas = {
       isbn: { type: 'string' },
       pages: { type: 'integer' },
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] },
+      language: { type: 'string', minLength: 1, maxLength: 80, description: 'Optional canonical language name. Unicode is supported.' },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' }
     }
@@ -532,7 +534,8 @@ const schemas = {
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' },
       coverImage: { type: 'string', format: 'uri' },
       isbn: { type: 'string' },
-      pages: { type: 'integer', minimum: 1 }
+      pages: { type: 'integer', minimum: 1 },
+      language: { type: 'string', minLength: 1, maxLength: 80 }
     }
   },
   AuthorBookUpdateRequest: {
@@ -546,7 +549,8 @@ const schemas = {
       format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] },
       coverImage: { type: 'string', format: 'uri' },
       isbn: { type: 'string' },
-      pages: { type: 'integer', minimum: 1 }
+      pages: { type: 'integer', minimum: 1 },
+      language: { type: 'string', minLength: 1, maxLength: 80 }
     }
   },
   AdminBookCreateRequest: {
@@ -574,7 +578,8 @@ const schemas = {
       isNewRelease: { type: 'boolean' },
       isbn: { type: 'string' },
       pages: { type: 'integer', minimum: 1 },
-      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' }
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'], default: 'paperback' },
+      language: { type: 'string', minLength: 1, maxLength: 80 }
     }
   },
   AdminBookUpdateRequest: {
@@ -601,7 +606,8 @@ const schemas = {
       isNewRelease: { type: 'boolean' },
       isbn: { type: 'string' },
       pages: { type: 'integer', minimum: 1 },
-      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] }
+      format: { type: 'string', enum: ['hardcover', 'paperback', 'ebook', 'audiobook'] },
+      language: { type: 'string', minLength: 1, maxLength: 80 }
     }
   },
   BookCreateRequest: {
@@ -1024,6 +1030,7 @@ const schemas = {
       status: { type: 'string', enum: ['RECORDED', 'VOID'] },
       voidReason: { type: 'string' },
       voidedAt: { type: 'string', format: 'date-time' },
+      replacementFor: { type: 'string', description: 'Optional void statement replaced by this statement.' },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' }
     }
@@ -1036,6 +1043,8 @@ const schemas = {
       periodStart: { type: 'string', format: 'date-time' },
       periodEnd: { type: 'string', format: 'date-time' },
       note: { type: 'string', maxLength: 2000 },
+      replacementFor: { type: 'string', description: 'Optional ObjectId of a VOID statement for the same author.' },
+      idempotencyKey: { type: 'string', maxLength: 128, description: 'Body compatibility alias; prefer the Idempotency-Key header.' },
       items: {
         type: 'array', minItems: 1, maxItems: 100,
         items: {
@@ -1498,6 +1507,15 @@ function queryFor(name) {
   };
 }
 
+function headerFor(name) {
+  return {
+    name,
+    in: 'header',
+    required: false,
+    schema: { type: 'string', maxLength: 128 }
+  };
+}
+
 function authHeaderFor() {
   return [];
 }
@@ -1565,6 +1583,7 @@ function buildOpenApiSpec() {
     }
     if (endpoint.tag === 'Admin Categories'
       || endpoint.path.includes('/operations/payments')
+      || endpoint.path.includes('/manual-royalties')
       || endpoint.path.endsWith('/publishing-terms/accept')) {
       responses[409] = { $ref: '#/components/responses/Conflict' };
     }
@@ -1578,7 +1597,8 @@ function buildOpenApiSpec() {
       parameters: [
         ...authHeaderFor(endpoint),
         ...(endpoint.params || []).map(parameterFor),
-        ...(endpoint.query || []).map(queryFor)
+        ...(endpoint.query || []).map(queryFor),
+        ...(endpoint.headers || []).map(headerFor)
       ],
       ...(body ? { requestBody: body } : {}),
       responses

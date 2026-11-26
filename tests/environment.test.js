@@ -15,6 +15,10 @@ const ENV_KEYS = [
   'RATE_LIMIT_MAX',
   'AUTH_RATE_LIMIT_WINDOW_MS',
   'AUTH_RATE_LIMIT_MAX',
+  'UPLOAD_RATE_LIMIT_WINDOW_MS',
+  'UPLOAD_RATE_LIMIT_MAX',
+  'SENSITIVE_RATE_LIMIT_WINDOW_MS',
+  'SENSITIVE_RATE_LIMIT_MAX',
   'PUBLISHING_TERMS_ENFORCEMENT_ENABLED',
   'PUBLISHING_TERMS_VERSION',
   'PUBLISHING_TERMS_EFFECTIVE_AT',
@@ -111,5 +115,17 @@ describe('Environment validation', () => {
     process.env.PUBLISHING_TERMS_VERSION = '2026-11-25';
     process.env.PUBLISHING_TERMS_EFFECTIVE_AT = '2026-11-25T00:00:00.000Z';
     expect(() => validateEnvironment({ strict: true })).not.toThrow();
+  });
+
+  it('validates dedicated upload and sensitive-write limiter settings', () => {
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/hm_backend';
+    process.env.UPLOAD_RATE_LIMIT_MAX = '0';
+    process.env.SENSITIVE_RATE_LIMIT_WINDOW_MS = '500';
+    expect(() => validateEnvironment({ strict: false })).toThrow(/UPLOAD_RATE_LIMIT_MAX/);
+
+    process.env.UPLOAD_RATE_LIMIT_MAX = '30';
+    process.env.SENSITIVE_RATE_LIMIT_WINDOW_MS = '900000';
+    process.env.SENSITIVE_RATE_LIMIT_MAX = '120';
+    expect(() => validateEnvironment({ strict: false })).not.toThrow();
   });
 });

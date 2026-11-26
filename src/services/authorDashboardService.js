@@ -10,6 +10,18 @@ const serviceError = (message, statusCode) => {
 
 const roundMoney = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
+const parseDate = (value, field) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) throw serviceError(`${field} must be a valid date`, 400);
+  return date;
+};
+
+const validateDateOrder = (startDate, endDate) => {
+  if (startDate > endDate) throw serviceError('from must be before or equal to to', 400);
+  const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  if (diffDays > 365) throw serviceError('Custom date range cannot exceed 365 days', 400);
+};
+
 const authorizeAuthorOrAdmin = (authorId, actor) => {
   const actorId = String(actor._id || actor.id);
   if (actorId !== String(authorId) && actor.role !== 'admin') {
@@ -156,22 +168,26 @@ class AuthorDashboardService {
     let endDate = new Date();
     let startDate = new Date();
 
+    if ((from && !to) || (!from && to)) {
+      throw serviceError('from and to must be provided together', 400);
+    }
     if (from && to) {
-      startDate = new Date(from);
-      endDate = new Date(to);
+      startDate = parseDate(from, 'from');
+      endDate = parseDate(to, 'to');
     } else {
-      const days = parseInt(range, 10) || (range === '7d' ? 7 : range === '90d' ? 90 : 30);
+      const rangeMatch = String(range).match(/^(\d{1,3})d$/);
+      if (!rangeMatch) throw serviceError('range must use the format 7d, 30d, 90d, or up to 365d', 400);
+      const days = Number(rangeMatch[1]);
+      if (days < 1 || days > 365) throw serviceError('range must be between 1d and 365d', 400);
       startDate.setDate(endDate.getDate() - days);
     }
-
-    const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    if (diffDays > 365) {
-      throw serviceError('Custom date range cannot exceed 365 days', 400);
-    }
+    validateDateOrder(startDate, endDate);
 
     const { orders, authorBookMap } = await this.repository.findVerifiedOrdersForAuthor(authorId);
 
     const timeMap = new Map();
+    const includedOrders = new Set();
+    let saleLineCount = 0;
 
     orders.forEach((order) => {
       const orderDate = order.createdAt;
@@ -189,6 +205,8 @@ class AuthorDashboardService {
           const itemAuthorId = item.author ? item.author.toString() : (item.book && item.book.author ? item.book.author.toString() : null);
 
           if (itemAuthorId === String(authorId) || (itemBookId && authorBookMap.has(itemBookId))) {
+            includedOrders.add(String(order._id));
+            saleLineCount += 1;
             const qty = item.quantity || 0;
             const unitPrice = item.price || 0;
             const gross = qty * unitPrice;
@@ -217,10 +235,30 @@ class AuthorDashboardService {
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    const summary = series.reduce((totals, item) => ({
+      units: totals.units + item.units,
+      revenue: roundMoney(totals.revenue + item.revenue),
+      knownRoyalty: roundMoney(totals.knownRoyalty + item.knownRoyalty),
+      unresolvedLegacyCount: totals.unresolvedLegacyCount + item.unresolvedLegacyCount
+    }), { units: 0, revenue: 0, knownRoyalty: 0, unresolvedLegacyCount: 0 });
+
     return {
-      period: range,
+      period: from && to ? 'custom' : range,
       startDate,
       endDate,
+      bounds: {
+        from: startDate,
+        to: endDate,
+        timezone: 'UTC',
+        inclusion: 'inclusive'
+      },
+      summary: {
+        ...summary,
+        orderCount: includedOrders.size,
+        saleLineCount,
+        currency: 'INR',
+        dataStatus: summary.unresolvedLegacyCount > 0 ? 'PARTIAL' : 'COMPLETE'
+      },
       series
     };
   }
@@ -239,8 +277,9 @@ class AuthorDashboardService {
 
     const allTransactions = [];
 
-    const fromDate = from ? new Date(from) : null;
-    const toDate = to ? new Date(to) : null;
+    const fromDate = from ? parseDate(from, 'from') : null;
+    const toDate = to ? parseDate(to, 'to') : null;
+    if (fromDate && toDate) validateDateOrder(fromDate, toDate);
 
     orders.forEach((order) => {
       const orderDate = order.createdAt;

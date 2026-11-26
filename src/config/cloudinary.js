@@ -88,6 +88,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: folderName,
       resource_type: resourceType,
+      ...(resourceType === 'image' && { allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'] }),
       public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '')}`,
     };
   }
@@ -112,6 +113,7 @@ const spotlightStorage = new CloudinaryStorage({
   params: async (req, file) => ({
     folder: 'harglim/spotlights',
     resource_type: 'image',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9_.-]/g, '')}`,
     transformation: [{ width: 1600, height: 1600, crop: 'limit', quality: 'auto' }],
   }),
@@ -154,6 +156,7 @@ const requireCloudinaryConfig = (req, res, next) => {
     });
     return res.status(503).json({
       success: false,
+      error: 'UPLOAD_PROVIDER_NOT_CONFIGURED',
       message: cloudinaryUnavailableMessage,
       missing: missingConfig
     });
@@ -183,6 +186,7 @@ const handleUploadError = (error, req, res, next) => {
   if (cloudinaryConfigFailure) {
     return res.status(503).json({
       success: false,
+      error: 'UPLOAD_PROVIDER_NOT_CONFIGURED',
       message: cloudinaryUnavailableMessage
     });
   }
@@ -190,12 +194,14 @@ const handleUploadError = (error, req, res, next) => {
   if (timedOut) {
     return res.status(504).json({
       success: false,
+      error: 'UPLOAD_TIMEOUT',
       message: 'Upload timed out. Please retry with a smaller file or try again shortly.'
     });
   }
 
   return res.status(fileTooLarge ? 413 : 400).json({
     success: false,
+    error: fileTooLarge ? 'UPLOAD_TOO_LARGE' : tooManyFiles ? 'UPLOAD_TOO_MANY_FILES' : 'UPLOAD_INVALID',
     message: fileTooLarge ? 'Uploaded file is too large' : tooManyFiles ? 'Too many files' : errorMessage
   });
 };

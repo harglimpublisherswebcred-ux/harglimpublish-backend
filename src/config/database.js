@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
+const autoIndexEnabled = () => {
+  if (process.env.MONGOOSE_AUTO_INDEX !== undefined) {
+    return ['true', '1', 'yes', 'on'].includes(String(process.env.MONGOOSE_AUTO_INDEX).trim().toLowerCase());
+  }
+  return process.env.NODE_ENV !== 'production';
+};
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
@@ -8,11 +15,13 @@ const connectDB = async () => {
       minPoolSize: Number(process.env.MONGODB_MIN_POOL_SIZE || 0),
       serverSelectionTimeoutMS: Number(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || 10000),
       connectTimeoutMS: Number(process.env.MONGODB_CONNECT_TIMEOUT_MS || 10000),
-      socketTimeoutMS: Number(process.env.MONGODB_SOCKET_TIMEOUT_MS || 45000)
+      socketTimeoutMS: Number(process.env.MONGODB_SOCKET_TIMEOUT_MS || 45000),
+      autoIndex: autoIndexEnabled()
     });
     logger.info('database.connected', {
       host: conn.connection.host,
-      maxPoolSize: Number(process.env.MONGODB_MAX_POOL_SIZE || 20)
+      maxPoolSize: Number(process.env.MONGODB_MAX_POOL_SIZE || 20),
+      autoIndex: autoIndexEnabled()
     });
   } catch (error) {
     logger.error('database.connection_failed', { message: error.message });

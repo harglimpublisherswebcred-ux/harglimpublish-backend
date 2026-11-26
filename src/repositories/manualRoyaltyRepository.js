@@ -15,6 +15,12 @@ class ManualRoyaltyRepository {
     return ManualRoyaltyStatement.create(data);
   }
 
+  findByIdempotencyKey(createdBy, idempotencyKey) {
+    return ManualRoyaltyStatement.findOne({ createdBy, idempotencyKey })
+      .select('+requestHash +idempotencyKey')
+      .lean();
+  }
+
   findById(id) {
     return ManualRoyaltyStatement.findById(id)
       .populate('author', 'name email')
@@ -27,7 +33,21 @@ class ManualRoyaltyRepository {
     const [data, total] = await Promise.all([
       ManualRoyaltyStatement.find(query)
         .populate('author', 'name email')
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ManualRoyaltyStatement.countDocuments(query),
+    ]);
+    return { data, total };
+  }
+
+  async listForAuthor(authorId, { skip, limit }) {
+    const query = { author: authorId, status: 'RECORDED' };
+    const [data, total] = await Promise.all([
+      ManualRoyaltyStatement.find(query)
+        .select('-createdBy -voidedBy -requestHash -idempotencyKey')
+        .sort({ createdAt: -1, _id: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),

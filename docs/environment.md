@@ -18,7 +18,12 @@ This document is generated from actual environment references in `server.js`, `s
 | `RATE_LIMIT_MAX` | Optional | `100` | `src/config/http.js`, `server.js` | Maximum requests per client IP in the global window. | Raise only after load testing; multi-instance deployments need a shared rate-limit store. | `100` | No |
 | `AUTH_RATE_LIMIT_WINDOW_MS` | Optional | `900000` | `src/config/http.js`, `server.js` | Authentication rate-limit window. | Keep stricter than the global API policy. | `900000` | No |
 | `AUTH_RATE_LIMIT_MAX` | Optional | `10` | `src/config/http.js`, `server.js` | Maximum authentication requests per client IP in the auth window. | Tune carefully to protect login while supporting legitimate retries. | `10` | No |
+| `UPLOAD_RATE_LIMIT_WINDOW_MS` | Optional | `900000` | `src/config/http.js`, `server.js` | Dedicated upload rate-limit window. | Keep independent from general browsing traffic. | `900000` | No |
+| `UPLOAD_RATE_LIMIT_MAX` | Optional | `30` | `src/config/http.js`, `server.js` | Maximum upload attempts per client IP and window. | Tune after staging upload tests. | `30` | No |
+| `SENSITIVE_RATE_LIMIT_WINDOW_MS` | Optional | `900000` | `src/config/http.js`, `server.js` | Dedicated sensitive-write rate-limit window. | Keep independent from GET traffic. | `900000` | No |
+| `SENSITIVE_RATE_LIMIT_MAX` | Optional | `120` | `src/config/http.js`, `server.js` | Maximum sensitive writes per client IP and window. | Tune from authenticated staging traffic. | `120` | No |
 | `MONGODB_URI` | Required | None | `src/config/database.js` | MongoDB connection string. | Use a production MongoDB replica set/Atlas URI with credentials from a secret manager. | `mongodb://localhost:27017/hm_backend` | Yes |
+| `MONGOOSE_AUTO_INDEX` | Optional | `false` in production; `true` otherwise | `src/config/database.js` | Controls automatic Mongoose index creation. | Keep `false` in production and apply reviewed index migrations explicitly. | `false` | No |
 | `MONGODB_MAX_POOL_SIZE` | Optional | `20` | `src/config/database.js` | Maximum MongoDB connection pool size. | Tune based on Render instance size and Atlas tier. | `20` | No |
 | `MONGODB_MIN_POOL_SIZE` | Optional | `0` | `src/config/database.js` | Minimum MongoDB connection pool size. | Keep low for small instances unless warm pools are required. | `0` | No |
 | `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | Optional | `10000` | `src/config/database.js` | MongoDB server selection timeout. | Use a bounded timeout so startup/requests fail clearly. | `10000` | No |

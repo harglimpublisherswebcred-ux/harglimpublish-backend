@@ -25,7 +25,12 @@
     "audit:author-settlements": "node scripts/authorSettlementAudit.js",
     "audit:privileged-users": "node scripts/privilegedUserAudit.js",
     "docs:validate-handover": "node scripts/validateHandoverDocs.js",
-    "audit:auth-identities": "node scripts/authIdentityAudit.js"
+    "audit:auth-identities": "node scripts/authIdentityAudit.js",
+    "audit:book-language": "node scripts/bookLanguageAudit.js",
+    "migrate:book-language-index:dry-run": "node scripts/bookLanguageIndexMigration.js",
+    "migrate:book-language-index": "node scripts/bookLanguageIndexMigration.js --apply",
+    "migrate:manual-royalty-index:dry-run": "node scripts/manualRoyaltyIndexMigration.js",
+    "migrate:manual-royalty-index": "node scripts/manualRoyaltyIndexMigration.js --apply"
   },
   "keywords": [],
   "author": "",

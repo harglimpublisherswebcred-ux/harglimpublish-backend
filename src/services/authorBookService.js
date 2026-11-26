@@ -4,6 +4,7 @@ const Category = require('../models/Category');
 const logger = require('../utils/logger');
 const { createBaseSlug, slugCandidate, isBookSlugDuplicateError } = require('../utils/bookSlug');
 const { royaltyPerCopyFromBook } = require('../utils/royaltyCalculation');
+const { normalizeBookLanguage } = require('../utils/bookLanguage');
 
 class AuthorBookError extends Error {
   constructor(message, code = 'AUTHOR_BOOK_ERROR', statusCode = 400, details = {}) {
@@ -48,7 +49,8 @@ const AUTHOR_EDITABLE_FIELDS = new Set([
   'mrp',
   'price',
   'isbn',
-  'pages'
+  'pages',
+  'language'
 ]);
 
 const PROTECTED_ADMIN_FIELDS = new Set([
@@ -86,6 +88,14 @@ const filterAndNormalizeAuthorPayload = (payload = {}, isUpdate = false) => {
   for (const key of Object.keys(payload)) {
     if (AUTHOR_EDITABLE_FIELDS.has(key)) {
       filtered[key] = payload[key];
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(filtered, 'language')) {
+    try {
+      filtered.language = normalizeBookLanguage(filtered.language);
+    } catch (error) {
+      throw new AuthorBookValidationError(error.message, { field: 'language', code: error.code });
     }
   }
 

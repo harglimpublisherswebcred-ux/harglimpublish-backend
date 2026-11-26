@@ -113,10 +113,11 @@ describe('Upload API hardening', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       success: false,
+      error: 'UPLOAD_PROVIDER_NOT_CONFIGURED',
       message: expect.stringMatching(/Cloudinary upload is not configured/)
-    });
+    }));
   });
 
   it('maps non-provider upload middleware failures to bad request responses', () => {
@@ -130,10 +131,11 @@ describe('Upload API hardening', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       success: false,
+      error: 'UPLOAD_INVALID',
       message: 'Unexpected file field'
-    });
+    }));
   });
 
   it('rejects invalid image upload MIME types before provider upload', async () => {
@@ -153,10 +155,11 @@ describe('Upload API hardening', () => {
       });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body).toEqual({
+    expect(res.body).toEqual(expect.objectContaining({
       success: false,
+      error: 'UPLOAD_INVALID',
       message: 'Invalid file type for upload'
-    });
+    }));
   });
 
   it('maps oversized file middleware failures to payload-too-large responses', () => {
@@ -172,9 +175,10 @@ describe('Upload API hardening', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(413);
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       success: false,
+      error: 'UPLOAD_TOO_LARGE',
       message: 'Uploaded file is too large'
-    });
+    }));
   });
 });

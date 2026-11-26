@@ -20,7 +20,7 @@ const listBooks = async (req, res) => {
     const result = await adminCoreService.listBooks(req.query);
     res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, ...(error.code && { error: error.code }), message: error.message });
   }
 };
 
@@ -32,7 +32,7 @@ const getBook = async (req, res) => {
     const book = await adminCoreService.getBook(req.params.id);
     res.json({ success: true, data: book });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, ...(error.code && { error: error.code }), message: error.message });
   }
 };
 
@@ -44,7 +44,7 @@ const createBook = async (req, res) => {
     const createdBook = await adminCoreService.createBook(req.body, req.user);
     res.status(201).json({ success: true, data: createdBook });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, ...(error.code && { error: error.code }), message: error.message });
   }
 };
 
@@ -56,7 +56,7 @@ const updateBook = async (req, res) => {
     const book = await adminCoreService.updateBook(req.params.id, req.body);
     res.json({ success: true, data: book });
   } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, ...(error.code && { error: error.code }), message: error.message });
   }
 };
 
